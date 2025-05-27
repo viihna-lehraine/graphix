@@ -1,0 +1,15 @@
+/* File: frontend/src/styles/partials/variables/shadows.css */
+
+@import url('./colors.css');
+
+/* ============================================== */
+/* ============================================== */
+
+:root {
+  --drop-shadow-1: 0 0 12px var(--drop-shadow-color-1);
+  --drop-shadow-2: 0 0 3px var(--drop-shadow-color-2);
+  --drop-shadow-3: 0 0 24px var(--drop-shadow-color-3);
+  --drop-shadow-4: 0 0 10px var(--drop-shadow-color-4);
+  --drop-shadow-5: 0 0 16px var(--drop-shadow-color-5);
+  --drop-shadow-6: 0 0 4px var(--drop-shadow-color-6);
+}

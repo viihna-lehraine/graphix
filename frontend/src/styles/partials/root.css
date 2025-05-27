@@ -1,0 +1,32 @@
+/* File: frontend/src/styles/partials/root.css */
+
+@import url('../partials/variables/index.css');
+
+/* ============================================== */
+/* ============================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+/* ============================================== */
+
+body,
+html {
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: var(--pad_p1);
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  align-items: center;
+  background: var(--body-bg-color);
+}
+
+/* ============================================== */
+
+.hidden {
+  display: none;
+}

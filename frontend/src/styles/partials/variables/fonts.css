@@ -1,0 +1,12 @@
+/* File: frontend/src/styles/partials/variables/fonts.css */
+
+/* ============================================== */
+/* ============================================== */
+
+:root {
+  --font-header: 'Impact', 'Arial Black', 'Luckiest Guy', 'Bangers', Arial, sans-serif;
+  --font-body: 'Trebuchet MS', Verdana, Arial, sans-serif;
+  --font-goth: 'Creepster', 'Georgia', 'Papyrus', serif;
+  --font-mono: 'Courier New', 'Lucida Console', monospace;
+  --font-script: 'Lobster', 'Comic Sans MS', 'Monotype Corsiva', cursive;
+}
