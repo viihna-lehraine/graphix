@@ -1,9 +1,6 @@
 // File: frontend/eslint.config.mjs
 
-import jestPlugin from 'eslint-plugin-jest';
 import prettierPlugin from 'eslint-plugin-prettier';
-import reactPlugin from 'eslin-plugin-react';
-import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import typescriptParser from '@typescript-eslint/parser';
 import typescriptEslintPlugin from '@typescript-eslint/eslint-plugin';
 
@@ -15,7 +12,6 @@ export default [
     ignores: ['node_modules/', 'public/js/']
   },
   {
-    files: ['jest.config.ts'],
     languageOptions: {
       parser: typescriptParser,
       parserOptions: {
@@ -24,22 +20,16 @@ export default [
       }
     },
     plugins: {
-      jest: jestPlugin,
       '@typescript-eslint': typescriptEslintPlugin,
       prettier: prettierPlugin
     },
     rules: {
       'prettier/prettier': ['error'],
-      '@typescript-eslint/no-var-requires': 'off',
-      'jest/no-disabled-tests': 'warn',
-      'jest/no-focused-tests': 'error',
-      'jest/no-identical-title': 'error',
-      'jest/prefer-to-have-length': 'warn',
-      'jest/valid-expect': 'error'
+      '@typescript-eslint/no-var-requires': 'off'
     }
   },
   {
-    files: ['src/**/*.ts', 'src/**/*.tsx'],
+    files: ['src/**/*.ts'],
     languageOptions: {
       parser: typescriptParser,
       parserOptions: {
@@ -51,7 +41,6 @@ export default [
     plugins: {
       '@typescript-eslint': typescriptEslintPlugin,
       prettier: prettierPlugin,
-      react: reactPlugin,
       'react-hooks': reactHooksPlugin
     },
     rules: {
@@ -68,9 +57,7 @@ export default [
         }
       ],
       '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/explicit-module-boundary-types': 'off',
-      'react-hooks/rules-of-hooks': 'error',
-      'react-hooks/exhaustive-deps': 'warn'
+      '@typescript-eslint/explicit-module-boundary-types': 'off'
     }
   }
 ];

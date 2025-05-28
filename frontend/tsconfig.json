@@ -10,7 +10,6 @@
     "inlineSources": true,
     "isolatedModules": true,
     "lib": ["DOM", "ES2022"],
-    "jsx": "react-jsx",
     "module": "ES2022",
     "moduleResolution": "bundler",
     "noFallthroughCasesInSwitch": true,
@@ -28,6 +27,6 @@
     "useDefineForClassFields": true,
     "useUnknownInCatchVariables": true
   },
-  "include": ["src/**/*.ts", "src/scripts/main.tsx"],
-  "exclude": ["node_modules", "public/js"]
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "public/js", "dist"]
 }

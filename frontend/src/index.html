@@ -19,19 +19,70 @@
     <link
       rel="icon"
       type="image/svg+xml"
-      href="static/icons/favicon.svg"
+      href="assets/icons/favicon.svg"
     />
     <link
       rel="shortcut icon"
       type="image/png"
-      href="static/icons/favicon-android-chrome.png"
+      href="assets/icons/favicon-android-chrome.png"
+    />
+    <link
+      rel="stylesheet"
+      href="styles/main.css"
     />
   </head>
 
   <body>
 
-    <div id="root" class="app-root"></div>
-    <script type="module" src="scripts/main.jsx"></script>
+    <div id="container">
+
+      <main class="studio-main">
+
+        <aside class="tray tray--stickers">
+          <h2 id="sticker-tray-heading">Stickers & Sparkles</h2>
+          <div class="tray-items" id="sticker-tray">
+            <!-- TODO: STICKER THUMBNAILS HERE -->
+          </div>
+        </aside>
+
+        <section class="canvas-field">
+
+          <div class="canvas-toolbar">
+            <button id="upload-btn">Upload</button>
+            <button id="download-btn">Download</button>
+            <button id="clear-btn">Clear</button>
+            <!-- TODO: add other controls and buttons here-->
+          </div>
+
+          <div id="canvas-container">
+            <canvas id="main-canvas" width="825" height="650"></canvas>
+            <!-- TODO: add overlays, effects, etc. here -->
+          </div>
+
+          <div class="properties-panel" id="properties-panel">
+            <!-- TODO: show controls for currently-selected object (sticker, text, border, etc.)-->
+          </div>
+        </section>
+
+        <aside class="tray tray--extras">
+          <h2>Add Text</h2>
+          <form id="text-form">
+            <input type="text" id="text-input" placeholder="Add text here :3" />
+            <button type="submit" id="add-text-btn">Add</button>
+          </form>
+          <!-- more new features could go here... -->
+        </aside>
+      </main>
+
+      <footer class="app-footer">
+        <span>
+          Made with 💖 by <a href="https://github.com/viihna-lehraine/graphix">Viihna Lehraine</a>🦈
+        </span>
+      </footer>
+
+    </div>
+
+    <script type="module" src="scripts/main.js"></script>
 
   </body>
 

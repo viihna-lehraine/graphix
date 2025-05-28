@@ -1,0 +1,26 @@
+/* File: frontend/src/styles/partials/components/canvas/_structure.scss */
+
+@import '../../variables/index';
+
+/* ============================================== */
+
+#canvas-container {
+  display: flex;
+  width: 100%;
+  max-width: 900px;
+  height: 60vh;
+  min-height: 320px;
+  margin: 0 auto;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ----------------------------------------------- */
+
+#main-canvas {
+  display: block;
+  border-radius: 1.5rem;
+  box-shadow: $canvas-box-shadow;
+  background: $canvas-bg-color;
+  /* DYNAMICALLY SET WIDTH AND HEIGHT IN JS */
+}

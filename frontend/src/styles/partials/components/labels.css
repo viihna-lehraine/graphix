@@ -1,8 +1,0 @@
-/* File: frontend/src/styles/partials/components/labels.css */
-
-/* ============================================== */
-/* ============================================== */
-
-#sparkle-checkbox-label {
-  @apply flex items-center gap-1;
-}
