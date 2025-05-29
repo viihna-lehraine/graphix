@@ -1,6 +1,8 @@
 // File: frontend/src/app/types/functions.ts
 
 import type {
+  CanvasRefs,
+  Data,
   Float,
   Integer,
   NonNegativeInteger,
@@ -22,7 +24,11 @@ import { ErrorHandler, Logger } from '../core/services/index.js';
 export interface Helpers {
   app: { noop: () => void };
   brand: {
-    asBrandedFromString<T>(str: string, check: (n: number) => boolean, brand: (n: number) => T): T;
+    asBrandedFromString<T>(
+      str: string,
+      check: (n: number) => boolean,
+      brand: (n: number) => T
+    ): T;
     asFloat: (x: number) => Float;
     asInteger: (x: number) => Integer;
     asNonNegativeInteger: (x: number) => NonNegativeInteger;
@@ -35,7 +41,9 @@ export interface Helpers {
     asSignedPercentile: (x: number) => SignedPercentile;
     asUnitInterval: (x: number) => UnitInterval;
   };
-  math: { weightedRandom: (min: number, max: number, weight: number) => number };
+  math: {
+    weightedRandom: (min: number, max: number, weight: number) => number;
+  };
 }
 
 /* ------------------------------------------------- */
@@ -82,9 +90,36 @@ export type Typeguards = Utilities['typeguards'];
 // ================================================== //
 // ================================================== //
 
+export interface CanvasFunctions {
+  main: {
+    clearCanvas: (ctx: CanvasRenderingContext2D, services: Services) => void;
+    drawBoundary: (ctx: CanvasRenderingContext2D, services: Services) => void;
+    get2DContext: (
+      canvas: HTMLCanvasElement,
+      services: Services
+    ) => CanvasRenderingContext2D;
+    getCanvasRefs(data: Data, services: Services): CanvasRefs;
+    getMainCanvas(data: Data, services: Services): HTMLCanvasElement;
+    resizeCanvasToParent(data: Data, services: Services): void;
+  };
+  io: IOFunctions;
+}
+
+// ================================================== //
+
 export interface IOFunctions {
-  handleDownload: (
-    targetRef: React.RefObject<HTMLDivElement | null>,
-    fileName?: string
-  ) => Promise<void>;
+  download: {
+    handle: (
+      fileName: string | null,
+      targetRef: React.RefObject<HTMLDivElement | null>,
+      services: Services
+    ) => Promise<void>;
+  };
+  upload: {
+    handle: (
+      data: Data,
+      canvasFns: CanvasFunctions,
+      services: Services
+    ) => Promise<void>;
+  };
 }

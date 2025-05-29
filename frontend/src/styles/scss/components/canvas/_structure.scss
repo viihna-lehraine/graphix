@@ -1,0 +1,67 @@
+/* File: frontend/src/styles/scss/components/canvas/_structure.scss */
+
+@use 'scss/variables/index' as *;
+@use 'scss/props/index' as *;
+@use 'scss/mixins/index' as *;
+
+/* ============================================== */
+
+#canvas-container {
+  display: flex;
+  width: 100%;
+  max-width: 900px;
+  height: 60vh;
+  min-width: 340px;
+  min-height: 340px;
+  padding: 1.8rem;
+  margin: 0 auto 2rem;
+  align-items: center;
+  justify-content: center;
+  background: $canvas-cntr-bg-2;
+  border: $border-2;
+  border-radius: 1.5rem;
+  box-shadow: $box-shadow-4;
+}
+
+/* ----------------------------------------------- */
+
+#main-canvas {
+  display: block;
+  /* height and weight are handled by JS to acheive pixel-perfect accuracy */
+  background: $vanilla-cream;
+  border: $border-3;
+  border-radius: 1.2rem;
+  box-shadow: 0 8px 32px -4px $bubblegum-pop-70;
+}
+
+/* ----------------------------------------------- */
+
+.studio-main {
+  display: grid;
+  grid-template-columns: 240px 1fr 240px;
+  gap: 2.4rem;
+  align-items: flex-start;
+  padding: 2rem 0;
+}
+
+/* ----------------------------------------------- */
+
+.tray {
+  background: $p_white-bf;
+  border-radius: 1rem;
+  box-shadow: 0 2px 24px $bubblegum-pop-30;
+  padding: 1.5rem 1rem 2.5rem;
+  margin-top: 1.5rem;
+}
+
+/* =============================================== */
+
+@include respond-max(lg) {
+  .studio-main {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .tray {
+    margin: 1.5rem 0;
+  }
+}

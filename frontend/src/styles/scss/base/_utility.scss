@@ -1,0 +1,14 @@
+/* File: frontend/src/styles/scss/base/_utility.scss */
+
+@use 'scss/variables/index' as *;
+
+/* ============================================== */
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.hidden {
+  display: none;
+}

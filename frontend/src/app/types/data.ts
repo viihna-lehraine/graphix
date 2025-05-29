@@ -5,8 +5,23 @@ import type { Sets } from './index.js';
 // ================================================== //
 // ================================================== //
 
+export type AllowedExtensions = string[];
+
+/* -------------------------------------------------- */
+
+export type BaseAssetTags = string[];
+
+/* -------------------------------------------------- */
+
 export interface DefaultData {
   fileName: string;
+}
+
+/* -------------------------------------------------- */
+
+export interface DOMData {
+  elements: DOMElements;
+  ids: DOM_IDs;
 }
 
 /* -------------------------------------------------- */
@@ -17,8 +32,31 @@ export interface DOMElements {
 
 /* -------------------------------------------------- */
 
+export interface DOM_IDs {
+  btns: {
+    clear: string;
+    download: string;
+    upload: string;
+  };
+  divs: {
+    canvasToolbar: string;
+  };
+  inputs: {
+    imgUpload: string;
+  };
+  canvas: string;
+}
+
+/* -------------------------------------------------- */
+
 export interface ErrorMessages {
   unknownFatalError: string;
+}
+
+/* -------------------------------------------------- */
+
+export interface ExtensionData {
+  allowed: AllowedExtensions;
 }
 
 /* -------------------------------------------------- */
@@ -29,8 +67,21 @@ export interface RegexData {
   numberString: RegExp;
 }
 
+/* -------------------------------------------------- */
+
+export interface AssetTagsData {
+  base: BaseAssetTags;
+}
+
 // ================================================== //
 // ================================================== //
+
+export interface AssetData {
+  ext: ExtensionData;
+  tags: AssetTagsData;
+}
+
+/* -------------------------------------------------- */
 
 export interface ConfigurationData {
   default: DefaultData;
@@ -59,6 +110,7 @@ export interface MessageData {
 // ================================================== //
 
 export interface Data {
+  assets: AssetData;
   config: ConfigurationData;
   dom: DOMData;
   math: MathData;

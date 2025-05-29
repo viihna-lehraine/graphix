@@ -1,0 +1,19 @@
+/* Error: Undefined variable.
+ *    ,
+ * 16 |     filter: $drop-shadow-1 $drop-shadow-2 brightness(1.1);
+ *    |             ^^^^^^^^^^^^^^
+ *    '
+ *   scss/base/_keyframes.scss 16:13  @use
+ *   scss/base/_index.scss 6:1        @use
+ *   src/styles/scss/main.scss 5:1    root stylesheet */
+
+body::before {
+  font-family: "Source Code Pro", "SF Mono", Monaco, Inconsolata, "Fira Mono",
+      "Droid Sans Mono", monospace, monospace;
+  white-space: pre;
+  display: block;
+  padding: 1em;
+  margin-bottom: 1em;
+  border-bottom: 2px solid black;
+  content: "Error: Undefined variable.\a    \2577 \a 16 \2502      filter: $drop-shadow-1 $drop-shadow-2 brightness(1.1);\a    \2502              ^^^^^^^^^^^^^^\a    \2575 \a   scss/base/_keyframes.scss 16:13  @use\a   scss/base/_index.scss 6:1        @use\a   src/styles/scss/main.scss 5:1    root stylesheet";
+}

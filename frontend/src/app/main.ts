@@ -15,7 +15,10 @@ async function startApp(): Promise<AppDependencies> {
       `Loading 'Configuration' data - application's primary static data dependency object.`
     );
     const { data } = await import('./data/index.js');
-    console.log(`Successfully loaded 'Configuration' data:`, JSON.stringify(data, null, 2));
+    console.log(
+      `Successfully loaded 'Configuration' data:`,
+      JSON.stringify(data, null, 2)
+    );
 
     console.log(`Generating Helpers, Services, and Utilities`);
     const { initializeApp } = await import('./system/initialize.js');
@@ -25,7 +28,9 @@ async function startApp(): Promise<AppDependencies> {
       JSON.stringify({ helpers, services, utilities }, null, 2)
     );
     const log = services.log;
-    log.info(`App initialization phase complete. Executing application bootstrap.`);
+    log.info(
+      `App initialization phase complete. Executing application bootstrap.`
+    );
     const timestamp_2 = Date.now();
     const elapsedTime_1 = timestamp_2 - timestamp_1;
     log.info(
@@ -33,10 +38,14 @@ async function startApp(): Promise<AppDependencies> {
     );
 
     const timestamp_3 = Date.now();
-    log.info(`Starting application bootstrap at: ${new Date(timestamp_3).toISOString()}`);
+    log.info(
+      `Starting application bootstrap at: ${new Date(timestamp_3).toISOString()}`
+    );
     const { bootstrap } = await import('./system/bootstrap.js');
     await bootstrap(services);
-    log.info(`Application bootstrap complete. Constructing the AppDependencies object.`);
+    log.info(
+      `Application bootstrap complete. Constructing the AppDependencies object.`
+    );
     const timestamp_4 = Date.now();
     const elapsedTime_2 = timestamp_4 - timestamp_3;
     log.info(
@@ -58,7 +67,10 @@ async function startApp(): Promise<AppDependencies> {
 
     return deps;
   } catch (error) {
-    console.error(`An unknown error occurred during application startup:`, error);
+    console.error(
+      `An unknown error occurred during application startup:`,
+      error
+    );
     throw new Error(`Application startup failed.`);
   }
 }
@@ -66,48 +78,34 @@ async function startApp(): Promise<AppDependencies> {
 // =================================================== //
 // =================================================== //
 
-const { onDOMContentLoaded, onResize } = await import('./system/listeners/startup.js');
+const { onDOMContentLoaded, onResize } = await import(
+  './system/listeners/startup.js'
+);
 
 onDOMContentLoaded(async () => {
-  let startupPromise: Promise<AppDependencies>;
-  let deps: AppDependencies | null = null;
-  let canvasRefs: CanvasRefs | void = void 0;
+  let deps: AppDependencies;
+  let canvasRefs: CanvasRefs;
 
   try {
-    startupPromise = startApp();
-    deps = await startupPromise;
+    deps = await startApp();
+
     const { data, services } = deps;
+    const errors = services.errors;
 
-    const domElements = data.dom.elements;
+    const { canvasFns } = await import('./features/canvas/main.js');
 
-    const { clearCanvas, getCanvasRefs, resizeCanvasToParent } = await import(
-      './features/canvas/index.js'
+    canvasRefs = canvasFns.getCanvasRefs(data, services);
+
+    onResize(() =>
+      errors.handleSync(() => {
+        canvasFns.resizeCanvasToParent(data, services);
+        canvasFns.clearCanvas(canvasRefs.ctx, services);
+        canvasFns.drawBoundary(canvasRefs.ctx, services);
+      }, 'Canvas resize/redraw failed')
     );
-
-    canvasRefs = getCanvasRefs(domElements, services);
-
-    if (!canvasRefs) {
-      throw new Error(`Failed to get canvas references.`);
-    } else if (!canvasRefs.canvas) {
-      throw new Error(`Canvas element is not available.`);
-    }
-
-    resizeCanvasToParent(canvasRefs.canvas, services);
-    clearCanvas(canvasRefs.ctx, services);
-
-    onResize(async () => {
-      const errors = deps.services.errors;
-      const errorMsgs = deps.data.msgs.errors;
-
-      errors.handleSync(() => {}, 'LOGIC NOT YET IMPLEMENTED. SLOW THE FUCK DOWN, SIS!', {
-        context: 'application startup',
-        fallback: 'n/a',
-        userMessage: errorMsgs.unknownFatalError
-      });
-    });
   } catch (error) {
     console.error(
-      `An error occurred during app startup:`,
+      `An unhandled error occurred during application startup:`,
       error instanceof Error ? error.message : error
     );
     throw new Error(`App startup failed.`);

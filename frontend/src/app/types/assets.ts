@@ -18,15 +18,6 @@ export interface BaseAsset {
 
 // ================================================== //
 
-export interface AnimationData {
-  frames: {
-    count: number;
-    rate: number;
-  };
-}
-
-// ================================================== //
-
 export interface BackgroundAsset extends BaseAsset {
   tileable: boolean;
 }
@@ -79,6 +70,18 @@ export interface OverlayAsset extends BaseAsset {
 export interface StickerAsset extends BaseAsset {}
 
 // ================================================== //
-// ================================================== //
 
-export interface Assets {}
+export interface AnimationData {
+  type: 'custom' | 'gif' | 'video' | undefined;
+  frames: {
+    count: number;
+    rate: number;
+  };
+  rotation?: {
+    speed: 360; // degrees per second
+    direction: 'clockwise' | 'counter-clockwise' | 'n/a';
+  };
+}
+
+// ================================================== //
+// ================================================== //

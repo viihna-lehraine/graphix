@@ -7,12 +7,29 @@ export type {
   ListenerRegistration
 } from './application.js';
 export type {
+  AnimationData,
+  BackgroundAsset,
+  BaseAsset,
+  BorderAsset,
+  FontAsset,
+  GIFAsset,
+  ImageAsset,
+  OverlayAsset,
+  StickerAsset
+} from './assets.js';
+export type {
+  AllowedExtensions,
+  AssetData,
+  AssetTagsData,
+  BaseAssetTags,
   ConfigurationData,
   Data,
   DefaultData,
   DOMData,
   DOMElements,
+  DOM_IDs,
   ErrorMessages,
+  ExtensionData,
   MathData,
   MessageData,
   RegexData
@@ -21,6 +38,7 @@ export type { ErrorHandlerServiceContract, LoggerServiceContract } from './contr
 export type {
   AppHelpers,
   BrandHelpers,
+  CanvasFunctions,
   Helpers,
   IOFunctions,
   MathHelpers,

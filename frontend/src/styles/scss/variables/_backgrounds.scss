@@ -1,0 +1,27 @@
+/* File: frontend/src/styles/scss/variables/_backgrounds.scss */
+
+@use 'scss/variables/colors' as *;
+
+/* ============================================== */
+/* ============================================== */
+
+$container-bg: linear-gradient(
+  to-br,
+  $rosewater-milkshake,
+  $dream-bubble,
+  $lavender-whisper
+);
+
+/* ============================================== */
+
+/* TODO: PICK ONE OF THE FOLLOWING STYLES */
+
+$canvas-cntr-bg-1: linear-gradient(
+  135deg,
+  $cotton-candy-pink 0%,
+  $baby-blueberry 100%
+);
+
+$canvas-cntr-bg-2: linear-gradient(135deg, $petal-mist 0%, $glacier-cream 100%);
+
+/* END LIST */

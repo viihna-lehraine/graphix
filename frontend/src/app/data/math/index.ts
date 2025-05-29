@@ -6,4 +6,4 @@ import { sets } from './sets.js';
 // ================================================== //
 // ================================================== //
 
-export const math: MathData = { sets } as const;
+export const mathData: MathData = { sets } as const;

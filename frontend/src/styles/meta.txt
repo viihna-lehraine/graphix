@@ -1,0 +1,53 @@
+# File: frontend/src/styles/meta.txt
+
+# ================================================ #
+# ================================================ #
+
+A. HTML elements
+  * #main-canvas // <canvas>
+  * .studio-main // <main>
+  * .canvas-field // <section>
+
+# ------------------------------------------------ #
+
+B. h1, h2, h3, etc...
+  * #sticker-tray-heading
+
+# ------------------------------------------------ #
+
+C. <div>
+  * #canvas-container
+  * #container
+  * #properties-panel
+  * #sticker-tray
+  * .app-footer
+  * .canvas-toolbar
+  * .properties-panel
+  * .tray-items
+
+# ------------------------------------------------ #
+
+D. <aside>
+  * .tray
+  * .tray--extras
+  * .tray--stickers
+
+# ------------------------------------------------ #
+
+E. <input>
+  * #img-upload-input
+  * #text-input
+
+# ------------------------------------------------ #
+
+F. <button>
+  * #add-text-btn
+  * #clear-btn
+  * #download-btn
+  * #upload-btn
+  * .canvas-io-btn
+
+# ------------------------------------------------ #
+
+H. <form>
+  * #text-form

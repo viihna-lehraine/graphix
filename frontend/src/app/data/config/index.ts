@@ -7,7 +7,7 @@ import { regexData } from './regex.js';
 // ================================================== //
 // ================================================== //
 
-export const config: ConfigurationData = {
+export const configData: ConfigurationData = {
   default: defaultData,
   regex: regexData
 } as const;

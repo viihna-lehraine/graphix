@@ -1,6 +1,9 @@
 // File: frontend/src/app/core/services/ErrorHandler.ts
 
-import { ErrorHandlerServiceContract, ErrorHandlerOptions } from '../../types/index.js';
+import {
+  ErrorHandlerServiceContract,
+  ErrorHandlerOptions
+} from '../../types/index.js';
 import { errorClasses, ErrorClasses } from './errorClasses.js';
 import { Logger } from './Logger.js';
 
@@ -23,7 +26,9 @@ export class ErrorHandler implements ErrorHandlerServiceContract {
   static getInstance(logger: Logger): ErrorHandler {
     try {
       if (!ErrorHandler.#instance) {
-        console.debug(`No ErrorHandler instance exists yet. Creating new instance.`);
+        console.debug(
+          `No ErrorHandler instance exists yet. Creating new instance.`
+        );
         ErrorHandler.#instance = new ErrorHandler(logger);
       }
 
@@ -73,7 +78,11 @@ export class ErrorHandler implements ErrorHandlerServiceContract {
     }
   }
 
-  handleSync<T>(action: () => T, errorMessage: string, options: ErrorHandlerOptions = {}): T {
+  handleSync<T>(
+    action: () => T,
+    errorMessage: string,
+    options: ErrorHandlerOptions = {}
+  ): T {
     try {
       return action();
     } catch (error) {
@@ -83,7 +92,11 @@ export class ErrorHandler implements ErrorHandlerServiceContract {
     }
   }
 
-  #formatError(error: unknown, message: string, context: Record<string, unknown>): string {
+  #formatError(
+    error: unknown,
+    message: string,
+    context: Record<string, unknown>
+  ): string {
     try {
       return error instanceof Error
         ? `${message}: ${error.message}. Context: ${JSON.stringify(context)}`
@@ -95,21 +108,32 @@ export class ErrorHandler implements ErrorHandlerServiceContract {
     }
   }
 
-  #handle(error: unknown, errorMessage: string, options: ErrorHandlerOptions = {}): void {
+  #handle(
+    error: unknown,
+    errorMessage: string,
+    options: ErrorHandlerOptions = {}
+  ): void {
     try {
-      const formattedError = this.#formatError(error, errorMessage, options.context ?? {});
-
+      const context: Record<string, unknown> =
+        typeof options.context === 'object' && options.context !== null
+          ? options.context
+          : {};
+      const formattedError = this.#formatError(error, errorMessage, context);
       this.#logger.error(formattedError);
 
       const userMessage =
         options.userMessage ??
-        (error instanceof this.#errorClasses.UserFacingError ? error.userMessage : undefined);
+        (error instanceof this.#errorClasses.UserFacingError
+          ? error.userMessage
+          : undefined);
 
       if (userMessage) {
         alert(userMessage);
       }
     } catch (error) {
-      throw new Error(`Error handling error: ${error instanceof Error ? error.message : error}`);
+      throw new Error(
+        `Error handling error: ${error instanceof Error ? error.message : error}`
+      );
     }
   }
 }

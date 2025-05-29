@@ -1,0 +1,64 @@
+/* File: frontend/src/styles/scss/components/_structure.scss */
+
+@use 'scss/variables/index' as *;
+@use 'scss/props/index' as *;
+@use 'scss/mixins/index' as *;
+
+/* ============================================== */
+
+#container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+  align-items: center;
+  justify-content: center;
+  background: $container-bg;
+}
+
+/* ============================================== */
+
+#canvas-toolbar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin: 1rem 0 1.8rem 0;
+}
+
+/* ============================================== */
+
+#graphic-preview-field {
+  position: relative;
+  display: flex;
+  min-width: 240px;
+  min-height: 56px;
+  padding: 4px 10px;
+  margin: 2px 0;
+  align-items: center;
+  justify-content: center;
+  background-color: $angel-mist;
+  border: $border-1;
+  border-radius: 8px;
+  box-shadow: $box-shadow-2;
+  overflow: hidden;
+  transition: $transition-1;
+
+  @include respond-min(md) {
+    min-width: 320px;
+    min-height: 72px;
+    padding: 8px 16px;
+  }
+}
+
+/* ============================================== */
+
+#sparkle-overlay {
+  position: absolute;
+  pointer-events: none;
+  z-index: 10;
+  inset: 0;
+  user-select: none;
+  animation: $sparkle-overlay-animation;
+}

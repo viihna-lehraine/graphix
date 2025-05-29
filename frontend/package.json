@@ -6,8 +6,8 @@
   "license": "GNU GPLv3",
   "type": "module",
   "scripts": {
-    "build": "pnpm build:ts && pnpm build:sass",
-    "build:sass": "sass src/styles/main.scss src/styles/main.css",
+    "build": "pnpm build:sass && pnpm build:ts",
+    "build:sass": "./scripts/build_sass.sh src/styles/scss/main.scss src/styles/main.css",
     "build:ts": "rm -rf ./dist && vite build && mkdir -p ./dist/assets && cp -r ./assets/* ./dist/assets/",
     "clean": "rm -rf node_modules dist && pnpm cache clean*",
     "dev": "vite",
@@ -20,7 +20,7 @@
     "test:coverage": "vitest --coverage",
     "typecheck": "tsc --noEmit",
     "watch": "pnpm watch:ts && pnpm watch:sass && pnpm watch:test",
-    "watch:sass": "sass --watch src/styles/main.scss:src/styles/main.css",
+    "watch:sass": "./scripts/build_sass.sh src/styles/scss/main.scss src/styles/main.css --watch",
     "watch:test": "vitest --watch",
     "watch:ts": "tsc --watch"
   },
