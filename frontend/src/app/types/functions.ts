@@ -2,6 +2,7 @@
 
 import type {
   CanvasRefs,
+  CanvasResizeOptions,
   Data,
   Float,
   Integer,
@@ -15,7 +16,7 @@ import type {
   SignedPercentile,
   UnitInterval
 } from './index.js';
-import { ErrorHandler, Logger } from '../core/services/index.js';
+import { ErrorHandler, Logger, StateManager } from '../core/services/index.js';
 
 // ================================================== //
 // ========= CORE FUNCTION OBJECTS ================== //
@@ -41,6 +42,7 @@ export interface Helpers {
     asSignedPercentile: (x: number) => SignedPercentile;
     asUnitInterval: (x: number) => UnitInterval;
   };
+  data: { clone: <T>(data: T) => T };
   math: {
     weightedRandom: (min: number, max: number, weight: number) => number;
   };
@@ -51,11 +53,18 @@ export interface Helpers {
 export type Services = {
   errors: ErrorHandler;
   log: Logger;
+  stateManager: StateManager;
 };
 
-/* ------------------------------------------------- */
+/* ================================================= */
 
 export interface Utilities {
+  canvas: {
+    autoResize: (
+      options: CanvasResizeOptions,
+      services: Services
+    ) => () => void;
+  };
   typeguards: {
     isFloat: (value: number) => value is Float;
     isFloatString: (string: string) => boolean;
@@ -80,10 +89,12 @@ export interface Utilities {
 
 export type AppHelpers = Helpers['app'];
 export type BrandHelpers = Helpers['brand'];
+export type DataHelpers = Helpers['data'];
 export type MathHelpers = Helpers['math'];
 
 /* -------------------------------------------------- */
 
+export type CanvasUtils = Utilities['canvas'];
 export type Typeguards = Utilities['typeguards'];
 
 // ================================================== //
@@ -102,24 +113,33 @@ export interface CanvasFunctions {
     getMainCanvas(data: Data, services: Services): HTMLCanvasElement;
     resizeCanvasToParent(data: Data, services: Services): void;
   };
-  io: IOFunctions;
-}
-
-// ================================================== //
-
-export interface IOFunctions {
-  download: {
-    handle: (
-      fileName: string | null,
-      targetRef: React.RefObject<HTMLDivElement | null>,
-      services: Services
-    ) => Promise<void>;
+  io: {
+    download: {
+      handle: (
+        fileName: string | null,
+        targetRef: React.RefObject<HTMLDivElement | null>,
+        services: Services
+      ) => Promise<void>;
+    };
+    upload: {
+      handle: (
+        file: File,
+        data: Data,
+        mainCanvasFns: MainCanvasFunctions,
+        services: Services
+      ) => Promise<void>;
+    };
   };
-  upload: {
-    handle: (
+  ui: {
+    initialize(
+      canvasIoFns: CanvasIOFunctions,
       data: Data,
-      canvasFns: CanvasFunctions,
+      mainCanvasFns: MainCanvasFunctions,
       services: Services
-    ) => Promise<void>;
+    ): Promise<void>;
   };
 }
+
+export type CanvasIOFunctions = CanvasFunctions['io'];
+export type CanvasUIFunctions = CanvasFunctions['ui'];
+export type MainCanvasFunctions = CanvasFunctions['main'];

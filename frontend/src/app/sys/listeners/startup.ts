@@ -1,4 +1,4 @@
-// File: frontend/src/app/dom/listeners/startup.ts
+// File: frontend/src/app/sys/listeners/startup.ts
 
 // ================================================== //
 // ================================================== //

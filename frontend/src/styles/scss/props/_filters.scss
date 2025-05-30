@@ -1,12 +1,11 @@
 /* File: frontend/src/styles/scss/props/_filters.scss */
 
-@use 'scss/variables/index' as *;
+@use 'scss/variables/index' as vars;
 
 /* ============================================== */
+$filter-1: drop-shadow(0 1px 1px vars.$p_black-33);
 
-$filter-1: drop-shadow(0 1px 1px $p_black-33);
-
-$filter-2: drop-shadow(0 2px 36px $bubblegum-pop-66);
+$filter-2: drop-shadow(0 2px 36px vars.$bubblegum-pop-66);
 
 /* ---------------------------------------------- */
 

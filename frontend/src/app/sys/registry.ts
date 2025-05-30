@@ -1,17 +1,17 @@
-// File: frontend/src/app/system/registry.ts
+// File: frontend/src/app/sys/registry.ts
 
-import type { Configuration, ListenerRegistration, Services } from '../types/index.js';
+import type { Data, ListenerRegistration, Services } from '../types/index.js';
 
 // ================================================== //
 // ================================================== //
 
 export async function registerEventListeners(
   registrations: ListenerRegistration[],
-  config: Configuration,
+  data: Data,
   services: Services
 ): Promise<void> {
   const { errors } = services;
-  const errorMsgs = config.msgs.errors;
+  const errorMsgs = data.msgs.errors;
 
   errors.handleAsync(
     async () => {

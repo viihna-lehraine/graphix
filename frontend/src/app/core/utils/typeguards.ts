@@ -12,14 +12,14 @@ import type {
   PositiveNumber,
   RegexData,
   SignedPercentile,
-  UnitInterval,
-  Utilities
+  Typeguards,
+  UnitInterval
 } from '../../types/index.js';
 
 // ================================================== //
 // ================================================== //
 
-export const typeguardFactory = (regex: RegexData): Utilities['typeguards'] => ({
+export const typeguardFactory = (regex: RegexData): Typeguards => ({
   isFloat(value: number): value is Float {
     return Number.isFinite(value) && !Number.isInteger(value);
   },

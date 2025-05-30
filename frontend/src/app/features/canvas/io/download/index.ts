@@ -1,6 +1,6 @@
 // File: frontend/src/app/features/canvas/io/download/index.ts
 
-import type { IOFunctions, Services } from '../../../../types/index.js';
+import type { CanvasIOFunctions, Services } from '../../../../types/index.js';
 import html2canvas from 'html2canvas';
 
 // =================================================== //
@@ -38,6 +38,6 @@ async function handleDownload(
 // =================================================== //
 // =================================================== //
 
-export const canvasDownloadFns: IOFunctions['download'] = {
+export const canvasDownloadFns: CanvasIOFunctions['download'] = {
   handle: handleDownload
 } as const;

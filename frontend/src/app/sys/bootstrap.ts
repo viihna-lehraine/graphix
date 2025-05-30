@@ -1,4 +1,4 @@
-// File: frontend/src/app/system/bootstrap.ts
+// File: frontend/src/app/sys/bootstrap.ts
 
 import type { Services } from '../types/index.js';
 
@@ -12,7 +12,9 @@ async function registerGlobalErrorHandlers(services: Services): Promise<void> {
 
   try {
     window.onerror = function (message, source, lineno, colno, error) {
-      console.log(`Unhandled error: ${message} at ${source}:${lineno}:${colno}`);
+      console.log(
+        `Unhandled error: ${message} at ${source}:${lineno}:${colno}`
+      );
       if (error && error.stack) {
         console.log(`Stack trace:\n${error.stack}`);
       }

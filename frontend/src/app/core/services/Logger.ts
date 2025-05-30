@@ -12,7 +12,9 @@ export class Logger implements LoggerServiceContract {
     try {
       helpers.app.noop();
     } catch (error) {
-      throw new Error(`constructor]: ${error instanceof Error ? error.message : error}`);
+      throw new Error(
+        `constructor]: ${error instanceof Error ? error.message : error}`
+      );
     }
   }
 
@@ -21,7 +23,9 @@ export class Logger implements LoggerServiceContract {
       if (!Logger.#instance) {
         Logger.#instance = new Logger(helpers);
 
-        console.log(`No existing Logger instance found. Creating new instance.`);
+        console.log(
+          `No existing Logger instance found. Creating new instance.`
+        );
       }
 
       console.log(`Returning Logger instance.`);
@@ -75,7 +79,11 @@ export class Logger implements LoggerServiceContract {
     }
   }
 
-  #logMessage(message: string, level: 'debug' | 'info' | 'warn' | 'error', caller?: string): void {
+  #logMessage(
+    message: string,
+    level: 'debug' | 'info' | 'warn' | 'error',
+    caller?: string
+  ): void {
     const callerInfo = caller;
     const timestamp = this.#getFormattedTimestamp();
 
@@ -87,7 +95,9 @@ export class Logger implements LoggerServiceContract {
         'color: inherit'
       );
     } catch (error) {
-      console.error(`[${caller}.#logMessage]: Encountered an unexpected error: ${error}.`);
+      console.error(
+        `[${caller}.#logMessage]: Encountered an unexpected error: ${error}.`
+      );
     }
 
     if (callerInfo === 'Unknown caller') {

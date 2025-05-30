@@ -21,7 +21,7 @@ async function startApp(): Promise<AppDependencies> {
     );
 
     console.log(`Generating Helpers, Services, and Utilities`);
-    const { initializeApp } = await import('./system/initialize.js');
+    const { initializeApp } = await import('./sys/init.js');
     const { helpers, services, utilities } = await initializeApp();
     console.log(
       `Successfully created the Helpers, Services, and Utilities dependency objects.`,
@@ -41,7 +41,7 @@ async function startApp(): Promise<AppDependencies> {
     log.info(
       `Starting application bootstrap at: ${new Date(timestamp_3).toISOString()}`
     );
-    const { bootstrap } = await import('./system/bootstrap.js');
+    const { bootstrap } = await import('./sys/bootstrap.js');
     await bootstrap(services);
     log.info(
       `Application bootstrap complete. Constructing the AppDependencies object.`
@@ -79,7 +79,7 @@ async function startApp(): Promise<AppDependencies> {
 // =================================================== //
 
 const { onDOMContentLoaded, onResize } = await import(
-  './system/listeners/startup.js'
+  './sys/listeners/startup.js'
 );
 
 onDOMContentLoaded(async () => {
@@ -92,15 +92,35 @@ onDOMContentLoaded(async () => {
     const { data, services } = deps;
     const errors = services.errors;
 
-    const { canvasFns } = await import('./features/canvas/main.js');
+    const { mainCanvasFns } = await import('./features/canvas/main.js');
 
-    canvasRefs = canvasFns.getCanvasRefs(data, services);
+    canvasRefs = mainCanvasFns.getCanvasRefs(data, services);
+
+    const { canvasIoFns } = await import('./features/canvas/io/index.js');
+    const { canvasUiFns } = await import('./features/canvas/ui/index.js');
+    await canvasUiFns.initialize(canvasIoFns, data, mainCanvasFns, services);
+
+    const { canvas } = canvasRefs;
+    const container = document.getElementById(
+      data.dom.ids.divs.canvasContainer
+    );
+
+    if (canvas && container) {
+      deps.utilities.canvas.autoResize(
+        {
+          canvas,
+          container,
+          preserveAspectRatio: true
+        },
+        services
+      );
+    }
 
     onResize(() =>
       errors.handleSync(() => {
-        canvasFns.resizeCanvasToParent(data, services);
-        canvasFns.clearCanvas(canvasRefs.ctx, services);
-        canvasFns.drawBoundary(canvasRefs.ctx, services);
+        mainCanvasFns.resizeCanvasToParent(data, services);
+        mainCanvasFns.clearCanvas(canvasRefs.ctx, services);
+        mainCanvasFns.drawBoundary(canvasRefs.ctx, services);
       }, 'Canvas resize/redraw failed')
     );
   } catch (error) {

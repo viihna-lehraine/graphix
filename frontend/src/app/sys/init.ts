@@ -1,4 +1,4 @@
-// File: frontend/src/app/system/initialize.ts
+// File: frontend/src/app/sys/init.ts
 
 import type { Helpers, Services, Utilities } from '../types/index.js';
 
@@ -44,7 +44,7 @@ async function initializeUtilities(services: Services): Promise<Utilities> {
 
   return await services.errors.handleAsync(async () => {
     const { utilitiesFactory } = await import('../core/factories/utilities.js');
-    const utilities: Utilities = await utilitiesFactory();
+    const utilities: Utilities = await utilitiesFactory(services);
 
     return utilities;
   }, `Utilities initialization failed.`);

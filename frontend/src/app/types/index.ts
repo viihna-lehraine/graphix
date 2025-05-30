@@ -3,8 +3,12 @@
 export type {
   AppDependencies,
   CanvasRefs,
+  CanvasResizeOptions,
+  CanvasState,
   ErrorHandlerOptions,
-  ListenerRegistration
+  ListenerRegistration,
+  State,
+  Subscriber
 } from './application.js';
 export type {
   AnimationData,
@@ -34,13 +38,21 @@ export type {
   MessageData,
   RegexData
 } from './data.js';
-export type { ErrorHandlerServiceContract, LoggerServiceContract } from './contracts.js';
+export type {
+  ErrorHandlerServiceContract,
+  LoggerServiceContract,
+  StateManagerContract
+} from './contracts.js';
 export type {
   AppHelpers,
   BrandHelpers,
   CanvasFunctions,
+  CanvasIOFunctions,
+  CanvasUIFunctions,
+  CanvasUtils,
+  DataHelpers,
   Helpers,
-  IOFunctions,
+  MainCanvasFunctions,
   MathHelpers,
   Services,
   Typeguards,

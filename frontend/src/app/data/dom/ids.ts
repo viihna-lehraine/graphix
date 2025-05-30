@@ -10,6 +10,7 @@ const downloadBtn = 'download-btn';
 const uploadBtn = 'upload-btn';
 
 const canvas = 'main-canvas';
+const canvasContainer = 'canvas-container';
 
 const canvasToolbar = 'canvas-toolbar';
 
@@ -26,6 +27,7 @@ const btns: DOM_IDs['btns'] = {
 // ================================================== //
 
 const divs: DOM_IDs['divs'] = {
+  canvasContainer,
   canvasToolbar
 } as const;
 

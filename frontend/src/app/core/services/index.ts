@@ -3,3 +3,4 @@
 export { errorClasses } from './errorClasses.js';
 export { ErrorHandler } from './ErrorHandler.js';
 export { Logger } from './Logger.js';
+export { StateManager } from './StateManager.js';

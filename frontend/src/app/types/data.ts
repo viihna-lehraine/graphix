@@ -39,6 +39,7 @@ export interface DOM_IDs {
     upload: string;
   };
   divs: {
+    canvasContainer: string;
     canvasToolbar: string;
   };
   inputs: {

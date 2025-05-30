@@ -9,26 +9,18 @@
 
 .canvas-io-btn {
   font-family: $canvas-io-btn-font-stack;
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: bold;
   color: $p_white;
   letter-spacing: 0.01em;
 
   @include respond-min(md) {
     font-size: 1.25rem;
-    padding: 0.75rem 2.5rem;
   }
 
   @include respond-min(lg) {
     font-size: 1.5rem;
-    padding: 1rem 3rem;
   }
-}
-
-/* ----------------------------------------------- */
-
-.canvas-toolbar button {
-  font-size: 1.08rem;
 }
 
 /* ----------------------------------------------- */
@@ -36,9 +28,9 @@
 #graphic-text-span {
   font-family: $font-stack-graphic-text-default;
   font-weight: 800;
-  font-size: 1.25rem;
+  font-size: clamp(1.1rem, 2.5vw, 1.75rem);
   letter-spacing: 0.05em;
-  line-height: 1.4;
+  line-height: clamp(1.4rem, 3vw, 2.25rem);
 
   @include respond-min(md) {
     font-size: 1.875rem;
@@ -49,19 +41,15 @@
 /* ----------------------------------------------- */
 
 #sticker-checkbox-label {
-  @include respond-min(md) {
-    font-size: 1.125rem;
-  }
+  font-size: clamp(1rem, 1.8vw, 1.125rem);
 }
 
 /* ----------------------------------------------- */
 
 #sticker-tray-heading,
 .tray--extras h2 {
-  font-size: 2rem;
+  font-size: clamp(1.25rem, 3vw, 1.6rem);
   color: $purple-reign;
   letter-spacing: 0.03em;
-  text-shadow: $text-shadow-1;
+  text-shadow: 0 1px 4px $bubblegum-pop-66;
 }
-
-/* ----------------------------------------------- */

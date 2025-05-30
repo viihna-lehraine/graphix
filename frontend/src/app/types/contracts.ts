@@ -1,6 +1,6 @@
 // File: frontend/src/app/types/contracts.ts
 
-import type { ErrorHandlerOptions } from './application.js';
+import type { CanvasState, ErrorHandlerOptions, State } from './application.js';
 
 // ================================================== //
 // ================================================== //
@@ -16,7 +16,11 @@ export interface ErrorHandlerServiceContract {
     errorMessage: string,
     options?: ErrorHandlerOptions
   ): Promise<T>;
-  handleSync<T>(action: () => T, errorMessage: string, options?: ErrorHandlerOptions): T;
+  handleSync<T>(
+    action: () => T,
+    errorMessage: string,
+    options?: ErrorHandlerOptions
+  ): T;
 }
 
 /* --------------------------------------------------- */
@@ -26,4 +30,13 @@ export interface LoggerServiceContract {
   error(message: string, caller?: string): void;
   info(message: string, caller?: string): void;
   warn(message: string, caller?: string): void;
+}
+
+/* --------------------------------------------------- */
+
+export interface StateManagerContract {
+  getAll(): State;
+  getCanvas(): CanvasState;
+  resetCanvas(): void;
+  setCanvas(width: number, height: number): void;
 }

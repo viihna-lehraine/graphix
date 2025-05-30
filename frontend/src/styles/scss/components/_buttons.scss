@@ -8,16 +8,15 @@
 
 .canvas-io-btn {
   display: flex;
-  padding: 0.45rem 1.3rem;
+  padding: clamp(0.5rem, 1.2vw, 0.85rem) clamp(1.25rem, 3vw, 2.2rem);
   margin: 0.3rem 0;
-  min-width: 110px;
-  max-width: 180px;
+  min-width: auto;
+  max-width: auto;
   align-items: center;
   gap: 0.5rem;
   background-color: $arcadian-pink;
   border: none;
   border-radius: 1.2rem;
-  /* box-shadow: $box-shadow-1; */
   box-shadow:
     0 4px 24px -6px $bubblegum-pop-80,
     0 1.5px 6px -4px $p_black-11;
@@ -50,6 +49,14 @@
     box-shadow:
       0 8px 28px -6px $grape-soda-glow-80,
       0 2.5px 10px -4px $p_white-33;
+  }
+
+  @include respond-min(md) {
+    padding: 0.75rem 2.5rem;
+  }
+
+  @include respond-min(lg) {
+    padding: 1rem 3rem;
   }
 }
 

@@ -7,16 +7,24 @@ import type { Helpers } from '../../types/index.js';
 
 export async function helpersFactory(): Promise<Helpers> {
   console.log(`Creating 'Helpers' object`);
+
   const helpers = {} as Helpers;
 
-  const [{ appHelpersFactory }, { brandFactory }, { mathHelpersFactory }] = await Promise.all([
+  const [
+    { appHelpersFactory },
+    { brandFactory },
+    { dataHelperFactory },
+    { mathHelpersFactory }
+  ] = await Promise.all([
     import('../helpers/app.js'),
     import('../helpers/brand.js'),
+    import('../helpers/data.js'),
     import('../helpers/math.js')
   ]);
 
   helpers.app = appHelpersFactory();
   helpers.brand = brandFactory();
+  helpers.data = dataHelperFactory();
   helpers.math = mathHelpersFactory();
 
   console.log(`Helpers object has been successfully created`);
