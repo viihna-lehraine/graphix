@@ -1,4 +1,4 @@
-// File: frontend/src/app/features/canvas/ui/buttons/download.ts
+// File: frontend/src/app/features/canvas/ui/btns/download.ts
 
 import type {
   Data,

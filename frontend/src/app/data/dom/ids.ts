@@ -14,7 +14,10 @@ const canvasContainer = 'canvas-container';
 
 const canvasToolbar = 'canvas-toolbar';
 
+const textInputForm = 'text-form';
+
 const imgUploadInput = 'img-upload-input';
+const textInput = 'text-input';
 
 // ================================================== //
 
@@ -33,8 +36,15 @@ const divs: DOM_IDs['divs'] = {
 
 // ================================================== //
 
+const forms: DOM_IDs['forms'] = {
+  text: textInputForm
+} as const;
+
+// ================================================== //
+
 const inputs: DOM_IDs['inputs'] = {
-  imgUpload: imgUploadInput
+  imgUpload: imgUploadInput,
+  text: textInput
 } as const;
 
 // ================================================== //
@@ -44,5 +54,6 @@ export const domIDs: DOM_IDs = {
   btns,
   canvas,
   divs,
+  forms,
   inputs
 } as const;

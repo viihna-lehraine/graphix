@@ -1,0 +1,37 @@
+===================================================================
+-------------------------------------------------------------------
+
+A. Improvements
+
+-------------------------------------------------------------------
+
+
+1. `ctx.drawImage(img, 0, 0, canvas.width, canvas.height);`
+  * this causes a stretched fit
+    * fix by preserving aspect ratio and centering or letterboxing
+
+
+-------------------------------------------------------------------
+===================================================================
+-------------------------------------------------------------------
+
+B. Unfinished App Components
+  -
+
+-------------------------------------------------------------------
+===================================================================
+-------------------------------------------------------------------
+
+C 5 Next
+
+    Build and register 1–2 ResizeManager plugins (make trays/canvas/headers fit beautifully and test on window resize).
+
+    Wire up the Add Text form:
+
+        On submit, paint entered text to the canvas.
+
+    Polish canvas upload/resize so images look good, not stretched.
+
+    Create a “feature toggle” in config or state so I can quickly enable/disable new features as theyre added.
+
+    Trim any old/unnecessary event listeners, moving all layout logic to the plugin system.

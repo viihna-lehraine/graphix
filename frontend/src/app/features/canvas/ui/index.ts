@@ -17,15 +17,17 @@ async function initializeCanvasUI(
   mainCanvasFns: MainCanvasFunctions,
   services: Services
 ): Promise<void> {
-  const { initializeCanvasClearButton } = await import('./buttons/clear.js');
-  const { initializeCanvasDownloadButton } = await import(
-    './buttons/download.js'
-  );
-  const { initializeCanvasUploadButton } = await import('./buttons/upload.js');
+  const { initializeCanvasClearButton } = await import('./btns/clear.js');
+  const { initializeCanvasDownloadButton } = await import('./btns/download.js');
+  const { initializeCanvasUploadButton } = await import('./btns/upload.js');
+
+  const { initializeAddTextForm } = await import('./inputs/text.js');
 
   initializeCanvasClearButton(data, mainCanvasFns, services);
   initializeCanvasDownloadButton(data, mainCanvasFns, services);
   initializeCanvasUploadButton(canvasIoFns, data, mainCanvasFns, services);
+
+  initializeAddTextForm(data, mainCanvasFns, services);
 }
 
 // =================================================== //

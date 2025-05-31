@@ -1,6 +1,7 @@
 /* File: frontend/src/styles/scss/base/_root.scss */
 
-@use 'scss/variables/index' as vars;
+@use 'scss/variables/index' as *;
+@use 'scss/props/index' as *;
 
 /* ============================================== */
 /* ============================================== */
@@ -13,7 +14,7 @@
 
 body,
 html {
-  font-family: vars.$font-stack-body;
+  font-family: vars$font-stack-body;
   display: flex;
   flex-direction: column;
   margin: 0;
@@ -22,5 +23,22 @@ html {
   width: 100vw;
   overflow: hidden;
   align-items: center;
-  background: vars.$frosted-concrete;
+  background: $frosted-concrete;
+}
+
+/* =============================================== */
+
+#root {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  min-width: 100vw;
+  min-height: 100vh;
+  height: 100vh;
+  min-height: 100vh;
+  max-height: 100vh;
+  overflow-x: hidden;
+  align-items: center;
+  justify-content: center;
+  background: $container-bg;
 }

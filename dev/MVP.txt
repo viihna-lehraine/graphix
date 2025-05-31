@@ -1,0 +1,13 @@
+Blinkie Creator: User enters text, picks background/pattern, colors, etc.
+
+Live Preview: See the blinkie as you build it.
+
+Animation Effects: Classic blink (on/off), maybe sparkle overlay, maybe frame-by-frame gif export later.
+
+Download/Export: As animated GIF (ideally), or PNG (for static).
+
+Palette Picker: Iconic color themes, or free-form picker.
+
+Pixel Fonts: Use retro pixel/bitmap fonts.
+
+Gallery (optional MVP): Show off user-made blinkies? Or just export/share for now.

@@ -5,7 +5,7 @@ import type { Services } from '../types/index.js';
 // ================================================== //
 // ================================================== //
 
-async function registerGlobalErrorHandlers(services: Services): Promise<void> {
+async function setGlobalErrorHandlers(services: Services): Promise<void> {
   const { log } = services;
 
   log.info(`Registering global error handlers`);
@@ -36,5 +36,5 @@ async function registerGlobalErrorHandlers(services: Services): Promise<void> {
 // ================================================== //
 
 export async function bootstrap(services: Services): Promise<void> {
-  await registerGlobalErrorHandlers(services);
+  await setGlobalErrorHandlers(services);
 }

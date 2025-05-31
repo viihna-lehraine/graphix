@@ -5,10 +5,14 @@ export type {
   CanvasRefs,
   CanvasResizeOptions,
   CanvasState,
+  ClientState,
   ErrorHandlerOptions,
   ListenerRegistration,
+  Plugin,
+  ResizePlugin,
   State,
-  Subscriber
+  Subscriber,
+  UIInitializer
 } from './application.js';
 export type {
   AnimationData,
@@ -21,6 +25,14 @@ export type {
   OverlayAsset,
   StickerAsset
 } from './assets.js';
+export type {
+  CanvasStateServiceContract,
+  ClientStateServiceContract,
+  ErrorHandlerServiceContract,
+  LoggerServiceContract,
+  ResizeManagerContract,
+  StateManagerContract
+} from './contracts.js';
 export type {
   AllowedExtensions,
   AssetData,
@@ -39,11 +51,6 @@ export type {
   RegexData
 } from './data.js';
 export type {
-  ErrorHandlerServiceContract,
-  LoggerServiceContract,
-  StateManagerContract
-} from './contracts.js';
-export type {
   AppHelpers,
   BrandHelpers,
   CanvasFunctions,
@@ -51,6 +58,7 @@ export type {
   CanvasUIFunctions,
   CanvasUtils,
   DataHelpers,
+  DOMUtils,
   Helpers,
   MainCanvasFunctions,
   MathHelpers,

@@ -6,7 +6,6 @@ import type { Data, Helpers, Services, Utilities } from '../types/index.js';
 // ================================================= //
 
 export interface AppDependencies {
-  data: Data;
   helpers: Helpers;
   services: Services;
   utilities: Utilities;
@@ -36,6 +35,13 @@ export type CanvasState = {
 
 // ================================================= //
 
+export interface ClientState {
+  viewportWidth: number;
+  viewportHeight: number;
+}
+
+// ================================================= //
+
 export interface ErrorHandlerOptions {
   context?: Record<string, unknown> | string;
   fallback?: unknown;
@@ -44,14 +50,33 @@ export interface ErrorHandlerOptions {
 
 // ================================================= //
 
-export type ListenerRegistration = () => void | (() => void);
+export type ListenerRegistration = (
+  data: Data,
+  services: Services
+) => void | (() => void);
+
+// ================================================= //
+
+export interface Plugin {
+  id: string;
+  register: (deps: AppDependencies) => void | Promise<void>;
+}
+
+// ================================================= //
+
+export type ResizePlugin = () => void;
 
 // ================================================= //
 
 export interface State {
   canvas: CanvasState;
+  client: ClientState;
 }
 
 // ================================================= //
 
 export type Subscriber<T> = (state: T) => void;
+
+// ================================================= //
+
+export type UIInitializer = (deps: AppDependencies) => void | Promise<void>;

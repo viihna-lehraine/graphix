@@ -14,6 +14,9 @@ export type BaseAssetTags = string[];
 /* -------------------------------------------------- */
 
 export interface DefaultData {
+  canvasWidth: number;
+  canvasHeight: number;
+  debounceWait: number;
   fileName: string;
 }
 
@@ -42,8 +45,12 @@ export interface DOM_IDs {
     canvasContainer: string;
     canvasToolbar: string;
   };
+  forms: {
+    text: string;
+  };
   inputs: {
     imgUpload: string;
+    text: string;
   };
   canvas: string;
 }

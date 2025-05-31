@@ -16,7 +16,7 @@ import type {
   SignedPercentile,
   UnitInterval
 } from './index.js';
-import { ErrorHandler, Logger, StateManager } from '../core/services/index.js';
+import { ErrorHandler, Logger } from '../core/services/index.js';
 
 // ================================================== //
 // ========= CORE FUNCTION OBJECTS ================== //
@@ -46,6 +46,12 @@ export interface Helpers {
   math: {
     weightedRandom: (min: number, max: number, weight: number) => number;
   };
+  time: {
+    debounce: <T extends (...args: Record<string, unknown>[]) => void>(
+      fn: T,
+      wait?: number
+    ) => (...args: Parameters<T>) => void;
+  };
 }
 
 /* ------------------------------------------------- */
@@ -53,7 +59,6 @@ export interface Helpers {
 export type Services = {
   errors: ErrorHandler;
   log: Logger;
-  stateManager: StateManager;
 };
 
 /* ================================================= */
@@ -64,6 +69,9 @@ export interface Utilities {
       options: CanvasResizeOptions,
       services: Services
     ) => () => void;
+  };
+  dom: {
+    getCssVar: (name: string) => string;
   };
   typeguards: {
     isFloat: (value: number) => value is Float;
@@ -95,6 +103,7 @@ export type MathHelpers = Helpers['math'];
 /* -------------------------------------------------- */
 
 export type CanvasUtils = Utilities['canvas'];
+export type DOMUtils = Utilities['dom'];
 export type Typeguards = Utilities['typeguards'];
 
 // ================================================== //

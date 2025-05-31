@@ -1,0 +1,80 @@
+1. AppRoot
+
+    Bootstraps everything.
+
+    Holds global state: active image, layers, etc.
+
+2. CanvasEditor
+
+    The big workspace. Shows the uploaded image + all active layers (stickers, text, glitter overlays).
+
+    Handles selecting, dragging, resizing, and rotating layers.
+
+    Handles animation preview.
+
+3. LayerToolbar
+
+    Buttons/tools for adding new layers: upload sticker, add text, add glitter, etc.
+
+    Could be a top or side bar.
+
+4. LayerList (LayerManager)
+
+    List of all current layers (base image, each sticker/text, glitter).
+
+    Drag to reorder.
+
+    Click to select/make active.
+
+    Hide/show/delete a layer.
+
+5. StampPicker
+
+    Lets you choose a sticker or glitter stamp to add.
+
+    MVP: Just a modal or dropdown with 3-5 hardcoded stickers/glitters.
+
+6. ExportPanel
+
+    Button(s) to export as animated GIF or static image.
+
+    Maybe some options (size, speed).
+
+7. Modal
+
+    Generic popups (e.g. “Upload Image,” “Add Text,” settings).
+
+Core Data Model
+State Shape
+
+    baseImage: Uploaded image (URL/blob)
+
+    layers: Array of layer objects
+
+        type: “sticker” | “text” | “glitter”
+
+        src: For stickers/glitter, a URL/blob
+
+        text: For text layers
+
+        style: x/y, scale, rotate, zIndex, visible, animation params, etc.
+
+    selectedLayerId: For focusing UI actions
+
+Actions
+
+    Add, remove, move, reorder, select, transform, hide/show, edit layer
+
+    Export to GIF
+
+  Component Data Flow
+
+    AppRoot holds all global state and passes down props/setters.
+
+    CanvasEditor renders from layers, manages selections, user transforms.
+
+    LayerList shows/controls layer order and selection.
+
+    LayerToolbar and StampPicker trigger “add layer” events.
+
+    ExportPanel triggers export flow using current state.

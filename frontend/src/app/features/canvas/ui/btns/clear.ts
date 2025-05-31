@@ -1,4 +1,4 @@
-// File: frontend/src/app/features/canvas/ui/buttons/clear.ts
+// File: frontend/src/app/features/canvas/ui/btns/clear.ts
 
 import type {
   Data,

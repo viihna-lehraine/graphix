@@ -26,77 +26,6 @@
 /* File: frontend/src/styles/scss/base/_index.scss */
 /* ============================================== */
 /* File: frontend/src/styles/scss/base/_root.scss */
-/* ============================================== */
-/* ============================================== */
-* {
-  box-sizing: border-box;
-}
-
-/* ---------------------------------------------- */
-body,
-html {
-  font-family: "Trebuchet MS", Verdana, Arial, sans-serif;
-  display: flex;
-  flex-direction: column;
-  margin: 0;
-  padding: 0;
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
-  align-items: center;
-  background: #dddddd;
-}
-
-/* File: frontend/src/styles/scss/base/keyframes.scss */
-/* File: frontend/src/styles/scss/variables/_shadows.scss */
-/* ============================================== */
-/* ============================================== */
-/* ============================================== */
-.sparkle {
-  animation: sparkleColor 2.5s linear infinite alternate;
-}
-
-/* ============================================== */
-@keyframes sparkleColor {
-  0% {
-    filter: 0 0 12px rgba(255, 255, 255, 0.5333333333) 0 0 3px rgba(255, 255, 0, 0.8666666667) brightness(1.1);
-  }
-  50% {
-    filter: 0 0 24px #ffffee 0 0 10px rgba(255, 0, 255, 0.5333333333) brightness(1.3);
-  }
-  100% {
-    filter: 0 0 16px #ff00ff 0 0 4px rgba(0, 255, 255, 0.5333333333) brightness(1.15);
-  }
-}
-/* ---------------------------------------------- */
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-/* ---------------------------------------------- */
-@keyframes sparkleMove {
-  0% {
-    background-position: 0 0;
-  }
-  100% {
-    background-position: 120px 120px;
-  }
-}
-/* File: frontend/src/styles/scss/base/_utility.scss */
-/* ============================================== */
-.flex-col {
-  display: flex;
-  flex-direction: column;
-}
-
-.hidden {
-  display: none;
-}
-
 /* File: frontend/src/styles/scss/props/_index.scss */
 /* File: frontend/src/styles/scss/props/_borders.scss */
 /* ============================================== */
@@ -124,8 +53,8 @@ html {
 
 /* File: frontend/src/styles/scss/props/_outlines.scss */
 /* ============================================== */
-/* File: frontend/src/styles/scss/base/keyframes.scss */
-/* File: frontend/src/styles/scss/base/keyframes.scss */
+/* File: frontend/src/styles/scss/variables/_shadows.scss */
+/* ============================================== */
 /* File: frontend/src/styles/scss/props/_text.scss */
 /* File: frontend/src/styles/scss/mixins/_media.scss */
 /* File: frontend/src/styles/scss/mixins/_media.scss */
@@ -184,7 +113,94 @@ html {
 
 /* File: frontend/src/styles/scss/props/_transitions.scss */
 /* ============================================== */
+/* ============================================== */
+/* ============================================== */
+* {
+  box-sizing: border-box;
+}
+
+/* ---------------------------------------------- */
+body,
+html {
+  font-family: vars "Trebuchet MS", Verdana, Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  align-items: center;
+  background: #dddddd;
+}
+
+/* =============================================== */
+#root {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  min-width: 100vw;
+  min-height: 100vh;
+  height: 100vh;
+  min-height: 100vh;
+  max-height: 100vh;
+  overflow-x: hidden;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(to-br, #fce7f3, #dbeafe, #e9d5ff);
+}
+
+/* File: frontend/src/styles/scss/base/keyframes.scss */
+/* ============================================== */
+/* ============================================== */
+.sparkle {
+  animation: sparkleColor 2.5s linear infinite alternate;
+}
+
+/* ============================================== */
+@keyframes sparkleColor {
+  0% {
+    filter: 0 0 12px rgba(255, 255, 255, 0.5333333333) 0 0 3px rgba(255, 255, 0, 0.8666666667) brightness(1.1);
+  }
+  50% {
+    filter: 0 0 24px #ffffee 0 0 10px rgba(255, 0, 255, 0.5333333333) brightness(1.3);
+  }
+  100% {
+    filter: 0 0 16px #ff00ff 0 0 4px rgba(0, 255, 255, 0.5333333333) brightness(1.15);
+  }
+}
+/* ---------------------------------------------- */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+/* ---------------------------------------------- */
+@keyframes sparkleMove {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 120px 120px;
+  }
+}
+/* File: frontend/src/styles/scss/base/_utility.scss */
+/* ============================================== */
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.hidden {
+  display: none;
+}
+
+/* File: frontend/src/styles/scss/base/_root.scss */
 /* File: frontend/src/styles/scss/components/_index.scss */
+/* File: frontend/src/styles/scss/base/_root.scss */
 /* File: frontend/src/styles/scss/props/_text.scss */
 /* File: frontend/src/styles/scss/components/_buttons.scss */
 /* ============================================== */
@@ -233,20 +249,10 @@ html {
   font-size: 1.08rem;
 }
 
+/* File: frontend/src/styles/scss/base/_root.scss */
 /* File: frontend/src/styles/scss/props/_text.scss */
 /* File: frontend/src/styles/scss/components/_structure.scss */
 /* ============================================== */
-#container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  width: 100%;
-  overflow-x: hidden;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(to-br, #fce7f3, #dbeafe, #e9d5ff);
-}
-
 /* ============================================== */
 #canvas-container {
   position: relative;
@@ -382,6 +388,7 @@ html {
   }
 }
 
+/* File: frontend/src/styles/scss/base/_root.scss */
 /* File: frontend/src/styles/partials/components/_text.scss */
 /* =================================================== */
 #graphic-text-span {

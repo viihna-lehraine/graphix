@@ -1,4 +1,4 @@
-// File: frontend/src/app/features/canvas/ui/buttons/upload.ts
+// File: frontend/src/app/features/canvas/ui/btns/upload.ts
 
 import type {
   CanvasIOFunctions,
