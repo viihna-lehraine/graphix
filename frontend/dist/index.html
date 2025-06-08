@@ -1,0 +1,90 @@
+<!-- File: frontend/src/index.html -->
+
+<!doctype html>
+
+<html lang="en">
+
+  <head>
+    <title>Glitter Graphix</title>
+    <meta charset="UTF-8" />
+    <meta
+			name="viewport"
+			content="width=device-width, initial-scale=1.0, shrink-to-fit=no"
+		/>
+    <meta name="author" content="Viihna Lehraine" />
+    <meta
+      name="description"
+      content="Remember Blinkies? Yeah we bringin' that shit back mafucka."
+    />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="assets/icons/favicon.svg"
+    />
+    <link
+      rel="shortcut icon"
+      type="image/png"
+      href="assets/icons/favicon-android-chrome.png"
+    />
+    <script type="module" crossorigin src="/assets/index-DQLFiAzJ.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-B9ciw1h4.css">
+  </head>
+
+  <body>
+
+    <div id="root">
+      <header>
+        <h1>Graphix</h1>
+      </header>
+
+      <main class="studio-main">
+
+        <aside class="tray tray--stickers">
+          <h2 id="sticker-tray-heading">Stickers & Sparkles</h2>
+          <div class="tray-items" id="sticker-tray">
+            <!-- TODO: STICKER THUMBNAILS HERE -->
+          </div>
+        </aside>
+
+        <section class="canvas-field">
+
+          <div class="canvas-toolbar">
+            <input type="file" accept="image/" id="img-upload-input" class="hidden" />
+            <button id="upload-btn" class="canvas-io-btn">Upload</button>
+            <button id="download-btn" class="canvas-io-btn">Download</button>
+            <button id="clear-btn" class="canvas-io-btn">Clear</button>
+            <!-- TODO: add other controls and buttons here-->
+          </div>
+
+          <div id="canvas-container">
+            <canvas id="main-canvas"></canvas>
+            <!-- TODO: add overlays, effects, etc. here -->
+          </div>
+
+          <div id="properties-panel" class="properties-panel">
+            <!-- TODO: show controls for currently-selected object (sticker, text, border, etc.)-->
+          </div>
+        </section>
+
+        <aside class="tray tray--extras">
+          <h2>Add Text</h2>
+          <form id="text-form">
+            <input type="text" id="text-input" placeholder="Add text here :3" />
+            <button type="submit" id="add-text-btn">Add</button>
+          </form>
+          <!-- more new features could go here... -->
+        </aside>
+      </main>
+
+      <footer class="app-footer">
+        <span>
+          Made with 💖 by <a href="https://github.com/viihna-lehraine/graphix">Viihna Lehraine</a>🦈
+        </span>
+      </footer>
+
+    </div>
+
+
+  </body>
+
+</html>

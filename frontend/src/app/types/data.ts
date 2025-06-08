@@ -1,39 +1,48 @@
 // File: frontend/src/app/types/data.ts
 
-import type { Sets } from './index.js';
+import type { Hex, Sets } from './index.js';
 
-// ================================================== //
 // ================================================== //
 
 export type AllowedExtensions = string[];
 
-/* -------------------------------------------------- */
-
 export type BaseAssetTags = string[];
 
-/* -------------------------------------------------- */
+// ================================================== //
+
+export interface AssetData {
+  ext: ExtensionData;
+  tags: AssetTagsData;
+}
+
+export interface AssetTagsData {
+  base: BaseAssetTags;
+}
+
+export interface ConfigurationData {
+  default: DefaultData;
+  regex: RegexData;
+}
 
 export interface DefaultData {
   canvasWidth: number;
   canvasHeight: number;
   debounceWait: number;
   fileName: string;
+  textElement: {
+    font: string;
+    color: Hex;
+    align: CanvasTextAlign;
+    baseline: CanvasTextBaseline;
+  };
 }
 
-/* -------------------------------------------------- */
+export type DOM_Classes = Record<string, string>;
 
 export interface DOMData {
-  elements: DOMElements;
+  classes: DOM_Classes;
   ids: DOM_IDs;
 }
-
-/* -------------------------------------------------- */
-
-export interface DOMElements {
-  canvas: HTMLCanvasElement | null;
-}
-
-/* -------------------------------------------------- */
 
 export interface DOM_IDs {
   btns: {
@@ -55,66 +64,29 @@ export interface DOM_IDs {
   canvas: string;
 }
 
-/* -------------------------------------------------- */
-
 export interface ErrorMessages {
   unknownFatalError: string;
 }
-
-/* -------------------------------------------------- */
 
 export interface ExtensionData {
   allowed: AllowedExtensions;
 }
 
-/* -------------------------------------------------- */
-
-export interface RegexData {
-  floatString: RegExp;
-  integerString: RegExp;
-  numberString: RegExp;
-}
-
-/* -------------------------------------------------- */
-
-export interface AssetTagsData {
-  base: BaseAssetTags;
-}
-
-// ================================================== //
-// ================================================== //
-
-export interface AssetData {
-  ext: ExtensionData;
-  tags: AssetTagsData;
-}
-
-/* -------------------------------------------------- */
-
-export interface ConfigurationData {
-  default: DefaultData;
-  regex: RegexData;
-}
-
-/* -------------------------------------------------- */
-
-export interface DOMData {
-  elements: DOMElements;
-}
-
-/* -------------------------------------------------- */
-
 export interface MathData {
   sets: Sets;
 }
-
-/* -------------------------------------------------- */
 
 export interface MessageData {
   errors: ErrorMessages;
 }
 
-// ================================================== //
+export interface RegexData {
+  floatString: RegExp;
+  hex: RegExp;
+  integerString: RegExp;
+  numberString: RegExp;
+}
+
 // ================================================== //
 
 export interface Data {

@@ -1,0 +1,49 @@
+/* File: frontend/src/styles/partials/media.css */
+
+@media (min-width: 768px) {
+  #graphic-preview-field {
+    min-width: 320px;
+    min-height: 72px;
+    padding: 8px 16px;
+  }
+  #graphic-text-span {
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+  }
+  #sparkle-checkbox-label {
+    font-size: 1.25rem;
+  }
+  .canvas-io-btn {
+    padding: 0.7rem 0;
+    font-size: 1.14rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .main-area {
+    grid-template-columns: 1fr;
+    grid-template-areas: 'center' 'right';
+  }
+  .main-div {
+    grid-template-columns: 1fr;
+    grid-template-areas: 'center' 'right';
+    gap: 1.2rem;
+  }
+  .tray--extras {
+    margin-top: 2rem;
+  }
+}
+
+@media (max-width: 1024px) {
+  .canvas-io-btn {
+    padding: 0.75rem 0;
+    font-size: 1.22rem;
+  }
+  .main-area {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .tray {
+    margin: 1.5rem 0;
+  }
+}

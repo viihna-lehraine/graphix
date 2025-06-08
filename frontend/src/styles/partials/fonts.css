@@ -1,0 +1,6 @@
+/* File: frontend/src/styles/partials/fonts.css */
+
+@font-face {
+  font-family: 'Luckiest Guy';
+  src: url('/assets/fonts/LuckiestGuy-Regular.ttf') format('truetype');
+}

@@ -3,11 +3,11 @@
 import type {
   CanvasFunctions,
   CanvasRefs,
+  CanvasState,
   Data,
   Services
 } from '../../types/index.js';
 
-// ================================================== //
 // ================================================== //
 
 function clearCanvas(ctx: CanvasRenderingContext2D, services: Services): void {
@@ -16,8 +16,6 @@ function clearCanvas(ctx: CanvasRenderingContext2D, services: Services): void {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   }, 'Unhandled canvas clear error.');
 }
-
-// ================================================== //
 
 function drawBoundary(ctx: CanvasRenderingContext2D, services: Services): void {
   const { errors } = services;
@@ -31,8 +29,6 @@ function drawBoundary(ctx: CanvasRenderingContext2D, services: Services): void {
     ctx.restore();
   }, 'Unhandled canvas boundary drawing error.');
 }
-
-// ================================================== //
 
 function get2DContext(
   canvas: HTMLCanvasElement,
@@ -49,13 +45,13 @@ function get2DContext(
   }, 'Unhandled canvas context retrieval error.');
 }
 
-// ================================================== //
-
 function getCanvasRefs(data: Data, services: Services): CanvasRefs {
   const { errors } = services;
 
   return errors.handleSync(() => {
-    const canvas = data.dom.elements.canvas;
+    const canvas = document.getElementById(
+      data.dom.ids.canvas
+    ) as HTMLCanvasElement | null;
     if (!canvas) throw new Error('Canvas element not found!');
 
     const ctx = canvas.getContext('2d');
@@ -69,21 +65,74 @@ function getCanvasRefs(data: Data, services: Services): CanvasRefs {
   }, 'Unhandled canvas reference retrieval error.');
 }
 
-// ================================================== //
-
 function getMainCanvas(data: Data, services: Services): HTMLCanvasElement {
   const { errors } = services;
 
   return errors.handleSync(() => {
-    const canvas = data.dom.elements.canvas;
-
+    const canvas = document.getElementById(
+      data.dom.ids.canvas
+    ) as HTMLCanvasElement | null;
     if (!canvas) throw new Error('Main canvas element not found!');
 
     return canvas;
-  }, 'Unhandled main canvas retrieval error.');
+  }, 'Unhandled canvas retrieval error.');
 }
 
-// ================================================== //
+function redrawCanvas(
+  ctx: CanvasRenderingContext2D,
+  state: CanvasState,
+  services: Services
+): void {
+  clearCanvas(ctx, services);
+  drawBoundary(ctx, services);
+
+  for (const elem of state.textElements) {
+    ctx.save();
+    const fontSize = elem.fontSize ?? 32;
+    const fontWeight = elem.fontWeight ?? 'bold';
+    const fontFamily = elem.fontFamily ?? 'sans-serif';
+    ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+    ctx.fillStyle = elem.color;
+    ctx.textAlign = elem.align;
+    ctx.textBaseline = elem.baseline;
+    ctx.fillText(elem.text, elem.x, elem.y);
+    ctx.restore();
+  }
+
+  if (state.selectedTextIndex !== null) {
+    const elem = state.textElements[state.selectedTextIndex];
+
+    // fallback font logic
+    const fontFamily = elem.fontFamily ?? 'sans-serif';
+    const fontSize = elem.fontSize ?? 32;
+    const fontWeight = elem.fontWeight ?? 'bold';
+    ctx.save();
+    ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+
+    // measure text dimensions
+    const width = ctx.measureText(elem.text).width ?? 32;
+    const height = elem.fontSize ?? 32;
+
+    // draw selection box
+    ctx.strokeStyle = '#00F6';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([4, 2]);
+    ctx.strokeRect(elem.x - width / 2, elem.y - height / 2, width, height);
+
+    // draw resize handle (bottom-right corner of the box)
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#00F6';
+    const handleSize = 10;
+    ctx.fillRect(
+      elem.x + width / 2 - handleSize / 2,
+      elem.y + height / 2 - handleSize / 2,
+      handleSize,
+      handleSize
+    );
+
+    ctx.restore();
+  }
+}
 
 function resizeCanvasToParent(data: Data, services: Services): void {
   const { errors } = services;
@@ -111,7 +160,6 @@ function resizeCanvasToParent(data: Data, services: Services): void {
 }
 
 // ================================================== //
-// ================================================== //
 
 export const mainCanvasFns: CanvasFunctions['main'] = {
   clearCanvas,
@@ -119,5 +167,6 @@ export const mainCanvasFns: CanvasFunctions['main'] = {
   get2DContext,
   getCanvasRefs,
   getMainCanvas,
+  redrawCanvas,
   resizeCanvasToParent
 } as const;

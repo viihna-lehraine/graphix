@@ -2,6 +2,7 @@
 
 import type {
   Float,
+  Hex,
   Integer,
   NonNegativeInteger,
   NonNegativeNumber,
@@ -27,6 +28,10 @@ export const typeguardFactory = (regex: RegexData): Typeguards => ({
   isFloatString(str: string): boolean {
     const s = str.trim();
     return !regex.integerString.test(s.trim()) && regex.numberString.test(s);
+  },
+
+  isHex(value: string): value is Hex {
+    return regex.hex.test(value.trim());
   },
 
   isInteger(value: number): value is Integer {

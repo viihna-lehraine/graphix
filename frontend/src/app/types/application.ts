@@ -1,11 +1,18 @@
 // File: frontend/src/application/types/app.ts
 
-import type { Data, Helpers, Services, Utilities } from '../types/index.js';
+import type {
+  Data,
+  Helpers,
+  Services,
+  TextElement,
+  Utilities
+} from '../types/index.js';
 
 // ================================================= //
 // ================================================= //
 
 export interface AppDependencies {
+  data: Data;
   helpers: Helpers;
   services: Services;
   utilities: Utilities;
@@ -31,6 +38,9 @@ export interface CanvasResizeOptions {
 export type CanvasState = {
   width: number;
   height: number;
+  selectedTextIndex: number | null;
+  textElements: TextElement[];
+  // stickers: Sticker[];
 };
 
 // ================================================= //

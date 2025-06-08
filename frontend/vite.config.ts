@@ -10,7 +10,8 @@ export default defineConfig({
   publicDir: '../public',
   build: {
     outDir: '../dist',
-    emptyOutDir: true
+    emptyOutDir: true,
+    target: 'esnext'
   },
   server: {
     host: '0.0.0.0',

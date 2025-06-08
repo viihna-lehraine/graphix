@@ -9,9 +9,8 @@ import type {
   Utilities
 } from '../types/index.js';
 import { ResizeManager } from '../dom/ResizeManager.js';
-import { StateManager } from '../state/StateManager.js';
+import { textElementOverlayFns } from '../features/canvas/ui/overlays/textElement.js';
 
-// ================================================== //
 // ================================================== //
 
 async function initializeHelpers(): Promise<Required<Helpers>> {
@@ -32,6 +31,7 @@ async function initializeHelpers(): Promise<Required<Helpers>> {
 // ================================================== //
 
 async function initializeServices(
+  data: Data,
   helpers: Helpers
 ): Promise<Required<Services>> {
   console.log(`Initializing Services object...`);
@@ -39,7 +39,7 @@ async function initializeServices(
   try {
     const { serviceFactory } = await import('../core/factories/services.js');
 
-    const services: Services = serviceFactory(helpers);
+    const services: Services = await serviceFactory(data, helpers);
 
     return services;
   } catch (error) {
@@ -73,10 +73,13 @@ export async function initializeAppDependencies(): Promise<
 
   let deps = {} as AppDependencies;
 
+  const data = await initializeData();
+  deps.data = data;
+
   const helpers = await initializeHelpers();
   deps.helpers = helpers;
 
-  const services = await initializeServices(helpers);
+  const services = await initializeServices(data, helpers);
   deps.services = services;
 
   const utilities = await initializeUtilities(services);
@@ -121,29 +124,9 @@ export async function initializeResizeManager(
 
 // ================================================== //
 
-export async function initializeStateManager(
-  data: Data,
-  deps: AppDependencies
-): Promise<StateManager> {
-  const { services } = deps;
-  const { errors } = services;
-
-  return errors.handleAsync(async () => {
-    const stateManager = StateManager.getInstance(
-      data,
-      services.errors,
-      services.log
-    );
-
-    return stateManager;
-  }, `StateManager initialization failed.`);
-}
-
-// ================================================== //
-
 export async function initializeUI(
   data: Data,
-  deps: AppDependencies
+  deps: Required<AppDependencies>
 ): Promise<Required<CanvasFunctions>> {
   const { services, utilities } = deps;
   const { errors } = services;
@@ -155,7 +138,14 @@ export async function initializeUI(
     const { canvasIoFns } = await import('../features/canvas/io/index.js');
     const { canvasUiFns } = await import('../features/canvas/ui/index.js');
 
-    await canvasUiFns.initialize(canvasIoFns, data, mainCanvasFns, services);
+    await canvasUiFns.initialize(
+      canvasIoFns,
+      data,
+      mainCanvasFns,
+      services,
+      textElementOverlayFns,
+      utilities
+    );
 
     const { canvas } = canvasRefs;
     const container = document.getElementById(

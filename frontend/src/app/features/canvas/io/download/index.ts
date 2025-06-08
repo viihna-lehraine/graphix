@@ -16,11 +16,11 @@ async function handleDownload(
   services: Services
 ): Promise<void> {
   if (!fileName) fileName = data.config.default.fileName;
-  const { errors } = services;
+  const { errors, log } = services;
 
   return errors.handleAsync(async () => {
     if (!targetRef.current) {
-      console.error('Target reference is null or undefined.');
+      log.error('Target reference is null or undefined.', 'handleDownload');
       return;
     }
 

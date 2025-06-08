@@ -1,20 +1,14 @@
 // File: frontend/src/app/features/canvas/ui/btns/clear.ts
 
-import type {
-  Data,
-  MainCanvasFunctions,
-  Services
-} from '../../../../types/index.js';
+import type { Data, Services } from '../../../../types/index.js';
 
-// ================================================== //
 // ================================================== //
 
 export function initializeCanvasClearButton(
   data: Data,
-  mainCanvasFns: MainCanvasFunctions,
   services: Services
 ): void {
-  const { errors, log } = services;
+  const { errors, log, stateManager } = services;
 
   return errors.handleSync(() => {
     const clearBtnId = data.dom.ids.btns.clear;
@@ -22,19 +16,14 @@ export function initializeCanvasClearButton(
 
     if (!btn) throw new Error(`Canvas Clear Button not found!`);
 
-    const ctx = mainCanvasFns.get2DContext(
-      mainCanvasFns.getMainCanvas(data, services),
-      services
-    );
-
     btn.addEventListener('click', () => {
-      mainCanvasFns.clearCanvas(ctx, services);
-      log.info(`Canvas cleared successfully.`);
-
-      mainCanvasFns.drawBoundary(ctx, services);
-      log.info(`Canvas boundary has been redrawn.`);
+      stateManager.clearCanvasAll();
+      services.log.info(
+        `Canvas cleared and reset via StateManager.`,
+        'initializeCanvasClearButton'
+      );
     });
 
-    services.log.debug(`Clear Button listener successfully attached.`);
+    log.debug(`Clear Button listener successfully attached.`);
   }, 'Unhandled Canvas Clear Button initialization error.');
 }

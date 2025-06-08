@@ -5,7 +5,6 @@ import { canvasDownloadFns } from './download/index.js';
 import { canvasUploadFns } from './upload/index.js';
 
 // =================================================== //
-// =================================================== //
 
 export const canvasIoFns: CanvasIOFunctions = {
   download: canvasDownloadFns,

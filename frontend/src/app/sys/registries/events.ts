@@ -9,11 +9,29 @@ type ListenerRegistration = (data: Data, services: Services) => void;
 
 export const eventListeners: ListenerRegistration[] = [
   (_data, services) => {
-    const { log } = services;
-    log.info('Registering global event listeners...');
+    const { log, stateManager } = services;
+    log.info(
+      'Registering global event listeners...',
+      'registries > events > eventListeners'
+    );
 
     window.addEventListener('resize', () => {
       // TODO: resize handler logic here
+    });
+
+    window.addEventListener('keydown', (event: KeyboardEvent) => {
+      if (
+        event.key === 'Delete' &&
+        stateManager.getCanvas().selectedTextIndex !== null
+      ) {
+        const idx = stateManager.getCanvas().selectedTextIndex!;
+        stateManager.removeTextElement(idx);
+        stateManager.getCanvas().selectedTextIndex = null;
+        log.info(
+          `Deleted text element at index: ${idx}`,
+          'event:keydown:Delete'
+        );
+      }
     });
   }
 ];

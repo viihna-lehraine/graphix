@@ -25,6 +25,7 @@ export type {
   OverlayAsset,
   StickerAsset
 } from './assets.js';
+export type { TextElement } from './canvas.js';
 export type {
   CanvasStateServiceContract,
   ClientStateServiceContract,
@@ -33,6 +34,7 @@ export type {
   ResizeManagerContract,
   StateManagerContract
 } from './contracts.js';
+export type { TextStyle } from './css.js';
 export type {
   AllowedExtensions,
   AssetData,
@@ -42,7 +44,7 @@ export type {
   Data,
   DefaultData,
   DOMData,
-  DOMElements,
+  DOM_Classes,
   DOM_IDs,
   ErrorMessages,
   ExtensionData,
@@ -63,11 +65,13 @@ export type {
   MainCanvasFunctions,
   MathHelpers,
   Services,
+  TextElementOverlayFunctions,
   Typeguards,
   Utilities
 } from './functions.js';
 export type {
   Float,
+  Hex,
   Integer,
   NonNegativeInteger,
   NonNegativeNumber,

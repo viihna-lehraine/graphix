@@ -3,8 +3,10 @@
 import type {
   CanvasRefs,
   CanvasResizeOptions,
+  CanvasState,
   Data,
   Float,
+  Hex,
   Integer,
   NonNegativeInteger,
   NonNegativeNumber,
@@ -14,9 +16,11 @@ import type {
   PositiveInteger,
   PositiveNumber,
   SignedPercentile,
+  TextElement,
   UnitInterval
 } from './index.js';
 import { ErrorHandler, Logger } from '../core/services/index.js';
+import { StateManager } from '../core/services/state/StateManager.js';
 
 // ================================================== //
 // ========= CORE FUNCTION OBJECTS ================== //
@@ -54,11 +58,12 @@ export interface Helpers {
   };
 }
 
-/* ------------------------------------------------- */
+// ================================================== //
 
 export type Services = {
   errors: ErrorHandler;
   log: Logger;
+  stateManager: StateManager;
 };
 
 /* ================================================= */
@@ -69,6 +74,23 @@ export interface Utilities {
       options: CanvasResizeOptions,
       services: Services
     ) => () => void;
+    getMousePosition(
+      canvas: HTMLCanvasElement,
+      evt: MouseEvent
+    ): {
+      x: number;
+      y: number;
+    };
+    isOverResizeHandle(
+      mouse: { x: number; y: number },
+      elem: TextElement,
+      ctx: CanvasRenderingContext2D
+    ): boolean;
+    isPointInText(
+      pt: { x: number; y: number },
+      elem: TextElement,
+      ctx: CanvasRenderingContext2D
+    ): boolean;
   };
   dom: {
     getCssVar: (name: string) => string;
@@ -76,6 +98,7 @@ export interface Utilities {
   typeguards: {
     isFloat: (value: number) => value is Float;
     isFloatString: (string: string) => boolean;
+    isHex: (value: string) => value is Hex;
     isInteger: (value: number) => value is Integer;
     isIntegerString: (string: string) => boolean;
     isNonNegativeInteger: (value: number) => value is NonNegativeInteger;
@@ -108,7 +131,6 @@ export type Typeguards = Utilities['typeguards'];
 
 // ================================================== //
 // ================================================== //
-// ================================================== //
 
 export interface CanvasFunctions {
   main: {
@@ -118,9 +140,14 @@ export interface CanvasFunctions {
       canvas: HTMLCanvasElement,
       services: Services
     ) => CanvasRenderingContext2D;
-    getCanvasRefs(data: Data, services: Services): CanvasRefs;
-    getMainCanvas(data: Data, services: Services): HTMLCanvasElement;
-    resizeCanvasToParent(data: Data, services: Services): void;
+    getCanvasRefs: (data: Data, services: Services) => CanvasRefs;
+    getMainCanvas: (data: Data, services: Services) => HTMLCanvasElement;
+    redrawCanvas: (
+      ctx: CanvasRenderingContext2D,
+      state: CanvasState,
+      services: Services
+    ) => void;
+    resizeCanvasToParent: (data: Data, services: Services) => void;
   };
   io: {
     download: {
@@ -144,7 +171,9 @@ export interface CanvasFunctions {
       canvasIoFns: CanvasIOFunctions,
       data: Data,
       mainCanvasFns: MainCanvasFunctions,
-      services: Services
+      services: Services,
+      textElementOverlayFns: TextElementOverlayFunctions,
+      utils: Utilities
     ): Promise<void>;
   };
 }
@@ -152,3 +181,14 @@ export interface CanvasFunctions {
 export type CanvasIOFunctions = CanvasFunctions['io'];
 export type CanvasUIFunctions = CanvasFunctions['ui'];
 export type MainCanvasFunctions = CanvasFunctions['main'];
+
+export interface TextElementOverlayFunctions {
+  show: (
+    canvas: HTMLCanvasElement,
+    elem: TextElement,
+    index: number,
+    data: Data,
+    services: Services,
+    redraw: () => void
+  ) => void;
+}

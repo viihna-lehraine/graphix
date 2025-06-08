@@ -3,19 +3,33 @@
 // =================================================== //
 // =================================================== //
 
-const { onDOMContentLoaded } = await import('./sys/events/dom.js');
+import('./sys/events/dom.js').then(({ onDOMContentLoaded }) => {
+  onDOMContentLoaded(async () => {
+    try {
+      const { launchApp } = await import('./sys/launch.js');
+      const { canvasFns, deps } = await launchApp();
 
-onDOMContentLoaded(async () => {
-  try {
-    const { launchApp } = await import('./sys/launch.js');
-    await launchApp();
-  } catch (error) {
-    console.error(
-      `An unhandled error occurred during application startup:`,
-      error instanceof Error ? error.message : error
-    );
-    throw new Error(`Startup failed.`);
-  }
+      const canvas = document.getElementById(
+        deps.data.dom.ids.canvas
+      ) as HTMLCanvasElement | null;
+
+      if (!canvas) throw new Error('Canvas element not found in DOM!');
+
+      const ctx = canvas.getContext('2d');
+
+      if (!ctx) throw new Error('2D context not available for canvas!');
+
+      deps.services.stateManager.subscribeToCanvas(state =>
+        canvasFns.main.redrawCanvas(ctx, state, deps.services)
+      );
+    } catch (error) {
+      console.error(
+        `An unhandled error occurred during application startup:`,
+        error instanceof Error ? error.message : error
+      );
+      throw new Error(`Startup failed.`);
+    }
+  });
 });
 
 // =================================================== //

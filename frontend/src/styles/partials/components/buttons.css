@@ -1,0 +1,51 @@
+/* File: frontend/src/styles/partials/components/buttons.css */
+
+@import url('../variables.css');
+
+.canvas-io-btn {
+  width: 90%;
+  max-width: 200px;
+  min-width: 120px;
+  margin: 0 auto;
+  font-size: 1rem;
+  padding: 0.65rem 0;
+  border-radius: 0.6rem;
+  box-shadow:
+    0 4px 24px -6px var(--bubblegum-pop-80),
+    0 1.5px 6px -4px var(--p_black-11);
+  transition:
+    background 0.22s,
+    transform 0.16s,
+    box-shadow 0.22s;
+  cursor: pointer;
+  border-radius: 0.4rem;
+  font-family: 'Courier New', Courier, monospace;
+  letter-spacing: 0.15rem;
+  color: var(--pastel-heart-rose);
+  background: var(--grape-soda-glow-80);
+  text-shadow: 2px 4px 2px #00000020;
+}
+
+.canvas-io-btn:hover {
+  background-color: var(--ultraviolet-slap);
+}
+
+.canvas-io-btn:focus,
+.canvas-io-btn:focus-visible {
+  outline: var(--btn-focus-outline-1);
+  outline-offset: 2px;
+  box-shadow: var(--bubblegum-pop-80);
+}
+
+.canvas-io-btn:hover,
+.canvas-io-btn:focus {
+  background: linear-gradient(
+    90deg,
+    var(--electric-rose) 0%,
+    var(--dreamcore-indigo) 100%
+  );
+  transform: translateY(-2px) scale(1.04) rotate(-1deg);
+  box-shadow:
+    0 8px 28px -6px var(--grape-soda-glow-80),
+    0 2.5px 10px -4px var(--p_white-33);
+}

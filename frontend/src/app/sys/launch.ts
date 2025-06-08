@@ -1,18 +1,15 @@
 // File: frontend/src/app/sys/launch.ts
 
-import type { AppDependencies, CanvasFunctions, Data } from '../types/index.js';
+import type { AppDependencies, CanvasFunctions } from '../types/index.js';
 import { ResizeManager } from '../dom/ResizeManager.js';
-import { StateManager } from '../state/StateManager.js';
 
 // ================================================== //
 // ================================================== //
 
 export async function launchApp(): Promise<{
-  data: Data;
   canvasFns: CanvasFunctions;
   deps: AppDependencies;
   resizeManager: ResizeManager;
-  stateManager: StateManager;
 }> {
   try {
     console.log(`Launching application...`);
@@ -36,29 +33,19 @@ export async function launchApp(): Promise<{
       JSON.stringify({ helpers, services, utilities }, null, 2)
     );
 
-    // 3. Initialize State Manager
-    log.info(`Initializing State Manager...`);
-    const { StateManager } = await import('../state/StateManager.js');
-    const stateManager = StateManager.getInstance(
-      data,
-      services.errors,
-      services.log
-    );
-    log.info(`State Manager initialized successfully.`);
-
-    // 4. Initialize Resize Manager
+    // 5. Initialize Resize Manager
     log.info(`Initializing Resize Manager...`);
     const { ResizeManager } = await import('../dom/ResizeManager.js');
     const resizeManager = ResizeManager.getInstance(services);
     log.info(`Resize Manager initialized successfully.`);
 
-    /// 5. Global One-Off Setup (error handlers, etc.)
+    // 6. Global One-Off Setup (error handlers, etc.)
     log.info(`Executing bootstrap processes...`);
     const { bootstrap } = await import('./bootstrap.js');
     await bootstrap(deps.services);
     log.info(`Bootstrap processes completed successfully.`);
 
-    // 6. Register Event Listeners
+    // 7. Register Event Listeners
     log.info(`Registering event listeners...`);
     const { eventListeners, registerEventListeners } = await import(
       './registries/events.js'
@@ -66,29 +53,27 @@ export async function launchApp(): Promise<{
     registerEventListeners(eventListeners, data, deps.services);
     log.info(`Event listeners registered successfully.`);
 
-    // 7. Register Plugins
+    // 8. Register Plugins
     log.info(`Registering plugins...`);
     const { plugins } = await import('./registries/plugins.js');
     for (const plugin of plugins) await plugin.register(deps);
     log.info(`Plugins registered successfully.`);
 
-    // 8. Initialize UI overlays/widgets
+    // 9. Initialize UI overlays/widgets
     // log.info(`Initializing UI overlays and widgets...`);
     // const { uiInitializers } = await import('./registries/ui.js');
     // log.info(`UI overlays and widgets initialized successfully.`);
 
-    // 9. Initialize User Interface
+    // 10. Initialize User Interface
     log.info(`Initializing User Interface...`);
     const { initializeUI } = await import('./initialize.js');
     const canvasFns = await initializeUI(data, deps);
     log.info(`User Interface initialized successfully.`);
 
     return {
-      data,
       canvasFns,
       deps,
-      resizeManager,
-      stateManager
+      resizeManager
     };
   } catch (error) {
     console.error(

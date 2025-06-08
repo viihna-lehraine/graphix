@@ -1,0 +1,2 @@
+async function s(o){const{log:n}=o;n.info("Registering global error handlers");try{window.onerror=function(r,a,t,l,e){return console.log(`Unhandled error: ${r} at ${a}:${t}:${l}`),e&&e.stack&&console.log(`Stack trace:
+${e.stack}`),!1},window.addEventListener("unhandledrejection",r=>{console.log(`Unhandled promise rejection: ${r.reason}`)})}catch(r){throw n.error("Failed to register global error handlers:",r instanceof Error?r.message:String(r)),new Error("Global error handler registration failed.")}}async function i(o){await s(o)}export{i as bootstrap};

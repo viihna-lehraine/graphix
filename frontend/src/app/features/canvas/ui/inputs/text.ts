@@ -2,11 +2,11 @@
 
 import type {
   Data,
+  Hex,
   Services,
   MainCanvasFunctions
 } from '../../../../types/index.js';
 
-// ================================================== //
 // ================================================== //
 
 export function initializeAddTextForm(
@@ -21,6 +21,8 @@ export function initializeAddTextForm(
     data.dom.ids.inputs.text
   ) as HTMLInputElement | null;
 
+  const { stateManager } = services;
+
   if (!textForm) {
     throw new Error(`Text form not found in DOM.`);
   }
@@ -30,7 +32,6 @@ export function initializeAddTextForm(
 
   // grab the canvas/context
   const canvas = mainCanvasFns.getMainCanvas(data, services);
-  const ctx = mainCanvasFns.get2DContext(canvas, services);
 
   textForm.addEventListener('submit', (e: Event) => {
     e.preventDefault();
@@ -38,17 +39,17 @@ export function initializeAddTextForm(
     const text = textInput.value.trim();
     if (!text) return;
 
-    // basic font setup
-    ctx.save();
-    ctx.font = 'bold 32px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = '#ff80c5'; // pink-ish
+    stateManager.addTextElement({
+      text,
+      x: canvas.width / 2,
+      y: canvas.height / 2,
+      font: 'bold 32px sans-serif',
+      fontSize: 32,
+      color: '#000000' as Hex,
+      align: 'center',
+      baseline: 'middle'
+    });
 
-    // draw in the center of the canvas
-    ctx.fillText(text, canvas.width / 2, canvas.height / 2);
-    ctx.restore();
-
-    textInput.value = ''; // clear input after submission
+    textInput.value = '';
   });
 }

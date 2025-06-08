@@ -6,9 +6,6 @@ import type {
   Services
 } from '../../../../types/index.js';
 
-// ================================================== //
-// ================================================== //
-
 export function initializeCanvasDownloadButton(
   data: Data,
   mainCanvasFns: MainCanvasFunctions,
@@ -27,7 +24,10 @@ export function initializeCanvasDownloadButton(
 
       canvas.toBlob(blob => {
         if (!blob) {
-          log.error('Canvas could not be converted to blob.');
+          log.error(
+            'Canvas could not be converted to blob.',
+            'initializeCanvasDownloadButton'
+          );
           return;
         }
 
