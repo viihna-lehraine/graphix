@@ -4,11 +4,13 @@ import type {
   CanvasState,
   ClientState,
   Data,
+  GifAnimation,
   Services,
   State,
   StateManagerContract,
   Subscriber,
-  TextElement
+  TextElement,
+  VisualLayer
 } from '../../../types/index.js';
 import { CanvasStateService } from './CanvasStateService.js';
 import { ClientStateService } from './ClientStateService.js';
@@ -46,8 +48,8 @@ export class StateManager implements StateManagerContract {
         canvas: {
           width: this.#data.config.default.canvasWidth,
           height: this.#data.config.default.canvasHeight,
-          selectedTextIndex: null,
-          textElements: []
+          layers: [],
+          selectedLayerIndex: null
         },
         client: {
           viewportWidth: window.innerWidth,
@@ -115,6 +117,10 @@ export class StateManager implements StateManagerContract {
   // ================================================= //
   // PROXY CANVAS STATE ACCESS //
 
+  addLayer(layer: VisualLayer): void {
+    this.#canvas.addLayer(layer);
+  }
+
   addTextElement(elem: TextElement): void {
     this.#canvas.addTextElement(elem);
   }
@@ -132,12 +138,32 @@ export class StateManager implements StateManagerContract {
     window.localStorage.setItem('appState', JSON.stringify(this.getAll()));
   }
 
+  clearCanvasAnimation(): void {
+    this.#canvas.clearAnimation();
+  }
+
   getCanvas(): CanvasState {
     return this.#canvas.get();
   }
 
+  getCanvasAspectRatio(): number | undefined {
+    return this.#canvas.getAspectRatio();
+  }
+
+  moveLayer(index: number, newIndex: number): void {
+    this.#canvas.moveLayer(index, newIndex);
+  }
+
   moveTextElement(index: number, x: number, y: number): void {
     this.#canvas.moveTextElement(index, x, y);
+  }
+
+  redoCanvas(): void {
+    this.#canvas.redo();
+  }
+
+  removeLayer(index: number): void {
+    this.#canvas.removeLayer(index);
   }
 
   removeTextElement(index: number): void {
@@ -152,20 +178,32 @@ export class StateManager implements StateManagerContract {
     this.#canvas.set(width, height);
   }
 
-  setSelectedTextIndex(index: number | null): void {
-    this.#canvas.setSelectedTextIndex(index);
+  setCanvasAnimation(anim: GifAnimation | null): void {
+    this.#canvas.setAnimation(anim);
+  }
+
+  setCanvasAspectRatio(aspect: number | undefined): void {
+    this.#canvas.setAspectRatio(aspect);
+  }
+
+  setCanvasImage(imageDataUrl: string | undefined): void {
+    this.#canvas.setCanvasImage(imageDataUrl);
+  }
+
+  setSelectedLayerIndex(index: number | null): void {
+    this.#canvas.setSelectedLayerIndex(index);
   }
 
   subscribeToCanvas(fn: Subscriber<CanvasState>): () => void {
     return this.#canvas.subscribe(fn);
   }
 
-  redoCanvas(): void {
-    this.#canvas.redo();
-  }
-
   undoCanvas(): void {
     this.#canvas.undo();
+  }
+
+  updateLayer(index: number, newLayer: VisualLayer): void {
+    this.#canvas.updateLayer(index, newLayer);
   }
 
   updateTextElement(index: number, newElem: TextElement): void {

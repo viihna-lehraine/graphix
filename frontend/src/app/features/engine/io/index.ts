@@ -1,8 +1,8 @@
-// File: frontend/src/app/features/canvas/io/index.ts
+// File: frontend/src/app/features/engine/io/index.ts
 
 import type { CanvasIOFunctions } from '../../../types/index.js';
-import { canvasDownloadFns } from './download/index.js';
-import { canvasUploadFns } from './upload/index.js';
+import { canvasDownloadFns } from './download.js';
+import { canvasUploadFns } from './upload.js';
 
 // =================================================== //
 

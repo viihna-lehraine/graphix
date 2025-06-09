@@ -1,32 +1,57 @@
 // File: frontend/src/app/types/contracts.ts
 
 import type {
+  AnimationGroup,
   CanvasState,
   ClientState,
   ErrorHandlerOptions,
+  GifAnimation,
   ResizePlugin,
   State,
   Subscriber,
-  TextElement
+  TextElement,
+  VisualLayer
 } from './index.js';
 
 // ================================================== //
-// ================================================== //
+
+export interface AnimationGroupManagerContract {
+  addGroup: (group: AnimationGroup) => void;
+  removeGroup: (groupId: string) => void;
+  pause: (groupId: string) => void;
+  play: (groupId: string) => void;
+  update(deltaTime: number): void;
+}
+
+export interface CanvasCacheServiceContract {
+  clearAll(): void;
+}
 
 export interface CanvasStateServiceContract {
+  addLayer(layer: VisualLayer): void;
   addTextElement: (elem: TextElement) => void;
   canRedo: () => boolean;
   canUndo: () => boolean;
   clearAll: () => void;
+  clearAnimation: () => void;
   get: () => CanvasState;
+  getAspectRatio: () => number | undefined;
+  getLayers(): VisualLayer[];
+  getSelectedLayerIndex(): number | null;
+  moveLayer(index: number, newIndex: number): void;
   moveTextElement: (index: number, x: number, y: number) => void;
   redo: () => void;
+  removeLayer(index: number): void;
   removeTextElement: (index: number) => void;
   reset: () => void;
   set: (width: number, height: number) => void;
-  setSelectedTextIndex: (index: number | null) => void;
+  setAnimation: (anim: GifAnimation) => void;
+  setAspectRatio: (aspect: number) => void;
+  setCanvasImage: (imageDataUrl: string | undefined) => void;
+  setSelectedLayerIndex(index: number | null): void;
   subscribe: (fn: Subscriber<CanvasState>) => () => void;
   undo: () => void;
+  updateLayer(index: number, newLayer: VisualLayer): void;
   updateTextElement: (index: number, newElem: TextElement) => void;
 }
 
@@ -79,19 +104,30 @@ export interface ResizeManagerContract {
 /* --------------------------------------------------- */
 
 export interface StateManagerContract {
+  addLayer(layer: VisualLayer): void;
+  addTextElement(elem: TextElement): void;
   canRedoCanvas: () => boolean;
   canUndoCanvas: () => boolean;
   clearCanvasAll(): void;
+  clearCanvasAnimation: () => void;
   getAll: () => State;
   getCanvas: () => CanvasState;
+  getCanvasAspectRatio: () => number | undefined;
   getClient: () => ClientState;
+  moveLayer: (index: number, newIndex: number) => void;
+  moveTextElement: (index: number, x: number, y: number) => void;
+  removeLayer: (index: number) => void;
   resetCanvas: () => void;
   setCanvas: (width: number, height: number) => void;
+  setCanvasAnimation: (anim: GifAnimation | null) => void;
+  setCanvasAspectRatio: (aspect: number) => void;
+  setCanvasImage: (imageDataUrl: string | undefined) => void;
   setClient: (viewportWidth: number, viewportHeight: number) => void;
-  setSelectedTextIndex: (index: number | null) => void;
+  setSelectedLayerIndex: (index: number | null) => void;
   subscribeToCanvas: (fn: Subscriber<CanvasState>) => () => void;
   subscribeToClient: (fn: Subscriber<ClientState>) => () => void;
   redoCanvas: () => void;
   undoCanvas: () => void;
+  updateLayer: (index: number, newLayer: VisualLayer) => void;
   updateTextElement: (index: number, newElem: TextElement) => void;
 }

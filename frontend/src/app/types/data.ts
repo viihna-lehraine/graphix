@@ -4,11 +4,7 @@ import type { Hex, Sets } from './index.js';
 
 // ================================================== //
 
-export type AllowedExtensions = string[];
-
 export type BaseAssetTags = string[];
-
-// ================================================== //
 
 export interface AssetData {
   ext: ExtensionData;
@@ -25,10 +21,17 @@ export interface ConfigurationData {
 }
 
 export interface DefaultData {
+  animation: {
+    frameCount: number;
+  };
   canvasWidth: number;
   canvasHeight: number;
   debounceWait: number;
   fileName: string;
+  font: string;
+  textAlignment: CanvasTextAlign;
+  textBaseline: CanvasTextBaseline;
+  textColor: Hex;
   textElement: {
     font: string;
     color: Hex;
@@ -37,14 +40,14 @@ export interface DefaultData {
   };
 }
 
-export type DOM_Classes = Record<string, string>;
+export type DomClasses = Record<string, string>;
 
-export interface DOMData {
-  classes: DOM_Classes;
-  ids: DOM_IDs;
+export interface DomData {
+  classes: DomClasses;
+  ids: DomIds;
 }
 
-export interface DOM_IDs {
+export interface DomIds {
   btns: {
     clear: string;
     download: string;
@@ -69,7 +72,8 @@ export interface ErrorMessages {
 }
 
 export interface ExtensionData {
-  allowed: AllowedExtensions;
+  supported: SupportedExts;
+  unsupported: UnsupportedExts;
 }
 
 export interface MathData {
@@ -87,12 +91,20 @@ export interface RegexData {
   numberString: RegExp;
 }
 
+export type SupportedExt = 'jpeg' | 'jpg' | 'png';
+
+export type SupportedExts = Readonly<SupportedExt[]>;
+
+export type UnsupportedExt = 'gif' | 'svg' | 'webp';
+
+export type UnsupportedExts = Readonly<UnsupportedExt[]>;
+
 // ================================================== //
 
 export interface Data {
   assets: AssetData;
   config: ConfigurationData;
-  dom: DOMData;
+  dom: DomData;
   math: MathData;
   msgs: MessageData;
 }

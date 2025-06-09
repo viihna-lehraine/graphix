@@ -1,32 +1,45 @@
 // File: frontend/src/app/types/index.ts
 
 export type {
+  AnimationGroup,
+  AnimationProps,
   AppDependencies,
+  BackgroundAsset,
+  BaseAsset,
+  BaseVisualLayer,
+  BorderAsset,
+  CanvasCache,
   CanvasRefs,
   CanvasResizeOptions,
   CanvasState,
   ClientState,
   ErrorHandlerOptions,
+  FontAsset,
+  GifAnimation,
+  GifAsset,
+  GifFrame,
+  GifVisualLayer,
+  ImageAsset,
+  ImageVisualLayer,
   ListenerRegistration,
+  OverlayAsset,
+  OverlayVisualLayer,
   Plugin,
   ResizePlugin,
   State,
+  StickerAsset,
+  StickerVisualLayer,
   Subscriber,
-  UIInitializer
-} from './application.js';
+  SupportedAsset,
+  TextElement,
+  TextVisualLayer,
+  UIInitializer,
+  VideoVisualLayer,
+  VisualLayer
+} from './app/index.js';
 export type {
-  AnimationData,
-  BackgroundAsset,
-  BaseAsset,
-  BorderAsset,
-  FontAsset,
-  GIFAsset,
-  ImageAsset,
-  OverlayAsset,
-  StickerAsset
-} from './assets.js';
-export type { TextElement } from './canvas.js';
-export type {
+  AnimationGroupManagerContract,
+  CanvasCacheServiceContract,
   CanvasStateServiceContract,
   ClientStateServiceContract,
   ErrorHandlerServiceContract,
@@ -36,36 +49,39 @@ export type {
 } from './contracts.js';
 export type { TextStyle } from './css.js';
 export type {
-  AllowedExtensions,
   AssetData,
   AssetTagsData,
   BaseAssetTags,
   ConfigurationData,
   Data,
   DefaultData,
-  DOMData,
-  DOM_Classes,
-  DOM_IDs,
+  DomData,
+  DomClasses,
+  DomIds,
   ErrorMessages,
   ExtensionData,
   MathData,
   MessageData,
-  RegexData
+  RegexData,
+  SupportedExt,
+  SupportedExts,
+  UnsupportedExt,
+  UnsupportedExts
 } from './data.js';
 export type {
   AppHelpers,
   BrandHelpers,
-  CanvasFunctions,
+  CanvasHelpers,
   CanvasIOFunctions,
-  CanvasUIFunctions,
   CanvasUtils,
+  Core,
   DataHelpers,
-  DOMUtils,
+  DomUtils,
   Helpers,
-  MainCanvasFunctions,
   MathHelpers,
   Services,
   TextElementOverlayFunctions,
+  TimeHelpers,
   Typeguards,
   Utilities
 } from './functions.js';

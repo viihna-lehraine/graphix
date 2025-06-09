@@ -1,7 +1,4 @@
-// File: frontend/src/app/core/services/errorClasses.ts
-
-// ================================================== //
-// ================================================== //
+// File: frontend/src/app/core/data/errorClasses.ts
 
 class UserFacingError extends Error {
   constructor(
@@ -12,9 +9,6 @@ class UserFacingError extends Error {
     this.name = 'UserFacingError';
   }
 }
-
-// ================================================== //
-// ================================================== //
 
 export interface ErrorClasses {
   UserFacingError: typeof UserFacingError;

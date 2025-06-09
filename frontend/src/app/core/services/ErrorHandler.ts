@@ -4,7 +4,7 @@ import {
   ErrorHandlerServiceContract,
   ErrorHandlerOptions
 } from '../../types/index.js';
-import { errorClasses, ErrorClasses } from './errorClasses.js';
+import { errorClasses, ErrorClasses } from '../config/errors.js';
 import { Logger } from './Logger.js';
 
 // ================================================== //

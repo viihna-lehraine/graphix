@@ -1,10 +1,11 @@
-// File: frontend/src/app/features/canvas/ui/dragText.ts
+// File: frontend/src/app/features/engine/events/dragText.ts
 
 import type {
   Data,
-  MainCanvasFunctions,
+  Helpers,
   Services,
   TextElementOverlayFunctions,
+  TextVisualLayer,
   Utilities
 } from '../../../types/index.js';
 
@@ -21,13 +22,12 @@ let initialFontSize = 32;
 export function setupTextDragHandlers(
   canvas: HTMLCanvasElement,
   data: Data,
-  mainCanvasFns: MainCanvasFunctions,
+  helpers: Helpers,
   services: Services,
   textElementOverlayFns: TextElementOverlayFunctions,
   utils: Utilities
 ): void {
   const { stateManager } = services;
-  const redrawCanvas = mainCanvasFns.redrawCanvas;
 
   canvas.addEventListener('mousedown', (e: MouseEvent) => {
     dragging = false;
@@ -36,28 +36,34 @@ export function setupTextDragHandlers(
     resizeTargetIndex = null;
 
     const state = stateManager.getAll();
-    const mouse = utils.canvas.getMousePosition(canvas, e);
+    const mouse = helpers.canvas.getMousePosition(canvas, e);
     const ctx = canvas.getContext('2d')!;
 
-    for (let i = state.canvas.textElements.length - 1; i >= 0; i--) {
-      const elem = state.canvas.textElements[i];
+    const textLayer = state.canvas.layers.find(
+      (layer): layer is TextVisualLayer => layer.type === 'text'
+    );
 
-      if (utils.canvas.isOverResizeHandle(mouse, elem, ctx)) {
+    if (!textLayer) return;
+
+    for (let i = textLayer.textElements.length - 1; i >= 0; i--) {
+      const elem = textLayer.textElements[i];
+
+      if (helpers.canvas.isOverResizeHandle(mouse, elem, ctx)) {
         isResizing = true;
         resizeTargetIndex = i;
         initialMouseY = mouse.y;
         initialFontSize = elem.fontSize ?? 32;
-        stateManager.setSelectedTextIndex(i);
+        stateManager.setSelectedLayerIndex(i);
 
         return;
       }
 
-      if (utils.canvas.isPointInText(mouse, elem, ctx)) {
+      if (helpers.canvas.isPointInText(mouse, elem, ctx)) {
         selectedTextIndex = i;
         dragging = true;
         dragOffset.x = mouse.x - elem.x;
         dragOffset.y = mouse.y - elem.y;
-        stateManager.setSelectedTextIndex(i);
+        stateManager.setSelectedLayerIndex(i);
         break;
       }
     }
@@ -65,37 +71,40 @@ export function setupTextDragHandlers(
 
   canvas.addEventListener('mousemove', (e: MouseEvent) => {
     const ctx = canvas.getContext('2d')!;
+    const state = stateManager.getCanvas();
 
-    if (!ctx) {
-      throw new Error('Canvas context not available');
-    }
+    const textLayer = state.layers.find(layer => layer.type === 'text') as
+      | TextVisualLayer
+      | undefined;
+
+    if (!textLayer) return;
+
     if (isResizing && resizeTargetIndex !== null) {
-      const elem = stateManager.getCanvas().textElements[resizeTargetIndex];
-      const mouse = utils.canvas.getMousePosition(canvas, e);
+      const elem = textLayer.textElements[resizeTargetIndex];
+      const mouse = helpers.canvas.getMousePosition(canvas, e);
       const deltaY = mouse.y - initialMouseY;
-      const newFontSize = Math.max(10, initialFontSize + deltaY); // prevent negative/too small
+      const newFontSize = Math.max(10, initialFontSize + deltaY);
 
-      stateManager.updateTextElement(resizeTargetIndex, {
-        ...elem,
-        fontSize: newFontSize
-      });
+      // Update element
+      const updatedElem = { ...elem, fontSize: newFontSize };
+      textLayer.textElements[resizeTargetIndex] = updatedElem;
 
-      redrawCanvas(ctx, stateManager.getCanvas(), services);
+      utils.canvas.redraw(ctx, stateManager.getCanvas());
       return;
     }
 
     if (dragging && selectedTextIndex !== null) {
-      const state = stateManager.getCanvas();
-      const elem = state.textElements[selectedTextIndex];
-      const mouse = utils.canvas.getMousePosition(canvas, e);
+      const elem = textLayer.textElements[selectedTextIndex];
+      const mouse = helpers.canvas.getMousePosition(canvas, e);
 
-      stateManager.updateTextElement(selectedTextIndex, {
+      const updatedElem = {
         ...elem,
         x: mouse.x - dragOffset.x,
         y: mouse.y - dragOffset.y
-      });
+      };
+      textLayer.textElements[selectedTextIndex] = updatedElem;
 
-      redrawCanvas(ctx, stateManager.getCanvas(), services);
+      utils.canvas.redraw(ctx, stateManager.getCanvas());
     }
   });
 
@@ -112,18 +121,23 @@ export function setupTextDragHandlers(
   });
 
   canvas.addEventListener('dblclick', (e: MouseEvent) => {
-    const state = stateManager.getAll();
-    const mouse = utils.canvas.getMousePosition(canvas, e);
+    const state = stateManager.getCanvas();
+    const mouse = helpers.canvas.getMousePosition(canvas, e);
 
-    for (let i = state.canvas.textElements.length - 1; i >= 0; i--) {
-      const elem = state.canvas.textElements[i];
+    const textLayer = state.layers.find(layer => layer.type === 'text') as
+      | TextVisualLayer
+      | undefined;
 
-      if (utils.canvas.isPointInText(mouse, elem, canvas.getContext('2d')!)) {
+    if (!textLayer) return;
+
+    for (let i = textLayer.textElements.length - 1; i >= 0; i--) {
+      const elem = textLayer.textElements[i];
+
+      if (helpers.canvas.isPointInText(mouse, elem, canvas.getContext('2d')!)) {
         textElementOverlayFns.show(canvas, elem, i, data, services, () =>
-          mainCanvasFns.redrawCanvas(
+          utils.canvas.redraw(
             canvas.getContext('2d')!,
-            services.stateManager.getCanvas(),
-            services
+            services.stateManager.getCanvas()
           )
         );
 

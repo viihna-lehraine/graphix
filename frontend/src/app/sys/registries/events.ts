@@ -22,11 +22,11 @@ export const eventListeners: ListenerRegistration[] = [
     window.addEventListener('keydown', (event: KeyboardEvent) => {
       if (
         event.key === 'Delete' &&
-        stateManager.getCanvas().selectedTextIndex !== null
+        stateManager.getCanvas().selectedLayerIndex !== null
       ) {
-        const idx = stateManager.getCanvas().selectedTextIndex!;
+        const idx = stateManager.getCanvas().selectedLayerIndex!;
         stateManager.removeTextElement(idx);
-        stateManager.getCanvas().selectedTextIndex = null;
+        stateManager.getCanvas().selectedLayerIndex = null;
         log.info(
           `Deleted text element at index: ${idx}`,
           'event:keydown:Delete'

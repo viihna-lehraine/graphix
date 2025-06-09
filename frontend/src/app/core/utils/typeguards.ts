@@ -13,11 +13,14 @@ import type {
   PositiveNumber,
   RegexData,
   SignedPercentile,
+  SupportedExt,
   Typeguards,
   UnitInterval
 } from '../../types/index.js';
+import { data } from '../../data/index.js';
 
-// ================================================== //
+const allowedExts = data.assets.ext;
+
 // ================================================== //
 
 export const typeguardFactory = (regex: RegexData): Typeguards => ({
@@ -73,6 +76,10 @@ export const typeguardFactory = (regex: RegexData): Typeguards => ({
 
   isSignedPercentile(value: number): value is SignedPercentile {
     return Number.isFinite(value) && value >= -100 && value <= 100;
+  },
+
+  isSupportedExt(ext: string): ext is SupportedExt {
+    return (allowedExts as unknown as readonly string[]).includes(ext);
   },
 
   isUnitInterval(value: number): value is UnitInterval {

@@ -1,8 +1,7 @@
 // File: frontend/src/app/data/dom/ids.ts
 
-import type { DOM_IDs } from '../../types/index.js';
+import type { DomIds } from '../../types/index.js';
 
-// ================================================== //
 // ================================================== //
 
 const clearBtn = 'clear-btn';
@@ -21,36 +20,29 @@ const textInput = 'text-input';
 
 // ================================================== //
 
-const btns: DOM_IDs['btns'] = {
+const btns: DomIds['btns'] = {
   clear: clearBtn,
   download: downloadBtn,
   upload: uploadBtn
 } as const;
 
-// ================================================== //
-
-const divs: DOM_IDs['divs'] = {
+const divs: DomIds['divs'] = {
   canvasContainer,
   canvasToolbar
 } as const;
 
-// ================================================== //
-
-const forms: DOM_IDs['forms'] = {
+const forms: DomIds['forms'] = {
   text: textInputForm
 } as const;
 
-// ================================================== //
-
-const inputs: DOM_IDs['inputs'] = {
+const inputs: DomIds['inputs'] = {
   imgUpload: imgUploadInput,
   text: textInput
 } as const;
 
 // ================================================== //
-// ================================================== //
 
-export const domIDs: DOM_IDs = {
+export const domIDs: DomIds = {
   btns,
   canvas,
   divs,

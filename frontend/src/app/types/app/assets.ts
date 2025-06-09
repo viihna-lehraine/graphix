@@ -1,8 +1,5 @@
 // File: frontend/src/app/types/assets.ts
 
-// ================================================== //
-// ================================================== //
-
 export interface BaseAsset {
   name: string;
   src: string /* path relative to assets/ */;
@@ -16,21 +13,15 @@ export interface BaseAsset {
   license?: string;
 }
 
-// ================================================== //
-
 export interface BackgroundAsset extends BaseAsset {
   tileable: boolean;
 }
-
-/* -------------------------------------------------- */
 
 export interface BorderAsset extends BaseAsset {
   animated: boolean;
   width: number;
   shape: 'circle' | 'square' | 'rounded' | 'other';
 }
-
-/* -------------------------------------------------- */
 
 export interface FontAsset extends BaseAsset {
   fontFamily: string;
@@ -39,15 +30,9 @@ export interface FontAsset extends BaseAsset {
   weight?: number | string;
 }
 
-/* -------------------------------------------------- */
-
-export interface GIFAsset extends BaseAsset {}
-
-/* -------------------------------------------------- */
+export interface GifAsset extends BaseAsset {}
 
 export interface ImageAsset extends BaseAsset {}
-
-/* -------------------------------------------------- */
 
 export interface OverlayAsset extends BaseAsset {
   blendMode:
@@ -65,23 +50,10 @@ export interface OverlayAsset extends BaseAsset {
     | 'exclusion';
 }
 
-/* -------------------------------------------------- */
-
 export interface StickerAsset extends BaseAsset {}
 
-// ================================================== //
-
-export interface AnimationData {
-  type: 'custom' | 'gif' | 'video' | undefined;
-  frames: {
-    count: number;
-    rate: number;
-  };
-  rotation?: {
-    speed: 360; // degrees per second
-    direction: 'clockwise' | 'counter-clockwise' | 'n/a';
-  };
-}
-
-// ================================================== //
-// ================================================== //
+export type SupportedAsset =
+  | ImageAsset
+  | GifAsset
+  | OverlayAsset
+  | StickerAsset;

@@ -1,10 +1,10 @@
-// File: frontend/rc/app/dom/ResizeManager.ts
+// File: frontend/src/app/core/services/dom/ResizeManager.ts
 
 import type {
   ResizeManagerContract,
   ResizePlugin,
   Services
-} from '../types/index.js';
+} from '../../../types/index.js';
 
 // =================================================== //
 // =================================================== //
@@ -20,13 +20,11 @@ export class ResizeManager implements ResizeManagerContract {
 
   // =================================================== //
 
-  private constructor(services: Services) {
+  private constructor(errors: Services['errors'], log: Services['log']) {
     try {
-      const { log } = services;
-
       log.info('Initializing ResizeManager...');
 
-      this.#errors = services.errors;
+      this.#errors = errors;
       this.#log = log;
 
       this.initialize();
@@ -41,10 +39,13 @@ export class ResizeManager implements ResizeManagerContract {
 
   // =================================================== //
 
-  static getInstance(services: Services): ResizeManager {
+  static getInstance(
+    errors: Services['errors'],
+    log: Services['log']
+  ): ResizeManager {
     try {
       if (!ResizeManager.#instance) {
-        ResizeManager.#instance = new ResizeManager(services);
+        ResizeManager.#instance = new ResizeManager(errors, log);
       }
 
       return ResizeManager.#instance;

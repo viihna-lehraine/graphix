@@ -2,16 +2,17 @@
 
 import type {
   CanvasUtils,
-  DOMUtils,
+  DomUtils,
+  Helpers,
   Services,
   Typeguards,
   Utilities
 } from '../../types/index.js';
 
 // ================================================== //
-// ================================================== //
 
 export async function utilitiesFactory(
+  helpers: Helpers,
   services: Services
 ): Promise<Required<Utilities>> {
   const { errors, log } = services;
@@ -27,8 +28,12 @@ export async function utilitiesFactory(
     const { domUtilityFactory } = await import('../utils/dom.js');
     const { typeguardFactory } = await import('../utils/typeguards.js');
 
-    const canvasUtils: CanvasUtils = canvasUtilityFactory(services);
-    const domUtils: DOMUtils = domUtilityFactory();
+    const canvasUtils: CanvasUtils = canvasUtilityFactory(
+      data,
+      helpers,
+      services
+    );
+    const domUtils: DomUtils = domUtilityFactory();
     const typeguards: Typeguards = typeguardFactory(regexData);
 
     utilities.canvas = canvasUtils;

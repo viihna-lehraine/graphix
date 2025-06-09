@@ -22,8 +22,9 @@
     "watch:test": "vitest --watch",
     "watch:ts": "tsc --watch"
   },
-  "packageManager": "pnpm@10.11.0",
+  "packageManager": "pnpm@10.12.1",
   "devDependencies": {
+    "@types/gif.js": "^0.2.5",
     "@typescript-eslint/eslint-plugin": "^8.32.1",
     "@typescript-eslint/parser": "^8.32.1",
     "autoprefixer": "^10.4.21",
@@ -36,6 +37,9 @@
     "vitest": "^3.1.4"
   },
   "dependencies": {
+    "browserify": "^17.0.1",
+    "gif.js": "^0.2.0",
+    "gifuct-js": "^2.1.2",
     "html2canvas": "^1.4.1",
     "source-map-support": "^0.5.21",
     "tslib": "^2.8.1"

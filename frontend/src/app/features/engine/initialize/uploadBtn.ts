@@ -1,24 +1,26 @@
-// File: frontend/src/app/features/canvas/ui/btns/upload.ts
+// File: frontend/src/app/features/engine/initialize/uploadBtn.ts
 
 import type {
   CanvasIOFunctions,
   Data,
-  MainCanvasFunctions,
-  Services
-} from '../../../../types/index.js';
+  Helpers,
+  Services,
+  Utilities
+} from '../../../types/index.js';
 
 // ================================================== //
-// ================================================== //
 
-export function initializeCanvasUploadButton(
+export async function initializeCanvasUploadButton(
   canvasIoFns: CanvasIOFunctions,
   data: Data,
-  mainCanvasFns: MainCanvasFunctions,
-  services: Services
-): void {
+  helpers: Helpers,
+  services: Services,
+  utils: Utilities
+): Promise<void> {
   const { errors } = services;
+  const { createGifAnimation } = await import('../animation/main.js');
 
-  return errors.handleSync(() => {
+  return errors.handleAsync(async () => {
     const uploadBtn = document.getElementById(
       data.dom.ids.btns.upload
     ) as HTMLButtonElement | null;
@@ -37,7 +39,14 @@ export function initializeCanvasUploadButton(
       const file = imgInput.files?.[0];
       if (!file) return;
 
-      canvasIoFns.upload.handle(file, data, mainCanvasFns, services);
+      canvasIoFns.upload.handle(
+        file,
+        data,
+        helpers,
+        services,
+        utils,
+        createGifAnimation
+      );
     });
   }, 'Failed to initialize upload UI.');
 }

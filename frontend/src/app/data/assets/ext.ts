@@ -1,23 +1,28 @@
 // File: frontend/src/app/data/assets/ext.ts
 
-import type { AllowedExtensions, ExtensionData } from '../../types/index.js';
+import type {
+  ExtensionData,
+  SupportedExt,
+  SupportedExts,
+  UnsupportedExt,
+  UnsupportedExts
+} from '../../types/index.js';
 
 // ================================================== //
-// ================================================== //
 
-const allowedExtensions: AllowedExtensions = [
+const supportedExts: SupportedExts = [
   'gif',
   'jpeg',
   'jpg',
-  'mp4',
   'png',
-  'svg',
   'webp'
-] as const;
+] as readonly SupportedExt[];
 
-// ================================================== //
+const unsupportedExts: UnsupportedExts = ['svg'] as readonly UnsupportedExt[];
+
 // ================================================== //
 
 export const extensionData: ExtensionData = {
-  allowed: allowedExtensions
+  supported: supportedExts,
+  unsupported: unsupportedExts
 } as const;

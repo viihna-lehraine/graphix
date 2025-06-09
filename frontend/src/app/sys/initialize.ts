@@ -2,14 +2,13 @@
 
 import type {
   AppDependencies,
-  CanvasFunctions,
   Data,
   Helpers,
   Services,
   Utilities
 } from '../types/index.js';
-import { ResizeManager } from '../dom/ResizeManager.js';
-import { textElementOverlayFns } from '../features/canvas/ui/overlays/textElement.js';
+import { ResizeManager } from '../core/services/dom/ResizeManager.js';
+import { textElementOverlayFns } from '../features/engine/overlays/textElement.js';
 
 // ================================================== //
 
@@ -51,13 +50,14 @@ async function initializeServices(
 // ================================================== //
 
 async function initializeUtilities(
+  helpers: Helpers,
   services: Services
 ): Promise<Required<Utilities>> {
   console.log(`Initializing Utilities object...`);
 
   return await services.errors.handleAsync(async () => {
     const { utilitiesFactory } = await import('../core/factories/utilities.js');
-    const utilities: Utilities = await utilitiesFactory(services);
+    const utilities: Utilities = await utilitiesFactory(helpers, services);
 
     return utilities;
   }, `Utilities initialization failed.`);
@@ -82,8 +82,8 @@ export async function initializeAppDependencies(): Promise<
   const services = await initializeServices(data, helpers);
   deps.services = services;
 
-  const utilities = await initializeUtilities(services);
-  deps.utilities = utilities;
+  const utils = await initializeUtilities(helpers, services);
+  deps.utils = utils;
 
   const log = services.log;
   log.info(`All dependencies initialized successfully.`);
@@ -115,8 +115,13 @@ export async function initializeResizeManager(
   const { errors } = services;
 
   return errors.handleAsync(async () => {
-    const { ResizeManager } = await import('../dom/ResizeManager.js');
-    const resizeManager = ResizeManager.getInstance(services);
+    const { ResizeManager } = await import(
+      '../core/services/dom/ResizeManager.js'
+    );
+    const resizeManager = ResizeManager.getInstance(
+      services.errors,
+      services.log
+    );
 
     return resizeManager;
   }, `ResizeManager initialization failed.`);
@@ -127,24 +132,25 @@ export async function initializeResizeManager(
 export async function initializeUI(
   data: Data,
   deps: Required<AppDependencies>
-): Promise<Required<CanvasFunctions>> {
-  const { services, utilities } = deps;
+): Promise<void> {
+  const { helpers, services, utils } = deps;
   const { errors } = services;
 
   return errors.handleAsync(async () => {
-    const { mainCanvasFns } = await import('../features/canvas/main.js');
-    const canvasRefs = mainCanvasFns.getCanvasRefs(data, services);
+    const canvasRefs = utils.canvas.getRefs();
 
-    const { canvasIoFns } = await import('../features/canvas/io/index.js');
-    const { canvasUiFns } = await import('../features/canvas/ui/index.js');
+    const { canvasIoFns } = await import('../features/engine/io/index.js');
+    const { initializeCanvasUI } = await import(
+      '../features/engine/initialize/main.js'
+    );
 
-    await canvasUiFns.initialize(
+    await initializeCanvasUI(
       canvasIoFns,
       data,
-      mainCanvasFns,
+      helpers,
       services,
       textElementOverlayFns,
-      utilities
+      utils
     );
 
     const { canvas } = canvasRefs;
@@ -153,7 +159,7 @@ export async function initializeUI(
     );
 
     if (canvas && container) {
-      utilities.canvas.autoResize(
+      utils.canvas.autoResize(
         {
           canvas,
           container,
@@ -165,18 +171,10 @@ export async function initializeUI(
 
     window.addEventListener('resize', () => {
       errors.handleSync(() => {
-        mainCanvasFns.resizeCanvasToParent(data, services);
-        mainCanvasFns.clearCanvas(canvasRefs.ctx, services);
-        mainCanvasFns.drawBoundary(canvasRefs.ctx, services);
+        utils.canvas.resizeCanvasToParent();
+        utils.canvas.clearCanvas(canvasRefs.ctx);
+        utils.canvas.drawBoundary(canvasRefs.ctx);
       }, 'Canvas resize/redraw failed');
     });
-
-    const canvasFns = {
-      main: mainCanvasFns,
-      io: canvasIoFns,
-      ui: canvasUiFns
-    } as const satisfies CanvasFunctions;
-
-    return canvasFns;
   }, `UI initialization failed.`);
 }

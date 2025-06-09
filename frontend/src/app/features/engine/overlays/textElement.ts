@@ -1,11 +1,11 @@
-// FileL frontend/src/app/features/canvas/ui/overlays/textElement.ts
+// FileL frontend/src/app/features/engine/overlays/textElement.ts
 
 import type {
   Data,
   Services,
   TextElement,
   TextElementOverlayFunctions
-} from '../../../../types/index.js';
+} from '../../../types/index.js';
 
 function removeExistingOverlay(className: string): void {
   document.querySelectorAll(`.${className}`).forEach(e => e.remove());

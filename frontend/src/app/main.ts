@@ -7,7 +7,9 @@ import('./sys/events/dom.js').then(({ onDOMContentLoaded }) => {
   onDOMContentLoaded(async () => {
     try {
       const { launchApp } = await import('./sys/launch.js');
-      const { canvasFns, deps } = await launchApp();
+      const { deps } = await launchApp();
+
+      const { utils } = deps;
 
       const canvas = document.getElementById(
         deps.data.dom.ids.canvas
@@ -20,7 +22,7 @@ import('./sys/events/dom.js').then(({ onDOMContentLoaded }) => {
       if (!ctx) throw new Error('2D context not available for canvas!');
 
       deps.services.stateManager.subscribeToCanvas(state =>
-        canvasFns.main.redrawCanvas(ctx, state, deps.services)
+        utils.canvas.redraw(ctx, state)
       );
     } catch (error) {
       console.error(
