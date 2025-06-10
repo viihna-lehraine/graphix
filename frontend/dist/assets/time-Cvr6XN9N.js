@@ -1,1 +1,0 @@
-import{_ as i}from"./index-DQLFiAzJ.js";const{data:n}=await i(async()=>{const{data:t}=await import("./index-CiKEqwpj.js");return{data:t}},[]),r=n.config.default.debounceWait,c=()=>({debounce(t,e){let o=null;return e||(e=r),function(...a){o&&clearTimeout(o),o=setTimeout(()=>t(...a),e)}}});export{c as timeHelpersFactory};

@@ -1,22 +1,16 @@
 // File: frontend/src/app/types/layers.ts
 
-import type { OverlayAsset, SupportedAsset } from './assets.js';
-import type { TextElement } from './core.js';
-import type { AnimationProps, GifFrame } from './props.js';
-
-// ================================================== //
-
-export interface AnimationGroup {
-  id: string;
-  layers: VisualLayer[];
-  isPlaying: boolean;
-  playbackRate: number;
-}
+import type {
+  AnimationProps,
+  OverlayAsset,
+  SupportedAsset,
+  TextElement
+} from '../index.js';
 
 export interface BaseVisualLayer {
   id: string;
   type: string;
-  assetRef: SupportedAsset;
+  assetRef: SupportedAsset | null;
   opacity: number;
   visible: boolean;
   zIndex: number;
@@ -27,6 +21,19 @@ export interface BaseVisualLayer {
     currentAngle: number;
   };
   scale?: { x: number; y: number };
+}
+
+export interface GifAnimation {
+  frames: GifFrame[];
+  isPlaying: () => boolean;
+  pause: () => void;
+  play: (ctx: CanvasRenderingContext2D, loop?: boolean) => void;
+  stop: () => void;
+}
+
+export interface GifFrame {
+  imageData: ImageData;
+  delay: number; // in ms
 }
 
 export interface GifVisualLayer extends BaseVisualLayer {

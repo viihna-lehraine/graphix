@@ -1,0 +1,1 @@
+const o=async()=>({clone(r){return structuredClone(r)},getFileSizeInKB(r){return Math.round(r.size/1024)},async getFileSHA256(r){const t=await r.arrayBuffer(),a=await crypto.subtle.digest("SHA-256",t);return Array.from(new Uint8Array(a)).map(e=>e.toString(16).padStart(2,"0")).join("")}});export{o as dataHelperFactory};

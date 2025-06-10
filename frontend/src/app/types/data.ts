@@ -1,26 +1,38 @@
 // File: frontend/src/app/types/data.ts
 
-import type { Hex, Sets } from './index.js';
-
-// ================================================== //
-
-export type BaseAssetTags = string[];
+import type { AssetClass } from './index.js';
 
 export interface AssetData {
-  ext: ExtensionData;
-  tags: AssetTagsData;
+  exts: AssetExts;
+  tags: AssetTags;
 }
 
-export interface AssetTagsData {
-  base: BaseAssetTags;
+export interface AssetExts {
+  supported: SupportedExts;
+  unsupported: UnsupportedExts;
 }
 
-export interface ConfigurationData {
-  default: DefaultData;
-  regex: RegexData;
+export type AssetManifest = {
+  name: string;
+  class: AssetClass;
+  ext: string;
+  type: string;
+  src: string;
+}[];
+
+export type AssetTags = string[];
+
+export interface BaseData {
+  version: string;
 }
 
-export interface DefaultData {
+export interface ConfigData {
+  defaults: Defaults;
+  paths: Paths;
+  regex: Regex;
+}
+
+export interface Defaults {
   animation: {
     frameCount: number;
   };
@@ -31,13 +43,26 @@ export interface DefaultData {
   font: string;
   textAlignment: CanvasTextAlign;
   textBaseline: CanvasTextBaseline;
-  textColor: Hex;
+  textColor: string;
   textElement: {
     font: string;
-    color: Hex;
+    color: string;
     align: CanvasTextAlign;
     baseline: CanvasTextBaseline;
   };
+}
+
+export interface DomDivIds {
+  assetBrowserDiv: string;
+  canvasContainerDiv: string;
+  canvasToolbarDiv: string;
+}
+
+export interface DomBtnIds {
+  clearBtn: string;
+  downloadBtn: string;
+  toggleAssetBrowserBtn: string;
+  uploadBtn: string;
 }
 
 export type DomClasses = Record<string, string>;
@@ -47,64 +72,63 @@ export interface DomData {
   ids: DomIds;
 }
 
-export interface DomIds {
-  btns: {
-    clear: string;
-    download: string;
-    upload: string;
+export interface DomFormIds {
+  textForm: string;
+}
+
+export type DomIds = DomBtnIds &
+  DomDivIds &
+  DomFormIds &
+  DomInputIds & {
+    canvas: string;
   };
-  divs: {
-    canvasContainer: string;
-    canvasToolbar: string;
-  };
-  forms: {
-    text: string;
-  };
-  inputs: {
-    imgUpload: string;
-    text: string;
-  };
-  canvas: string;
+
+export interface DomInputIds {
+  imgUploadInput: string;
+  textInput: string;
 }
 
 export interface ErrorMessages {
   unknownFatalError: string;
 }
 
-export interface ExtensionData {
-  supported: SupportedExts;
-  unsupported: UnsupportedExts;
+export interface Flags {
+  devMode: boolean;
 }
 
-export interface MathData {
-  sets: Sets;
+export interface Manifests {
+  asset: AssetManifest;
 }
 
 export interface MessageData {
   errors: ErrorMessages;
 }
 
-export interface RegexData {
+export interface Paths {
+  gifWorkerScript: '/assets/scripts/gif.worker.js';
+}
+
+export interface Regex {
   floatString: RegExp;
   hex: RegExp;
   integerString: RegExp;
   numberString: RegExp;
 }
 
-export type SupportedExt = 'jpeg' | 'jpg' | 'png';
+export type SupportedExt = 'gif' | 'jpeg' | 'jpg' | 'png' | 'webp';
 
 export type SupportedExts = Readonly<SupportedExt[]>;
 
-export type UnsupportedExt = 'gif' | 'svg' | 'webp';
+export type UnsupportedExt = 'svg';
 
 export type UnsupportedExts = Readonly<UnsupportedExt[]>;
 
 // ================================================== //
 
-export interface Data {
+export interface Data extends BaseData {
   assets: AssetData;
-  config: ConfigurationData;
+  config: ConfigData;
   dom: DomData;
-  math: MathData;
+  flags: Flags;
   msgs: MessageData;
 }

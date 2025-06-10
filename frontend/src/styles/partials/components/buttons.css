@@ -2,7 +2,7 @@
 
 @import url('../variables.css');
 
-.canvas-io-btn {
+.canvas-btn {
   width: 90%;
   max-width: 200px;
   min-width: 120px;
@@ -26,19 +26,19 @@
   text-shadow: 2px 4px 2px #00000020;
 }
 
-.canvas-io-btn:hover {
+.canvas-btn:hover {
   background-color: var(--ultraviolet-slap);
 }
 
-.canvas-io-btn:focus,
-.canvas-io-btn:focus-visible {
+.canvas-btn:focus,
+.canvas-btn:focus-visible {
   outline: var(--btn-focus-outline-1);
   outline-offset: 2px;
   box-shadow: var(--bubblegum-pop-80);
 }
 
-.canvas-io-btn:hover,
-.canvas-io-btn:focus {
+.canvas-btn:hover,
+.canvas-btn:focus {
   background: linear-gradient(
     90deg,
     var(--electric-rose) 0%,

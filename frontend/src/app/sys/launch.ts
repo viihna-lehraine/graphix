@@ -1,12 +1,11 @@
 // File: frontend/src/app/sys/launch.ts
 
-import type { AppDependencies } from '../types/index.js';
-
-// ================================================== //
-// ================================================== //
+import type { Core } from '../types/index.js';
+import { RenderingEngine } from '../features/engine/RenderingEngine.js';
 
 export async function launchApp(): Promise<{
-  deps: AppDependencies;
+  core: Core;
+  renderingEngine: RenderingEngine;
 }> {
   try {
     console.log(`Launching application...`);
@@ -19,21 +18,22 @@ export async function launchApp(): Promise<{
       `Successfully loaded static Data object: ${JSON.stringify(data, null, 2)}`
     );
 
-    // 2. Initialize App Dependencies (helpers, services, utilities)
-    console.log(`Initializing App Dependencies...`);
-    const { initializeAppDependencies } = await import('./initialize.js');
-    const deps = await initializeAppDependencies();
-    const { helpers, services, utils } = deps;
-    const { log } = services;
+    // 2. Initialize App Core
+    console.log(`Initializing App Core...`);
+    const { initializeCore } = await import('./initialize.js');
+    const core = await initializeCore();
+    const {
+      services: { log }
+    } = core;
     log.info(
-      `Successfully created the Helpers, Services, and Utilities dependency objects.`,
-      JSON.stringify({ helpers, services, utils }, null, 2)
+      `Successfully initialized the Application Core.`,
+      JSON.stringify(core, null, 2)
     );
 
     // 3. Global One-Off Setup (error handlers, etc.)
     log.info(`Executing bootstrap processes...`);
     const { bootstrap } = await import('./bootstrap.js');
-    await bootstrap(deps.services);
+    await bootstrap(core);
     log.info(`Bootstrap processes completed successfully.`);
 
     // 4. Register Event Listeners
@@ -41,28 +41,42 @@ export async function launchApp(): Promise<{
     const { eventListeners, registerEventListeners } = await import(
       './registries/events.js'
     );
-    registerEventListeners(eventListeners, data, deps.services);
+    registerEventListeners(eventListeners, core);
     log.info(`Event listeners registered successfully.`);
 
     // 5. Register Plugins
     log.info(`Registering plugins...`);
     const { plugins } = await import('./registries/plugins.js');
-    for (const plugin of plugins) await plugin.register(deps);
+    for (const plugin of plugins) await plugin.register(core);
     log.info(`Plugins registered successfully.`);
 
-    // 6. Initialize UI overlays/widgets
-    // log.info(`Initializing UI overlays and widgets...`);
-    // const { uiInitializers } = await import('./registries/ui.js');
-    // log.info(`UI overlays and widgets initialized successfully.`);
-
-    // 7. Initialize User Interface
+    // 6. Initialize User Interface
     log.info(`Initializing User Interface...`);
     const { initializeUI } = await import('./initialize.js');
-    await initializeUI(data, deps);
+    await initializeUI(core);
     log.info(`User Interface initialized successfully.`);
 
+    // 7. Initialize Rendering Engine
+    log.info(`Initializing Rendering Engine...`);
+    const { initializeRenderingEngine } = await import('./initialize.js');
+    const ctx = document.querySelector('canvas')?.getContext('2d');
+    if (!ctx) {
+      throw new Error(`Failed to get 2D context from canvas element.`);
+    }
+    const renderingEngine = await initializeRenderingEngine(ctx, core);
+
+    // 8. Initialise Asset Browser Rendering SubEngine
+    log.info(`Initializing Asset Browser Rendering SubEngine...`);
+    const { renderAssetBrowser } = await import(
+      '../features/engine/asset_browser.js'
+    );
+    await renderAssetBrowser(core).then(() =>
+      log.info(`Asset Browser Rendering SubEngine initialized successfully.`)
+    );
+
     return {
-      deps
+      core,
+      renderingEngine
     };
   } catch (error) {
     console.error(

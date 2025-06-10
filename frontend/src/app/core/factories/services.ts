@@ -1,11 +1,15 @@
 // File: frontend/src/app/core/factories/services.ts
 
 import type { Data, Helpers, Services } from '../../types/index.js';
-import { AnimationGroupManager } from '../services/dom/AnimationGroupManager.js';
-import { CanvasCacheService } from '../services/CanvasCacheService.js';
-import { ErrorHandler, Logger } from '../services/index.js';
-import { ResizeManager } from '../services/dom/ResizeManager.js';
-import { StateManager } from '../services/state/StateManager.js';
+import {
+  AnimationGroupManager,
+  CacheManager,
+  ErrorHandler,
+  Logger,
+  ResizeManager,
+  StateManager,
+  StorageManager
+} from '../services/index.js';
 
 // ================================================== //
 
@@ -20,15 +24,13 @@ export async function serviceFactory(
 
   services.log = Logger.getInstance(helpers);
   services.errors = ErrorHandler.getInstance(services.log);
+  services.storageManager = await StorageManager.getInstance();
   services.stateManager = StateManager.getInstance(
     data,
     services.errors,
     services.log
   );
-  services.canvasCache = CanvasCacheService.getInstance(
-    services.errors,
-    services.log
-  );
+  services.cache = CacheManager.getInstance(services.errors, services.log);
   services.resizeManager = ResizeManager.getInstance(
     services.errors,
     services.log

@@ -2,17 +2,14 @@
 
 import type {
   CanvasUtils,
+  DataUtils,
   DomUtils,
-  Helpers,
+  MathUtils,
   Services,
-  Typeguards,
   Utilities
 } from '../../types/index.js';
 
-// ================================================== //
-
 export async function utilitiesFactory(
-  helpers: Helpers,
   services: Services
 ): Promise<Required<Utilities>> {
   const { errors, log } = services;
@@ -20,28 +17,24 @@ export async function utilitiesFactory(
   return errors.handleAsync(async () => {
     log.info(`Creating 'Utilities' object.`);
 
-    const { data } = await import('../../data/index.js');
-    const regexData = data.config.regex;
-
-    const utilities = {} as Utilities;
+    const utils = {} as Utilities;
     const { canvasUtilityFactory } = await import('../utils/canvas.js');
+    const { dataUtilityFactory } = await import('../utils/data.js');
     const { domUtilityFactory } = await import('../utils/dom.js');
-    const { typeguardFactory } = await import('../utils/typeguards.js');
+    const { mathUtilityFactory } = await import('../utils/math.js');
 
-    const canvasUtils: CanvasUtils = canvasUtilityFactory(
-      data,
-      helpers,
-      services
-    );
+    const canvasUtils: CanvasUtils = canvasUtilityFactory();
+    const dataUtils: DataUtils = dataUtilityFactory();
     const domUtils: DomUtils = domUtilityFactory();
-    const typeguards: Typeguards = typeguardFactory(regexData);
+    const mathUtils: MathUtils = mathUtilityFactory();
 
-    utilities.canvas = canvasUtils;
-    utilities.dom = domUtils;
-    utilities.typeguards = typeguards;
+    utils.canvas = canvasUtils;
+    utils.data = dataUtils;
+    utils.dom = domUtils;
+    utils.math = mathUtils;
 
     log.info(`'Utilities' object has been successfully created.`);
 
-    return utilities;
+    return utils;
   }, `Utilities initialization failed.`);
 }

@@ -16,6 +16,7 @@ export interface ClientState {
 }
 
 export interface State {
+  version: string;
   canvas: CanvasState;
   client: ClientState;
 }

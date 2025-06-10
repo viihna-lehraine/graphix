@@ -1,46 +1,29 @@
 // File: frontend/src/app/types/functions.ts
 
-import type {
-  CanvasRefs,
-  CanvasResizeOptions,
-  CanvasState,
-  Data,
-  Float,
-  GifAnimation,
-  Hex,
-  Integer,
-  NonNegativeInteger,
-  NonNegativeNumber,
-  NonZeroNumber,
-  NonZeroInteger,
-  Percentile,
-  PositiveInteger,
-  PositiveNumber,
-  SignedPercentile,
-  SupportedExt,
-  TextElement,
-  UnitInterval,
-  VisualLayer
-} from './index.js';
-import { AnimationGroupManager } from '../core/services/dom/AnimationGroupManager.js';
-import { CanvasCacheService } from '../core/services/CanvasCacheService.js';
-import { ErrorHandler, Logger } from '../core/services/index.js';
-import { ResizeManager } from '../core/services/dom/ResizeManager.js';
-import { StateManager } from '../core/services/state/StateManager.js';
+import type { Data, GifAnimation, TextElement, VisualLayer } from './index.js';
+import {
+  AnimationGroupManager,
+  CacheManager,
+  ErrorHandler,
+  Logger,
+  ResizeManager,
+  StateManager,
+  StorageManager
+} from '../core/services/index.js';
 
 // ================================================== //
 // ========= CORE FUNCTION OBJECTS ================== //
 // ================================================== //
 
 export interface Core {
-  helpers: Helpers;
-  services: Services;
-  utilities: Utilities;
+  data: Required<Data>;
+  helpers: Required<Helpers>;
+  services: Required<Services>;
+  utils: Required<Utilities>;
 }
 
 export interface Helpers {
   app: AppHelpers;
-  brand: BrandHelpers;
   canvas: CanvasHelpers;
   data: DataHelpers;
   math: MathHelpers;
@@ -49,18 +32,19 @@ export interface Helpers {
 
 export type Services = {
   animationGroupManager: AnimationGroupManager;
-  canvasIO: CanvasIOFunctions;
+  cache: CacheManager;
   errors: ErrorHandler;
   log: Logger;
-  canvasCache: CanvasCacheService;
   resizeManager: ResizeManager;
   stateManager: StateManager;
+  storageManager: StorageManager;
 };
 
 export interface Utilities {
   canvas: CanvasUtils;
+  data: DataUtils;
   dom: DomUtils;
-  typeguards: Typeguards;
+  math: MathUtils;
 }
 
 // ================================================== //
@@ -69,25 +53,6 @@ export interface Utilities {
 
 export interface AppHelpers {
   noop: () => void;
-}
-
-export interface BrandHelpers {
-  asBrandedFromString<T>(
-    str: string,
-    check: (n: number) => boolean,
-    brand: (n: number) => T
-  ): T;
-  asFloat: (x: number) => Float;
-  asInteger: (x: number) => Integer;
-  asNonNegativeInteger: (x: number) => NonNegativeInteger;
-  asNonNegativeNumber: (x: number) => NonNegativeNumber;
-  asNonZeroInteger: (x: number) => NonZeroInteger;
-  asNonZeroNumber: (x: number) => NonZeroNumber;
-  asPercentile: (x: number) => Percentile;
-  asPositiveInteger: (x: number) => PositiveInteger;
-  asPositiveNumber: (x: number) => PositiveNumber;
-  asSignedPercentile: (x: number) => SignedPercentile;
-  asUnitInterval: (x: number) => UnitInterval;
 }
 
 export interface CanvasHelpers {
@@ -114,6 +79,8 @@ export interface CanvasHelpers {
 
 export interface DataHelpers {
   clone: <T>(data: T) => T;
+  getFileSizeInKB: (file: File | Blob) => number;
+  getFileSHA256: (file: File | Blob) => Promise<string>;
 }
 export interface MathHelpers {
   weightedRandom: (min: number, max: number, weight: number) => number;
@@ -126,91 +93,67 @@ export interface TimeHelpers {
   ) => (...args: Parameters<T>) => void;
 }
 
-/* -------------------------------------------------- */
-
 export interface CanvasUtils {
-  autoResize: (options: CanvasResizeOptions, services: Services) => () => void;
-  clearCanvas: (ctx: CanvasRenderingContext2D) => void;
-  drawBoundary: (ctx: CanvasRenderingContext2D) => void;
-  drawTextAndSelection: (
+  drawVisualLayersToContext(
     ctx: CanvasRenderingContext2D,
     layers: VisualLayer[],
-    selectedLayerIndex: number | null
-  ) => void;
-  drawVisualLayers(ctx: CanvasRenderingContext2D, layers: VisualLayer[]): void;
-  getCanvasElement(): HTMLCanvasElement;
-  getRefs(): CanvasRefs;
-  redraw(ctx: CanvasRenderingContext2D, state: CanvasState): void;
-  resizeCanvasToParent(): void;
+    helpers: Helpers,
+    log: Services['log']
+  ): void;
+}
+
+export interface DataUtils {
+  detectFileType: (file: File) => Promise<string | undefined>;
 }
 
 export interface DomUtils {
   getCssVar: (name: string) => string;
 }
 
-export interface Typeguards {
-  isFloat: (value: number) => value is Float;
-  isFloatString: (string: string) => boolean;
-  isHex: (value: string) => value is Hex;
-  isInteger: (value: number) => value is Integer;
-  isIntegerString: (string: string) => boolean;
-  isNonNegativeInteger: (value: number) => value is NonNegativeInteger;
-  isNonNegativeNumber: (value: number) => value is NonNegativeNumber;
-  isNonZeroInteger: (value: number) => value is NonZeroInteger;
-  isNonZeroNumber: (value: number) => value is NonZeroNumber;
-  isPercentile: (value: number) => value is Percentile;
-  isPositiveInteger: (value: number) => value is PositiveInteger;
-  isPositiveNumber: (value: number) => value is PositiveNumber;
-  isSignedPercentile: (value: number) => value is SignedPercentile;
-  isSupportedExt: (ext: string) => ext is SupportedExt;
-  isUnitInterval: (value: number) => value is UnitInterval;
-  parseNumberString(str: string): Float | Integer | undefined;
+export interface MathUtils {
+  modulo: (x: number, n: number) => number;
+  roundToStep: (x: number, step: number) => number;
+  toDegrees: (rad: number) => number;
+  toRadians: (deg: number) => number;
 }
 
 // ================================================== //
 
-export interface CanvasIOFunctions {
-  download: {
-    exportGif: (
-      layers: VisualLayer[],
-      width: number,
-      height: number,
-      frameCount: number,
-      fileName: string,
-      utils: Utilities
-    ) => Promise<void>;
-    exportStaticFile: (
-      layers: VisualLayer[],
-      width: number,
-      height: number,
-      fileName: string,
-      utils: Utilities
-    ) => Promise<void>;
-    handle: (
-      fileName: string | null,
-      targetRef: React.RefObject<HTMLDivElement | null>,
-      services: Services
-    ) => Promise<void>;
-  };
-  upload: {
-    handle: (
-      file: File,
-      data: Data,
-      helpers: Helpers,
-      services: Services,
-      utils: Utilities,
-      createGifAnimation: (arrayBuffer: ArrayBuffer) => GifAnimation
-    ) => Promise<void>;
-  };
+export interface IOFunctions {
+  exportGif: (
+    layers: VisualLayer[],
+    width: number,
+    height: number,
+    frameCount: number,
+    core: Core,
+    fileName?: string
+  ) => Promise<void>;
+  exportStaticFile: (
+    layers: VisualLayer[],
+    width: number,
+    height: number,
+    core: Core,
+    fileName?: string
+  ) => Promise<void>;
+  handleDownload(
+    targetRef: React.RefObject<HTMLDivElement | null>,
+    core: Core,
+    fileName?: string
+  ): Promise<void>;
+  handleUpload: (
+    file: File,
+    core: Core,
+    createGifAnimation: (arrayBuffer: ArrayBuffer) => GifAnimation
+  ) => Promise<void>;
 }
 
-export interface TextElementOverlayFunctions {
-  show: (
+export interface OverlayFunctions {
+  removeExistingOverlay(className: string): void;
+  showTxtElemOverlay: (
     canvas: HTMLCanvasElement,
     elem: TextElement,
     index: number,
-    data: Data,
-    services: Services,
+    core: Core,
     redraw: () => void
   ) => void;
 }

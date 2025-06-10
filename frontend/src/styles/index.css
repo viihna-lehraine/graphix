@@ -1,6 +1,5 @@
 /* File: frontend/src/styles/index.css */
 
-@import url('./partials/fonts.css');
 @import url('./partials/variables.css');
 @import url('./partials/keyframes.css');
 @import url('./partials/media.css');
@@ -52,6 +51,36 @@ footer {
 }
 
 /* ============================================ */
+
+#asset-browser {
+  position: absolute;
+  display: flex;
+  right: 2rem;
+  top: 6rem;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 8px 32px var(--grape-soda-glow-80);
+  flex-wrap: wrap;
+  gap: 12px;
+  min-width: 350px;
+  max-width: 90vw;
+  max-height: 65vh;
+  overflow-y: auto;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(48px) scale(0.98);
+  transition:
+    opacity 0.32s cubic-bezier(0.25, 0.8, 0.25, 1),
+    transform 0.32 cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+#asset-browser.open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
 
 #canvas-container {
   position: relative;
@@ -131,6 +160,25 @@ footer {
 
 /* ============================================ */
 
+.asset-browser img,
+.asset-browser-thumb {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+  margin: 8px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px var(--bubblegum-pop-80);
+  background: var(--vanilla-cream);
+  transition:
+    box-shadow 0.15s,
+    transform 0.15s;
+}
+
+.assetBrowserThumb:hover {
+  box-shadow: 0 4px 18px var(--grape-soda-glow-80);
+  transform: scale(1.1) rotate(-2deg);
+}
+
 .canvas-field {
   display: flex;
   grid-area: center;
@@ -165,7 +213,7 @@ footer {
 
 .footer-div {
   width: 100%;
-  min-height: 54px;
+  max-height: 25px;
   padding: 1rem 0 1.1rem 0;
   background: var(--container-bg);
   border-radius: 1.1rem 1.1rem 0 0;

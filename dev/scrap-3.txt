@@ -1,0 +1,1194 @@
+      ctx.strokeStyle = '#ff80c5ff';
+      ctx.setLineDash([12, 10]);
+      ctx.strokeRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      ctx.restore();
+    }, 'Unhandled canvas boundary drawing error.');
+  }
+
+  drawDevOverlay(): void {
+    return this.#errors.handleSync(() => {
+      // draw crosshairs (or whatever dev markers I want)
+      this.#ctx!.save();
+      this.#ctx!.strokeStyle = 'rgba(255,0,0,0.25)';
+      this.#ctx!.lineWidth = 1;
+      this.#ctx!.setLineDash([4, 4]);
+      this.#ctx!.beginPath();
+      this.#ctx!.moveTo(0, this.#ctx!.canvas.height / 2);
+      this.#ctx!.lineTo(this.#ctx!.canvas.width, this.#ctx!.canvas.height / 2);
+      this.#ctx!.moveTo(this.#ctx!.canvas.width / 2, 0);
+      this.#ctx!.lineTo(this.#ctx!.canvas.width / 2, this.#ctx!.canvas.height);
+      this.#ctx!.stroke();
+      this.#ctx!.restore();
+    }, 'RENDERING_ENGINE: Failed to draw dev overlay.');
+  }
+
+  redraw(ctx: CanvasRenderingContext2D, state: CanvasState): void {
+    return this.#errors.handleSync(() => {
+      this.clearCanvas(ctx);
+      this.drawBoundary(ctx);
+      this.#utils.canvas.drawVisualLayersToContext(
+        ctx,
+        state.layers,
+        this.#helpers
+      );
+      this.#drawTextAndSelection(ctx, state.layers, state.selectedLayerIndex);
+    }, 'Unhandled canvas redraw error.');
+  }
+
+  removeRedrawPlugin(plugin: RedrawPlugin): void {
+    return this.#errors.handleSync(() => {
+      this.#redrawPlugins = this.#redrawPlugins.filter(fn => fn !== plugin);
+    }, 'RENDERING_ENGINE: Failed to remove redraw plugin.');
+  }
+
+  renderTo(ctx: CanvasRenderingContext2D, state?: CanvasState): void {
+    return this.#errors.handleSync(() => {
+      const prev = this.#devMode;
+      const origCtx = this.#ctx;
+      this.#ctx = ctx;
+      this.render(state);
+      this.#ctx = origCtx;
+      this.#devMode = prev;
+    }, 'RENDERING_ENGINE: Failed to render to provided context.');
+  }
+
+  resizeCanvasToParent(): void {
+    return this.#errors.handleSync(() => {
+      const canvas = document.getElementById(
+        this.#data.dom.ids.canvas
+      ) as HTMLCanvasElement | null;
+      if (!canvas) throw new Error('Canvas element not found!');
+      const parent = canvas.parentElement;
+      if (!parent) throw new Error('Canvas has no parent element!');
+
+      const rect = parent.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+
+      // set actual bitmap size
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(rect.height * dpr);
+
+      // set display size
+      canvas.style.width = `${rect.width}px`;
+      canvas.style.height = `${rect.height}px`;
+    }, 'Unhandled canvas resize error.');
+  }
+
+  // ==================================================== //
+  // PRIVATE METHODS //
+
+  #drawTextAndSelection(
+    ctx: CanvasRenderingContext2D,
+    layers: VisualLayer[],
+    selectedLayerIndex: number | null
+  ): void {
+    return this.#errors.handleSync(() => {
+      const textLayer = layers.find(
+        (l): l is TextVisualLayer => l.type === 'text'
+      );
+
+      if (!textLayer) return;
+
+      for (const elem of textLayer.textElements!) {
+        ctx.save();
+        const fontSize = elem.fontSize ?? 32;
+        const fontWeight = elem.fontWeight ?? 'bold';
+        const fontFamily = elem.fontFamily ?? 'sans-serif';
+        ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+        ctx.fillStyle = elem.color;
+        ctx.textAlign = elem.align;
+        ctx.textBaseline = elem.baseline;
+        ctx.fillText(elem.text, elem.x, elem.y);
+        ctx.restore();
+      }
+
+      if (selectedLayerIndex !== null) {
+        const selectedLayer = layers[selectedLayerIndex];
+        if (selectedLayer?.type === 'text') {
+          ctx.save();
+          ctx.strokeStyle = '#00F6';
+          ctx.lineWidth = 2;
+          ctx.setLineDash([4, 2]);
+          ctx.strokeRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+          ctx.restore();
+        }
+      }
+    }, 'Unhandled canvas text and selection drawing error.');
+  }
+
+  // ==================================================== //
+
+  _(): void {
+    this.#data = this.#data;
+    this.#errors = this.#errors;
+    this.#helpers = this.#helpers;
+    this.#log = this.#log;
+    this.#utils = this.#utils;
+  }
+}
+// File: frontend/src/app/features/engine/start.ts
+
+import type {
+  Core,
+  IOFunctions,
+  OverlayFunctions,
+  TextVisualLayer
+} from '../../types/index.js';
+import { RenderingEngine } from '../../features/engine/RenderingEngine.js';
+
+let selectedTextIndex: number | null = null;
+let dragging = false;
+let dragOffset = { x: 0, y: 0 };
+let isResizing = false;
+let resizeTargetIndex: number | null = null;
+let initialMouseY = 0;
+let initialFontSize = 32;
+
+function initAssetBrowserToggleBtn(core: Core): void {
+  const {
+    data: {
+      dom: { ids }
+    }
+  } = core;
+  const toggleBtn = document.getElementById(
+    ids.toggleAssetBrowserBtn
+  ) as HTMLButtonElement | null;
+  const browser = document.getElementById(
+    ids.assetBrowserDiv
+  ) as HTMLDivElement | null;
+
+  if (!toggleBtn) throw new Error(`Asset Browser Toggle Button not found!`);
+  if (!browser) throw new Error(`Asset Browser Div not found!`);
+
+  toggleBtn.addEventListener('click', () => {
+    browser.classList.toggle('open');
+  });
+
+  document.addEventListener('click', (e: MouseEvent) => {
+    if (!browser.contains(e.target as Node) && e.target !== toggleBtn) {
+      browser.classList.remove('open');
+    }
+  });
+}
+
+function initClearBtn(core: Core): void {
+  const {
+    data: {
+      dom: { ids }
+    },
+    services: { cache, errors, log, stateManager }
+  } = core;
+
+  return errors.handleSync(() => {
+    const clearBtnId = ids.clearBtn;
+    const btn = document.getElementById(clearBtnId) as HTMLButtonElement | null;
+
+    if (!btn) throw new Error(`Canvas Clear Button not found!`);
+
+    btn.addEventListener('click', () => {
+      // 1. remove all text elements
+      stateManager.clearCanvasAll();
+
+      // 2. remove background image from state
+      stateManager.setCanvasImage(undefined);
+      stateManager.setCanvasAspectRatio(undefined);
+
+      // 3. clear animations
+      stateManager.clearCanvasAnimation();
+
+      // 4. clear cached background image
+      cache.cachedBgImg = null;
+      const canvas = document.getElementById(
+        ids.canvas
+      ) as HTMLCanvasElement | null;
+      if (!canvas) {
+        throw new Error(`Canvas element not found in DOM!`);
+      }
+      stateManager.clearCanvasAll();
+
+      log.info(
+        `Canvas cleared and reset via StateManager.`,
+        'initializeCanvasClearButton'
+      );
+    });
+
+    log.debug(`Clear Button listener successfully attached.`);
+  }, 'Unhandled Canvas Clear Button initialization error.');
+}
+
+// --------------------------------------------------- //
+
+function initDownloadBtn(core: Core, io: IOFunctions): void {
+  const {
+    data: {
+      dom: { ids },
+      config: { defaults }
+    },
+    helpers,
+    services: { errors, log, stateManager }
+  } = core;
+
+  return errors.handleSync(() => {
+    const btnId = ids.downloadBtn;
+    const btn = document.getElementById(btnId) as HTMLButtonElement | null;
+
+    if (!btn) throw new Error(`Download button not found!`);
+
+    btn.addEventListener('click', () => {
+      const canvas = document.getElementById(
+        ids.canvas
+      ) as HTMLCanvasElement | null;
+      if (!canvas) {
+        throw new Error(`Canvas element not found in DOM!`);
+      }
+      const ctx = helpers.canvas.get2DContext(canvas);
+
+      if (!ctx) {
+        throw new Error(`Canvas 2D context not available.`);
+        return;
+      }
+
+      const state = stateManager.getCanvas();
+      const hasAnimatedLayer = state.layers.some(layer => layer.type === 'gif');
+
+      const width = canvas.width;
+      const height = canvas.height;
+      const frameCount = defaults.animation.frameCount;
+      const fileName = defaults.fileName || 'default.png';
+
+      if (hasAnimatedLayer) {
+        log.info(`AnimationLayer(s) detected - running GIF export pipeline...`);
+        io.exportGif(state.layers, width, height, frameCount, core, fileName);
+      } else {
+        log.info(`Running static image export pipeline...`);
+        io.exportStaticFile(state.layers, width, height, core, fileName);
+      }
+    });
+
+    log.debug(`Download Button listener successfully attached.`);
+  }, 'Unhandled Download Button initialization error.');
+}
+
+// --------------------------------------------------- //
+
+function initTextInputForm(core: Core): void {
+  const {
+    data: {
+      dom: { ids }
+    },
+    services: { errors, stateManager }
+  } = core;
+
+  return errors.handleSync(() => {
+    const textForm = document.getElementById(
+      ids.textForm
+    ) as HTMLFormElement | null;
+    const textInput = document.getElementById(
+      ids.textInput
+    ) as HTMLInputElement | null;
+
+    if (!textForm) {
+      throw new Error(`Text form not found in DOM.`);
+    }
+    if (!textInput) {
+      throw new Error(`Text input not found in DOM.`);
+    }
+
+    // grab the canvas/context
+    const canvas = document.getElementById(
+      ids.canvas
+    ) as HTMLCanvasElement | null;
+    if (!canvas) {
+      throw new Error(`Canvas element not found in DOM!`);
+    }
+
+    textForm.addEventListener('submit', (e: Event) => {
+      e.preventDefault();
+
+      const text = textInput.value.trim();
+      if (!text) return;
+
+      stateManager.addTextElement({
+        text,
+        x: canvas.width / 2,
+        y: canvas.height / 2,
+        font: 'bold 32px sans-serif',
+        fontSize: 32,
+        color: '#000000',
+        align: 'center',
+        baseline: 'middle'
+      });
+
+      textInput.value = '';
+    });
+  }, 'Unhandled Text Input Form initialization error.');
+}
+
+// --------------------------------------------------- //
+
+async function initUploadBtn(core: Core, io: IOFunctions): Promise<void> {
+  const {
+    data: {
+      dom: { ids }
+    },
+    services
+  } = core;
+  const { errors } = services;
+  const { createGifAnimation } = await import('./animation.js');
+
+  return errors.handleAsync(async () => {
+    const uploadBtn = document.getElementById(
+      ids.uploadBtn
+    ) as HTMLButtonElement | null;
+    const imgInput = document.getElementById(
+      ids.imgUploadInput
+    ) as HTMLInputElement | null;
+
+    if (!uploadBtn) throw new Error('Upload button not found.');
+    if (!imgInput) throw new Error('Image upload input not found.');
+
+    // button click opens file dialog
+    uploadBtn.addEventListener('click', () => imgInput.click());
+
+    // file select triggers upload logic
+    imgInput.addEventListener('change', () => {
+      const file = imgInput.files?.[0];
+      if (!file) return;
+
+      io.handleUpload(file, core, createGifAnimation);
+    });
+  }, 'Failed to initialize upload UI.');
+}
+
+// --------------------------------------------------- //
+
+function setupTextDragHandlers(
+  canvas: HTMLCanvasElement,
+  overlay: OverlayFunctions,
+  core: Core,
+  renderingEngine: RenderingEngine
+): void {
+  const { helpers, services } = core;
+  const { errors, stateManager } = services;
+
+  return errors.handleSync(() => {
+    canvas.addEventListener('mousedown', (e: MouseEvent) => {
+      dragging = false;
+      isResizing = false;
+      selectedTextIndex = null;
+      resizeTargetIndex = null;
+
+      const state = stateManager.getState();
+      const mouse = helpers.canvas.getMousePosition(canvas, e);
+      const ctx = canvas.getContext('2d')!;
+
+      const textLayer = state.canvas.layers.find(
+        (layer): layer is TextVisualLayer => layer.type === 'text'
+      );
+
+      if (!textLayer) return;
+
+      for (let i = textLayer.textElements.length - 1; i >= 0; i--) {
+        const elem = textLayer.textElements[i];
+
+        if (helpers.canvas.isOverResizeHandle(mouse, elem, ctx)) {
+          isResizing = true;
+          resizeTargetIndex = i;
+          initialMouseY = mouse.y;
+          initialFontSize = elem.fontSize ?? 32;
+          stateManager.setSelectedLayerIndex(i);
+
+          return;
+        }
+
+        if (helpers.canvas.isPointInText(mouse, elem, ctx)) {
+          selectedTextIndex = i;
+          dragging = true;
+          dragOffset.x = mouse.x - elem.x;
+          dragOffset.y = mouse.y - elem.y;
+          stateManager.setSelectedLayerIndex(i);
+          break;
+        }
+      }
+    });
+
+    canvas.addEventListener('mousemove', (e: MouseEvent) => {
+      const ctx = canvas.getContext('2d')!;
+      const state = stateManager.getCanvas();
+
+      const textLayer = state.layers.find(layer => layer.type === 'text') as
+        | TextVisualLayer
+        | undefined;
+
+      if (!textLayer) return;
+
+      if (isResizing && resizeTargetIndex !== null) {
+        const elem = textLayer.textElements[resizeTargetIndex];
+        const mouse = helpers.canvas.getMousePosition(canvas, e);
+        const deltaY = mouse.y - initialMouseY;
+        const newFontSize = Math.max(10, initialFontSize + deltaY);
+
+        // update element
+        const updatedElem = { ...elem, fontSize: newFontSize };
+        textLayer.textElements[resizeTargetIndex] = updatedElem;
+
+        renderingEngine.redraw(ctx, stateManager.getCanvas());
+        return;
+      }
+
+      if (dragging && selectedTextIndex !== null) {
+        const elem = textLayer.textElements[selectedTextIndex];
+        const mouse = helpers.canvas.getMousePosition(canvas, e);
+
+        const updatedElem = {
+          ...elem,
+          x: mouse.x - dragOffset.x,
+          y: mouse.y - dragOffset.y
+        };
+        textLayer.textElements[selectedTextIndex] = updatedElem;
+
+        renderingEngine.redraw(ctx, stateManager.getCanvas());
+      }
+    });
+
+    canvas.addEventListener('mouseup', () => {
+      dragging = false;
+      isResizing = false;
+      resizeTargetIndex = null;
+    });
+
+    canvas.addEventListener('mouseleave', () => {
+      dragging = false;
+      isResizing = false;
+      resizeTargetIndex = null;
+    });
+
+    canvas.addEventListener('dblclick', (e: MouseEvent) => {
+      const state = stateManager.getCanvas();
+      const mouse = helpers.canvas.getMousePosition(canvas, e);
+
+      const textLayer = state.layers.find(layer => layer.type === 'text') as
+        | TextVisualLayer
+        | undefined;
+
+      if (!textLayer) return;
+
+      for (let i = textLayer.textElements.length - 1; i >= 0; i--) {
+        const elem = textLayer.textElements[i];
+
+        if (
+          helpers.canvas.isPointInText(mouse, elem, canvas.getContext('2d')!)
+        ) {
+          overlay.showTxtElemOverlay(canvas, elem, i, core, () =>
+            renderingEngine.redraw(
+              canvas.getContext('2d')!,
+              stateManager.getCanvas()
+            )
+          );
+
+          break;
+        }
+      }
+    });
+  }, 'Unhandled text drag handlers initialization error.');
+}
+
+// =================================================== //
+
+export async function initializeCanvasUI(
+  io: IOFunctions,
+  overlay: OverlayFunctions,
+  core: Core,
+  renderingEngine: RenderingEngine
+): Promise<void> {
+  const {
+    data: {
+      dom: { ids }
+    },
+    services: { errors }
+  } = core;
+  const canvas = document.getElementById(
+    ids.canvas
+  ) as HTMLCanvasElement | null;
+
+  if (!canvas) {
+    throw new Error(`Canvas element not found in DOM!`);
+  }
+
+  return errors.handleAsync(async () => {
+    initAssetBrowserToggleBtn(core);
+    initClearBtn(core);
+    initDownloadBtn(core, io);
+    await initUploadBtn(core, io);
+    initTextInputForm(core);
+    setupTextDragHandlers(canvas, overlay, core, renderingEngine);
+  }, 'Canvas UI initialization failed.');
+}
+// FileL frontend/src/app/features/engine/overlays.ts
+
+import type { Core, OverlayFunctions, TextElement } from '../../types/index.js';
+
+function removeExistingOverlay(className: string): void {
+  document.querySelectorAll(`.${className}`).forEach(e => e.remove());
+}
+
+function showTextElementOverlay(
+  canvas: HTMLCanvasElement,
+  elem: TextElement,
+  index: number,
+  core: Core,
+  redraw: () => void
+): void {
+  const {
+    data: {
+      dom: { classes }
+    },
+    services: { stateManager }
+  } = core;
+  const className = classes.textEditOverlay;
+
+  removeExistingOverlay(className);
+
+  // canvas/text position calc
+  const rect = canvas.getBoundingClientRect();
+  const ctx = canvas.getContext('2d')!;
+  ctx.font = `${elem.fontWeight ?? 'bold'} ${elem.fontSize ?? 32}px ${elem.fontFamily ?? 'sans-serif'}`;
+  const width = ctx.measureText(elem.text).width + 16;
+  const height = (elem.fontSize ?? 32) + 8;
+  const x = rect.left + elem.x * (rect.width / canvas.width) - width / 2;
+  const y = rect.top + elem.y * (rect.height / canvas.height) - height / 2;
+
+  // overlay
+  const overlay = document.createElement('div');
+  overlay.className = className;
+  Object.assign(overlay.style, {
+    position: 'absolute',
+    left: `${x}px`,
+    top: `${y + height + 10}px`, // below the text
+    zIndex: '10000',
+    padding: '12px',
+    background: 'rgba(255,255,255,0.97)',
+    border: '1.5px solid #b4b4b4',
+    borderRadius: '8px',
+    boxShadow: '0 2px 14px #0003',
+    minWidth: '220px'
+  });
+
+  // text input
+  const textInput = document.createElement('input');
+  textInput.type = 'text';
+  textInput.value = elem.text;
+  textInput.style.width = '100%';
+
+  // font select
+  const fontSelect = document.createElement('select');
+  fontSelect.className = classes.fontSelector;
+  ['Arial', 'Impact', 'Comic Sans MS', 'Times New Roman'].forEach(f => {
+    const opt = document.createElement('option');
+    opt.value = f;
+    opt.text = f;
+    if (elem.fontFamily === f) opt.selected = true;
+    fontSelect.appendChild(opt);
+  });
+
+  // size input
+  const sizeInput = document.createElement('input');
+  sizeInput.type = 'number';
+  sizeInput.min = '8';
+  sizeInput.max = '200';
+  sizeInput.value = String(elem.fontSize);
+
+  // color input
+  const colorInput = document.createElement('input');
+  colorInput.type = 'color';
+  colorInput.value = elem.color;
+
+  // save/cancel buttons
+  const saveBtn = document.createElement('button');
+  saveBtn.innerText = 'Done';
+  saveBtn.type = 'button';
+  const cancelBtn = document.createElement('button');
+  cancelBtn.innerText = 'Cancel';
+  cancelBtn.type = 'button';
+  cancelBtn.style.marginLeft = '8px';
+
+  // form layout
+  overlay.append(
+    'Text:',
+    document.createElement('br'),
+    textInput,
+    document.createElement('br'),
+    'Font:',
+    document.createElement('br'),
+    fontSelect,
+    document.createElement('br'),
+    'Size:',
+    document.createElement('br'),
+    sizeInput,
+    document.createElement('br'),
+    'Color:',
+    document.createElement('br'),
+    colorInput,
+    document.createElement('br'),
+    saveBtn,
+    cancelBtn
+  );
+
+  // commit logic
+  function commitEdit() {
+    stateManager.updateTextElement(index, {
+      ...elem,
+      text: textInput.value,
+      fontFamily: fontSelect.value,
+      fontSize: parseInt(sizeInput.value, 10),
+      color: colorInput.value as TextElement['color']
+    });
+    overlay.remove();
+    redraw();
+  }
+  // cancellation logic
+  function cancelEdit() {
+    overlay.remove();
+    redraw();
+  }
+
+  saveBtn.addEventListener('click', commitEdit);
+  cancelBtn.addEventListener('click', cancelEdit);
+  overlay.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key === 'Escape') cancelEdit();
+    if (e.key === 'Enter') commitEdit();
+  });
+
+  // focus logic
+  setTimeout(() => textInput.focus(), 20);
+
+  // attach to DOM
+  document.body.appendChild(overlay);
+}
+
+// ================================================== //
+
+export const overlayFns: OverlayFunctions = {
+  removeExistingOverlay,
+  showTxtElemOverlay: showTextElementOverlay
+} as const;
+// File: frontend/src/app/features/engine/io.ts
+
+import type {
+  Core,
+  GifAnimation,
+  IOFunctions,
+  SupportedExt,
+  VisualLayer
+} from '../../types/index.js';
+import GIF from 'gif.js';
+import html2canvas from 'html2canvas';
+
+async function exportGif(
+  layers: VisualLayer[],
+  width: number,
+  height: number,
+  frameCount: number = 60,
+  core: Core,
+  fileName?: string
+): Promise<void> {
+  const {
+    data: {
+      config: { defaults, paths }
+    }
+  } = core;
+  if (!fileName) fileName = defaults.fileName + '.gif';
+
+  return new Promise((resolve, reject) => {
+    const gif = new GIF({
+      workers: 2,
+      quality: 10,
+      width,
+      height,
+      workerScript: paths.gifWorkerScript
+    });
+
+    const offscreenCanvas = document.createElement('canvas');
+    offscreenCanvas.width = width;
+    offscreenCanvas.height = height;
+
+    const offCtx = offscreenCanvas.getContext('2d');
+    if (!offCtx) {
+      reject(new Error('Offscreen canvas 2D context unavailable'));
+      return;
+    }
+
+    const baseFrameDelay = 100; // ms/frame
+
+    for (let frameIndex = 0; frameIndex < frameCount; frameIndex++) {
+      // step GIF layers to this frame
+      for (const layer of layers) {
+        if (layer.type === 'gif') {
+          layer.currentFrame = frameIndex % layer.gifFrames.length;
+        }
+      }
+
+      // draw this frame
+      offCtx.clearRect(0, 0, width, height);
+      // drawVisualLayersToContext(offCtx, layers);
+
+      // add frame to GIF
+      gif.addFrame(offCtx, { copy: true, delay: baseFrameDelay });
+    }
+
+    gif.on('finished', (blob: Blob) => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.click();
+      URL.revokeObjectURL(url);
+      resolve();
+    });
+
+    (gif as any).on('error', (error: unknown) => {
+      reject(error);
+    });
+
+    gif.render();
+  });
+}
+
+async function exportStaticFile(
+  layers: VisualLayer[],
+  width: number,
+  height: number,
+  core: Core,
+  fileName?: string
+): Promise<void> {
+  const {
+    data: {
+      config: { defaults }
+    },
+    helpers,
+    services: { errors },
+    utils
+  } = core;
+  if (!fileName) fileName = defaults.fileName + '.png';
+
+  return errors.handleAsync(async () => {
+    const offscreenCanvas = document.createElement('canvas');
+    offscreenCanvas.width = width;
+    offscreenCanvas.height = height;
+
+    const offCtx = offscreenCanvas.getContext('2d');
+    if (!offCtx) throw new Error('Offscreen canvas 2D context unavailable');
+
+    offCtx.clearRect(0, 0, width, height);
+
+    // draw all layers
+    utils.canvas.drawVisualLayersToContext(offCtx, layers, helpers);
+
+    // export as PNG
+    offscreenCanvas.toBlob(blob => {
+      if (!blob) throw new Error('Failed to generate PNG blob');
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.click();
+      URL.revokeObjectURL(url);
+    }, 'image/png');
+  }, 'Static file export failed.');
+}
+
+async function handleDownload(
+  targetRef: React.RefObject<HTMLDivElement | null>,
+  core: Core,
+  fileName?: string
+): Promise<void> {
+  const {
+    data: {
+      config: { defaults }
+    },
+    services: { errors, log }
+  } = core;
+  if (!fileName) fileName = defaults.fileName;
+
+  return errors.handleAsync(async () => {
+    if (!targetRef.current) {
+      log.error('Target reference is null or undefined.', 'handleDownload');
+      return;
+    }
+
+    const canvas = await html2canvas(targetRef.current, {
+      backgroundColor: null
+    });
+    const url = canvas.toDataURL('image/png');
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.click();
+  }, 'File download failed.');
+}
+
+async function handleUpload(
+  file: File,
+  core: Core,
+  createGifAnimation: (arrayBuffer: ArrayBuffer) => GifAnimation
+): Promise<void> {
+  const {
+    data: {
+      dom: { ids }
+    },
+    helpers,
+    services: { cache, errors, stateManager }
+  } = core;
+
+  return errors.handleAsync(async () => {
+    const fileName = file.name;
+    const ext = fileName.split('.').pop()?.toLowerCase() ?? '';
+
+    const canvas = document.getElementById(
+      ids.canvas
+    ) as HTMLCanvasElement | null;
+    if (!canvas) throw new Error(`Canvas element not found.`);
+
+    const ctx = helpers.canvas.get2DContext(canvas);
+
+    // GIF support
+    if (ext === ('gif' as SupportedExt)) {
+      const arrayBuffer = await file.arrayBuffer();
+      const anim = createGifAnimation(arrayBuffer);
+
+      stateManager.setCanvasAnimation(anim);
+
+      anim.play(ctx);
+
+      // don't run static image logic!
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e: ProgressEvent<FileReader>) => {
+      const img = new Image();
+
+      img.onload = () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0);
+
+        const imgAspect = img.width / img.height;
+        const imageDataUrl = e.target?.result as string;
+
+        stateManager.setCanvasImage(imageDataUrl);
+        stateManager.setCanvasAspectRatio(imgAspect);
+
+        cache.cachedBgImg = img;
+
+        canvas.style.width = 'auto';
+        canvas.style.height = 'auto';
+
+        const canvasAspect = canvas.width / canvas.height;
+        let drawWidth, drawHeight, offsetX, offsetY;
+        if (imgAspect > canvasAspect) {
+          drawWidth = canvas.width;
+          drawHeight = canvas.width / imgAspect;
+          offsetX = 0;
+          offsetY = (canvas.height - drawHeight) / 2;
+        } else {
+          drawHeight = canvas.height;
+          drawWidth = canvas.height * imgAspect;
+          offsetY = 0;
+          offsetX = (canvas.width - drawWidth) / 2;
+        }
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+      };
+      img.src = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  }, 'File upload processing failed.');
+}
+
+// =================================================== //
+
+export const io: IOFunctions = {
+  exportGif,
+  exportStaticFile,
+  handleDownload,
+  handleUpload
+} as const;
+// File: frontend/src/app/features/engine/animation.ts
+
+import { decompressFrames, parseGIF } from 'gifuct-js';
+import type { GifAnimation, GifFrame } from '../../types/index.js';
+
+export function createGifAnimation(arrayBuffer: ArrayBuffer): GifAnimation {
+  const gif = parseGIF(arrayBuffer);
+  const rawFrames = decompressFrames(gif, true);
+
+  const frames: GifFrame[] = rawFrames.map(
+    (frame): GifFrame => ({
+      imageData: new ImageData(
+        new Uint8ClampedArray(frame.patch), // ALWAYS convert to Uint8ClampedArray for ImageData
+        frame.dims.width,
+        frame.dims.height
+      ),
+      delay: (frame.delay || 10) * 10 // delay is in 0.01s; convert to ms
+    })
+  );
+
+  let playing = false;
+  let frameIndex = 0;
+  let rafId: number | null = null;
+
+  function isPlaying(): boolean {
+    return playing;
+  }
+
+  function drawFrame(ctx: CanvasRenderingContext2D): void {
+    const frame = frames[frameIndex];
+    ctx.putImageData(frame.imageData, 0, 0);
+  }
+
+  function loop(ctx: CanvasRenderingContext2D, loopForever: boolean = true) {
+    if (!playing) return;
+    drawFrame(ctx);
+
+    const nextDelay = frames[frameIndex].delay;
+    frameIndex = (frameIndex + 1) % frames.length;
+
+    if (frameIndex === 0 && !loopForever) {
+      stop();
+      return;
+    }
+    rafId = window.setTimeout(() => loop(ctx, loopForever), nextDelay);
+  }
+
+  function play(ctx: CanvasRenderingContext2D, loopForever = true) {
+    if (playing) return;
+    playing = true;
+    frameIndex = 0;
+    loop(ctx, loopForever);
+  }
+
+  function pause() {
+    playing = false;
+    if (rafId !== null) clearTimeout(rafId);
+    rafId = null;
+  }
+
+  function stop() {
+    pause();
+    frameIndex = 0;
+  }
+
+  return { frames, isPlaying, play, pause, stop };
+}
+// File: frontend/src/app/features/engine/layers.ts
+
+import {
+  GifAsset,
+  GifVisualLayer,
+  ImageAsset,
+  ImageVisualLayer,
+  OverlayAsset,
+  OverlayVisualLayer,
+  StickerAsset,
+  StickerVisualLayer,
+  TextElement,
+  TextVisualLayer
+} from '../../types/index.js';
+
+// ====================================================== //
+
+function makeGifLayer(asset: GifAsset, zIndex: number): GifVisualLayer {
+  return {
+    id: crypto.randomUUID(),
+    type: 'gif',
+    assetRef: asset,
+    opacity: 1,
+    visible: true,
+    zIndex,
+    gifFrames: [],
+    currentFrame: 0,
+    frameElapsed: 0
+  };
+}
+
+function makeImageLayer(asset: ImageAsset, zIndex: number): ImageVisualLayer {
+  return {
+    id: crypto.randomUUID(),
+    type: 'image',
+    assetRef: asset,
+    opacity: 1,
+    visible: true,
+    zIndex,
+    element: new Image()
+  };
+}
+
+function makeOverlayLayer(
+  asset: OverlayAsset,
+  zIndex: number
+): OverlayVisualLayer {
+  return {
+    id: crypto.randomUUID(),
+    type: 'overlay',
+    assetRef: asset,
+    opacity: 1,
+    visible: true,
+    zIndex,
+    blendMode: asset.blendMode,
+    element: new Image()
+  };
+}
+
+function makeStickerLayer(
+  asset: StickerAsset,
+  zIndex: number
+): StickerVisualLayer {
+  return {
+    id: crypto.randomUUID(),
+    type: 'sticker',
+    assetRef: asset,
+    opacity: 1,
+    visible: true,
+    zIndex,
+    element: new Image()
+  };
+}
+
+function makeTextLayer(
+  zIndex: number,
+  elements: TextElement[]
+): TextVisualLayer {
+  return {
+    id: crypto.randomUUID(),
+    type: 'text',
+    assetRef: null,
+    opacity: 1,
+    visible: true,
+    zIndex,
+    textElements: elements
+  };
+}
+
+// ====================================================== //
+
+export const createLayer = {
+  gif: makeGifLayer,
+  image: makeImageLayer,
+  overlay: makeOverlayLayer,
+  sticker: makeStickerLayer,
+  text: makeTextLayer
+} as const;
+// File: frontend/src/app/features/asset_browser.ts
+
+import type {
+  Core,
+  GifAsset,
+  ImageAsset,
+  OverlayAsset,
+  StickerAsset
+} from '../../types/index.js';
+
+function fileExtensionToVisualLayerType(
+  core: Core,
+  ext: string
+): 'image' | 'gif' | 'overlay' | 'sticker' | 'text' | 'video' {
+  switch (ext.toLowerCase()) {
+    case 'jpg':
+    case 'jpeg':
+    case 'png':
+    case 'webp':
+      return 'image';
+
+    case 'gif':
+      return 'gif';
+
+    case 'mp4':
+    case 'webm':
+      return 'video';
+    default:
+      core.services.log.warn(`Unsupported file extension: ${ext}`);
+      return 'image';
+  }
+}
+
+async function renderAssetBrowser(core: Core): Promise<void> {
+  const {
+    data: {
+      dom: { classes, ids }
+    },
+    services: { log, stateManager }
+  } = core;
+  const browser = document.getElementById(ids.assetBrowserDiv);
+  if (!browser) return;
+
+  browser.innerHTML = '';
+
+  const { loadAssetManifest } = await import('../../core/config/manifest.js');
+  const { createLayer } = await import('./layers.js');
+
+  const asset_manifest = await loadAssetManifest();
+
+  asset_manifest.forEach(asset => {
+    const thumb = document.createElement('img');
+    thumb.src = asset.src;
+    thumb.alt = asset.name;
+    thumb.className = classes.assetBrowserThumb;
+
+    thumb.addEventListener('click', () => {
+      const fullAsset = {
+        ...asset,
+        size_kb: (asset as any).size_kb ?? 0,
+        hash_sha256: (asset as any).hash_sha256 ?? '',
+        extension: asset.extension ?? ''
+      };
+
+      let newLayer;
+
+      switch (asset.class) {
+        case 'animation':
+          newLayer = createLayer.gif(
+            fullAsset as GifAsset,
+            stateManager.getCanvas().layers.length
+          );
+          break;
+
+        case 'image':
+          newLayer = createLayer.image(
+            fullAsset as ImageAsset,
+            stateManager.getCanvas().layers.length
+          );
+          break;
+
+        case 'overlay':
+          newLayer = createLayer.overlay(
+            fullAsset as OverlayAsset,
+            stateManager.getCanvas().layers.length
+          );
+          break;
+
+        case 'sticker':
+          newLayer = createLayer.sticker(
+            fullAsset as StickerAsset,
+            stateManager.getCanvas().layers.length
+          );
+          break;
+
+        default:
+          log.warn(`Unsupported asset class: ${asset.class}`);
+          newLayer = createLayer.image(
+            fullAsset as ImageAsset,
+            stateManager.getCanvas().layers.length
+          );
+      }
+
+      stateManager.addLayer(newLayer);
+    });
+  });
+}
+
+export { fileExtensionToVisualLayerType, renderAssetBrowser };
+viihna@sharkie:~/Projects/graphix/frontend/scripts$

@@ -1,29 +1,25 @@
 // File: frontend/src/app/main.ts
 
-// =================================================== //
-// =================================================== //
-
 import('./sys/events/dom.js').then(({ onDOMContentLoaded }) => {
   onDOMContentLoaded(async () => {
     try {
       const { launchApp } = await import('./sys/launch.js');
-      const { deps } = await launchApp();
-
-      const { utils } = deps;
+      const {
+        core: {
+          data: {
+            dom: { ids }
+          }
+        }
+      } = await launchApp();
 
       const canvas = document.getElementById(
-        deps.data.dom.ids.canvas
+        ids.canvas
       ) as HTMLCanvasElement | null;
 
       if (!canvas) throw new Error('Canvas element not found in DOM!');
 
       const ctx = canvas.getContext('2d');
-
       if (!ctx) throw new Error('2D context not available for canvas!');
-
-      deps.services.stateManager.subscribeToCanvas(state =>
-        utils.canvas.redraw(ctx, state)
-      );
     } catch (error) {
       console.error(
         `An unhandled error occurred during application startup:`,
@@ -33,7 +29,5 @@ import('./sys/events/dom.js').then(({ onDOMContentLoaded }) => {
     }
   });
 });
-
-// =================================================== //
 
 export {};

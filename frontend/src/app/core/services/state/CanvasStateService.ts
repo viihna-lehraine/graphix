@@ -73,9 +73,8 @@ export class CanvasStateService implements CanvasStateServiceContract {
         type: 'text',
         assetRef: {
           name: 'TextLayer',
+          class: 'text',
           src: '',
-          uploaded: new Date(),
-          modified: new Date(),
           size_kb: 0,
           hash_sha256: '',
           extension: 'txt'
@@ -175,8 +174,8 @@ export class CanvasStateService implements CanvasStateServiceContract {
 
   reset() {
     this.set(
-      this.#data.config.default.canvasWidth,
-      this.#data.config.default.canvasHeight
+      this.#data.config.defaults.canvasWidth,
+      this.#data.config.defaults.canvasHeight
     );
   }
 
@@ -199,9 +198,8 @@ export class CanvasStateService implements CanvasStateServiceContract {
         type: 'gif',
         assetRef: {
           name: 'GifAnimation',
+          class: 'gif',
           src: '',
-          uploaded: new Date(),
-          modified: new Date(),
           size_kb: 0,
           hash_sha256: '',
           extension: 'gif'
@@ -247,8 +245,7 @@ export class CanvasStateService implements CanvasStateServiceContract {
         assetRef: {
           name: 'ImageLayer',
           src: imageDataUrl,
-          uploaded: new Date(),
-          modified: new Date(),
+          class: 'image',
           size_kb: 0,
           hash_sha256: '',
           extension: 'png'

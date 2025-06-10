@@ -37,7 +37,7 @@
     <div id="app">
       <header>
         <div class="header-div">
-          <h1>G R A P H I X</h1>
+          <h1>T E S T I C L E S</h1>
       </div>
       </header>
 
@@ -53,9 +53,9 @@
           <aside class="tray tray--extras">
             <div class="canvas-toolbar">
               <input type="file" accept=".gif,.jpg,.jpeg,.png" id="img-upload-input" class="hidden" />
-              <button id="upload-btn" class="canvas-io-btn">Upload</button>
-              <button id="download-btn" class="canvas-io-btn">Download</button>
-              <button id="clear-btn" class="canvas-io-btn">Clear</button>
+              <button id="upload-btn" class="canvas-btn">Upload</button>
+              <button id="download-btn" class="canvas-btn">Download</button>
+              <button id="clear-btn" class="canvas-btn">Clear</button>
             </div>
             <div>
               <h2>Add Text</h2>
@@ -64,6 +64,10 @@
                 <button type="submit" id="add-text-btn">Add</button>
               </form>
             </div>
+            <div class="asset-browser-subpanel">
+              <button id="toggle-asset-browser-btn" class="canvas-btn">Browse Assets</button>
+            </div>
+            <div id="asset-browser" class="asset-browser"></div>
             <div id="properties-panel" class="properties-panel"></div>
           </aside>
         </div>

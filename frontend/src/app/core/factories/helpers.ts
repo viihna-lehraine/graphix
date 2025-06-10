@@ -11,14 +11,12 @@ export async function helpersFactory(): Promise<Required<Helpers>> {
 
   const [
     { appHelpersFactory },
-    { brandFactory },
     { canvasHelpersFactory },
     { dataHelperFactory },
     { mathHelpersFactory },
     { timeHelpersFactory }
   ] = await Promise.all([
     import('../helpers/app.js'),
-    import('../helpers/brand.js'),
     import('../helpers/canvas.js'),
     import('../helpers/data.js'),
     import('../helpers/math.js'),
@@ -26,9 +24,8 @@ export async function helpersFactory(): Promise<Required<Helpers>> {
   ]);
 
   helpers.app = appHelpersFactory();
-  helpers.brand = brandFactory();
   helpers.canvas = canvasHelpersFactory();
-  helpers.data = dataHelperFactory();
+  helpers.data = await dataHelperFactory();
   helpers.math = mathHelpersFactory();
   helpers.time = timeHelpersFactory();
 

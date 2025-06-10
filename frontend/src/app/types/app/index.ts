@@ -1,6 +1,10 @@
 // File: frontend/src/app/types/app/index.ts
 
 export type {
+  AnimationGroup,
+  AnimationProps,
+  AssetClass,
+  AssetManifestEntry,
   BaseAsset,
   BackgroundAsset,
   BorderAsset,
@@ -11,22 +15,24 @@ export type {
   StickerAsset,
   SupportedAsset
 } from './assets.js';
-export type { CanvasCache } from './cache.js';
 export type {
-  AppDependencies,
-  CanvasRefs,
+  Cache,
   CanvasResizeOptions,
   ErrorHandlerOptions,
   ListenerRegistration,
+  NotifierLevel,
   Plugin,
+  RedrawPlugin,
   ResizePlugin,
   Subscriber,
   TextElement,
   UIInitializer
 } from './core.js';
+export type { CanvasLifecycleEvent, StateLifecycleHook } from './engine.js';
 export type {
-  AnimationGroup,
   BaseVisualLayer,
+  GifAnimation,
+  GifFrame,
   GifVisualLayer,
   ImageVisualLayer,
   OverlayVisualLayer,
@@ -35,5 +41,4 @@ export type {
   VideoVisualLayer,
   VisualLayer
 } from './layers.js';
-export type { AnimationProps, GifAnimation, GifFrame } from './props.js';
 export type { CanvasState, ClientState, State } from './state.js';

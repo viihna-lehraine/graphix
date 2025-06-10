@@ -1,4 +1,4 @@
-// File: frontend/src/app/core/data/errorClasses.ts
+// File: frontend/src/app/core/config/errors.ts
 
 class UserFacingError extends Error {
   constructor(

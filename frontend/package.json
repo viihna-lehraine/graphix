@@ -6,7 +6,8 @@
   "license": "GNU GPLv3",
   "type": "module",
   "scripts": {
-    "build": "vite build",
+    "genAssetManifest": "node ./scripts/generateAssetManifest.mjs",
+    "build": "vite build && pnpm run genAssetManifest",
     "clean": "rm -rf node_modules dist",
     "dev": "vite",
     "format": "prettier --write \"**/*.{ts,js,json,css,md,html}\"",
@@ -25,16 +26,16 @@
   "packageManager": "pnpm@10.12.1",
   "devDependencies": {
     "@types/gif.js": "^0.2.5",
-    "@typescript-eslint/eslint-plugin": "^8.32.1",
-    "@typescript-eslint/parser": "^8.32.1",
+    "@typescript-eslint/eslint-plugin": "^8.34.0",
+    "@typescript-eslint/parser": "^8.34.0",
     "autoprefixer": "^10.4.21",
-    "eslint": "^9.27.0",
+    "eslint": "^9.28.0",
     "eslint-config-prettier": "^10.1.5",
-    "eslint-plugin-prettier": "^5.4.0",
+    "eslint-plugin-prettier": "^5.4.1",
     "prettier": "^3.5.3",
     "typescript": "^5.8.3",
     "vite": "^6.3.5",
-    "vitest": "^3.1.4"
+    "vitest": "^3.2.3"
   },
   "dependencies": {
     "browserify": "^17.0.1",

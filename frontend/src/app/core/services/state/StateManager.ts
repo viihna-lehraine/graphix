@@ -3,17 +3,16 @@
 import type {
   CanvasState,
   ClientState,
-  Data,
+  Core,
   GifAnimation,
-  Services,
   State,
+  StateLifecycleHook,
   StateManagerContract,
   Subscriber,
   TextElement,
   VisualLayer
 } from '../../../types/index.js';
-import { CanvasStateService } from './CanvasStateService.js';
-import { ClientStateService } from './ClientStateService.js';
+import { CanvasStateService, ClientStateService } from '../index.js';
 
 // ================================================== //
 // ================================================== //
@@ -21,20 +20,22 @@ import { ClientStateService } from './ClientStateService.js';
 export class StateManager implements StateManagerContract {
   static #instance: StateManager | null = null;
 
+  #version: string | null = null;
+  #lifecycleHooks: StateLifecycleHook[] = [];
+
   #canvas: CanvasStateService;
   #client: ClientStateService;
 
-  #errors: Services['errors'];
-  #log: Services['log'];
-
-  #data: Data;
+  #data: Core['data'];
+  #errors: Core['services']['errors'];
+  #log: Core['services']['log'];
 
   // ================================================= //
 
   private constructor(
-    data: Data,
-    errors: Services['errors'],
-    log: Services['log']
+    data: Core['data'],
+    errors: Core['services']['errors'],
+    log: Core['services']['log']
   ) {
     try {
       log.info('Initializing StateManager...', '[StateManager constructor]');
@@ -42,12 +43,14 @@ export class StateManager implements StateManagerContract {
       this.#data = data;
       this.#errors = errors;
       this.#log = log;
+      this.#version = data.version;
 
       // hydrate state
       let initialState: State = {
+        version: this.#data.version,
         canvas: {
-          width: this.#data.config.default.canvasWidth,
-          height: this.#data.config.default.canvasHeight,
+          width: this.#data.config.defaults.canvasWidth,
+          height: this.#data.config.defaults.canvasHeight,
           layers: [],
           selectedLayerIndex: null
         },
@@ -97,15 +100,21 @@ export class StateManager implements StateManagerContract {
   // ================================================== //
 
   static getInstance(
-    data: Data,
-    errors: Services['errors'],
-    log: Services['log']
+    data: Core['data'],
+    errors: Core['services']['errors'],
+    log: Core['services']['log']
   ): StateManager {
     try {
+      log.info('Calling StateManager.getInstance()...');
+
       if (!StateManager.#instance) {
-        StateManager.#instance = new StateManager(data, errors, log);
+        log.info(
+          'No existing StateManager instance found. Creating new instance.'
+        );
+        return (StateManager.#instance = new StateManager(data, errors, log));
       }
 
+      log.info('Returning existing StateManager instance.');
       return StateManager.#instance;
     } catch (error) {
       throw new Error(
@@ -115,97 +124,112 @@ export class StateManager implements StateManagerContract {
   }
 
   // ================================================= //
+  // CORE CLASS METHODS //
+
+  addLifecycleHook(hook: StateLifecycleHook): void {
+    this.#errors.handleSync(() => {
+      this.#log.info(
+        'Adding lifecycle hook.',
+        'StateManager.addLifecycleHook()'
+      );
+
+      if (typeof hook !== 'function') {
+        throw new Error('Lifecycle hook must be a function.');
+      }
+
+      this.#lifecycleHooks.push(hook);
+      this.#log.info(
+        'Lifecycle hook added successfully.',
+        'StateManager.addLifecycleHook()'
+      );
+    }, 'Failed to add lifecycle hook.');
+  }
+
+  getState(): State {
+    return this.#errors.handleSync(() => {
+      this.#log.info('Returning current state.', 'StateManager.getState()');
+
+      return {
+        version: this.#version!,
+        canvas: this.getCanvas(),
+        client: this.getClient()
+      };
+    }, 'Failed to return state.');
+  }
+
+  // ================================================= //
   // PROXY CANVAS STATE ACCESS //
 
   addLayer(layer: VisualLayer): void {
     this.#canvas.addLayer(layer);
+    for (const hook of this.#lifecycleHooks) {
+      hook('addLayer', this.getCanvas());
+    }
   }
-
   addTextElement(elem: TextElement): void {
     this.#canvas.addTextElement(elem);
   }
-
   canRedoCanvas(): boolean {
     return this.#canvas.canRedo();
   }
-
   canUndoCanvas(): boolean {
     return this.#canvas.canUndo();
   }
-
   clearCanvasAll(): void {
     this.#canvas.clearAll();
-    window.localStorage.setItem('appState', JSON.stringify(this.getAll()));
+    window.localStorage.setItem('appState', JSON.stringify(this.getState()));
   }
-
   clearCanvasAnimation(): void {
     this.#canvas.clearAnimation();
   }
-
   getCanvas(): CanvasState {
     return this.#canvas.get();
   }
-
   getCanvasAspectRatio(): number | undefined {
     return this.#canvas.getAspectRatio();
   }
-
   moveLayer(index: number, newIndex: number): void {
     this.#canvas.moveLayer(index, newIndex);
   }
-
   moveTextElement(index: number, x: number, y: number): void {
     this.#canvas.moveTextElement(index, x, y);
   }
-
   redoCanvas(): void {
     this.#canvas.redo();
   }
-
   removeLayer(index: number): void {
     this.#canvas.removeLayer(index);
   }
-
   removeTextElement(index: number): void {
     this.#canvas.removeTextElement(index);
   }
-
   resetCanvas(): void {
     this.#canvas.reset();
   }
-
   setCanvas(width: number, height: number): void {
     this.#canvas.set(width, height);
   }
-
   setCanvasAnimation(anim: GifAnimation | null): void {
     this.#canvas.setAnimation(anim);
   }
-
   setCanvasAspectRatio(aspect: number | undefined): void {
     this.#canvas.setAspectRatio(aspect);
   }
-
   setCanvasImage(imageDataUrl: string | undefined): void {
     this.#canvas.setCanvasImage(imageDataUrl);
   }
-
   setSelectedLayerIndex(index: number | null): void {
     this.#canvas.setSelectedLayerIndex(index);
   }
-
   subscribeToCanvas(fn: Subscriber<CanvasState>): () => void {
     return this.#canvas.subscribe(fn);
   }
-
   undoCanvas(): void {
     this.#canvas.undo();
   }
-
   updateLayer(index: number, newLayer: VisualLayer): void {
     this.#canvas.updateLayer(index, newLayer);
   }
-
   updateTextElement(index: number, newElem: TextElement): void {
     this.#canvas.updateTextElement(index, newElem);
   }
@@ -224,33 +248,11 @@ export class StateManager implements StateManagerContract {
   }
 
   // ================================================= //
-
-  getAll(): State {
-    return {
-      canvas: this.getCanvas(),
-      client: this.getClient()
-    };
-  }
-
-  // ================================================= //
+  // PRIVATE METHODS //
 
   #persistToStorage(): void {
-    try {
-      window.localStorage.setItem('appState', JSON.stringify(this.getAll()));
-    } catch (error) {
-      this.#log.warn(
-        `Failed to persist app state to localStorage`,
-        'StateManger.#persistToStorage()'
-      );
-    }
-  }
-
-  // ================================================= //
-  // ================================================= //
-
-  // TODO: remove later - suppresses TS warning about unused private fields
-  _(): void {
-    this.#log;
-    this.#errors;
+    return this.#errors.handleSync(() => {
+      window.localStorage.setItem('appState', JSON.stringify(this.getState()));
+    }, 'Failed to persist state to localStorage.');
   }
 }

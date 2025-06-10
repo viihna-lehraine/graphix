@@ -1,19 +1,9 @@
 // File: frontend/src/application/types/app/core.ts
 
-import type { Data, Helpers, Hex, Services, Utilities } from '../index.js';
+import type { Core } from '../index.js';
 
-// ================================================= //
-
-export interface AppDependencies {
-  data: Data;
-  helpers: Helpers;
-  services: Services;
-  utils: Utilities;
-}
-
-export interface CanvasRefs {
-  canvas: HTMLCanvasElement;
-  ctx: CanvasRenderingContext2D;
+export interface Cache {
+  bgImg: HTMLImageElement | null;
 }
 
 export interface CanvasResizeOptions {
@@ -28,15 +18,16 @@ export interface ErrorHandlerOptions {
   userMessage?: string;
 }
 
-export type ListenerRegistration = (
-  data: Data,
-  services: Services
-) => void | (() => void);
+export type ListenerRegistration = (core: Core) => void | (() => void);
+
+export type NotifierLevel = 'info' | 'warn' | 'error' | 'success';
 
 export interface Plugin {
   id: string;
-  register: (deps: AppDependencies) => void | Promise<void>;
+  register: (core: Core) => void | Promise<void>;
 }
+
+export type RedrawPlugin = (ctx: CanvasRenderingContext2D, core: Core) => void;
 
 export type ResizePlugin = () => void;
 
@@ -48,7 +39,7 @@ export interface TextElement {
   y: number;
   align: CanvasTextAlign;
   baseline: CanvasTextBaseline;
-  color: Hex;
+  color: string;
   font: string;
   fontFamily?: string;
   fontSize: number;
@@ -57,4 +48,4 @@ export interface TextElement {
   scale?: number;
 }
 
-export type UIInitializer = (deps: AppDependencies) => void | Promise<void>;
+export type UIInitializer = (core: Core) => void | Promise<void>;

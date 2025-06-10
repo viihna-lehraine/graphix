@@ -2,13 +2,10 @@
 
 import type { Data, Helpers } from '../../types/index.js';
 
-// ================================================== //
-
 const { data } = await import('../../data/index.js');
-const defaultDebounceWait: Data['config']['default']['debounceWait'] =
-  data.config.default.debounceWait;
+const defaultDebounceWait: Data['config']['defaults']['debounceWait'] =
+  data.config.defaults.debounceWait;
 
-// ================================================== //
 // ================================================== //
 
 export const timeHelpersFactory = (): Helpers['time'] => ({

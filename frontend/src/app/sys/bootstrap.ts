@@ -1,12 +1,11 @@
 // File: frontend/src/app/sys/bootstrap.ts
 
-import type { Services } from '../types/index.js';
+import type { Core } from '../types/index.js';
 
-// ================================================== //
-// ================================================== //
-
-async function setGlobalErrorHandlers(services: Services): Promise<void> {
-  const { log } = services;
+async function setGlobalErrorHandlers(core: Core): Promise<void> {
+  const {
+    services: { log }
+  } = core;
 
   log.info(`Registering global error handlers`);
 
@@ -33,8 +32,7 @@ async function setGlobalErrorHandlers(services: Services): Promise<void> {
 }
 
 // ================================================== //
-// ================================================== //
 
-export async function bootstrap(services: Services): Promise<void> {
-  await setGlobalErrorHandlers(services);
+export async function bootstrap(core: Core): Promise<void> {
+  await setGlobalErrorHandlers(core);
 }
