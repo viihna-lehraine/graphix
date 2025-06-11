@@ -9,64 +9,27 @@ export interface AnimationGroup {
   playbackRate: number;
 }
 
-export interface AnimationProps {
-  frames: {
-    count: number;
-    rate: number; // fps
-  };
-  rotation?: {
-    speed: 360; // degrees per second
-    direction: 'clockwise' | 'counter-clockwise' | 'n/a';
-  };
-}
-
-export type AssetClass = 'animation' | 'image' | 'text';
-
-export type AssetManifestEntry =
-  | BackgroundAsset
-  | BorderAsset
-  | FontAsset
-  | GifAsset
-  | ImageAsset
-  | OverlayAsset
-  | StickerAsset;
-
-export interface BaseAsset {
+export interface Asset {
+  type:
+    | 'background'
+    | 'border'
+    | 'font'
+    | 'gif'
+    | 'image'
+    | 'overlay'
+    | 'sticker';
   name: string;
-  src: string /* path relative to assets/ */;
+  class: 'animation' | 'image' | 'text';
+  src: string;
+  ext: string;
+  tags: string[];
   size_kb: number;
   hash_sha256: string;
-  class: string;
-  extension: string;
-  tags?: string[];
-  credit?: string;
+  credits?: string;
   license?: string;
-}
-
-export interface BackgroundAsset extends BaseAsset {
-  tileable: boolean;
-}
-
-export interface BorderAsset extends BaseAsset {
-  animated: boolean;
-  width: number;
-  shape: 'circle' | 'square' | 'rounded' | 'other';
-}
-
-export interface FontAsset extends BaseAsset {
-  fontFamily: string;
-  serif: boolean;
-  style?: string;
-  weight?: number | string;
-}
-
-export interface GifAsset extends BaseAsset {
-  animation?: AnimationProps;
-}
-
-export interface ImageAsset extends BaseAsset {}
-
-export interface OverlayAsset extends BaseAsset {
+  tileable?: boolean;
+  width?: number;
+  height?: number;
   blendMode?:
     | 'normal'
     | 'multiply'
@@ -80,12 +43,64 @@ export interface OverlayAsset extends BaseAsset {
     | 'soft-light'
     | 'difference'
     | 'exclusion';
+  font:
+    | {
+        family: string;
+        serif: boolean;
+        style: string;
+        weight: number | string;
+      }
+    | false;
+  animation?: {
+    frames: {
+      count: number;
+      rate: number; // fps
+    };
+    rotation?: {
+      speed: 360; // degrees per second
+      direction: 'clockwise' | 'counter-clockwise' | 'n/a';
+    };
+  };
 }
 
-export interface StickerAsset extends BaseAsset {}
+export type AssetsExtra =
+  | BackgroundExtra
+  | BorderExtra
+  | FontExtra
+  | GifExtra
+  | ImageExtra
+  | OverlayExtra
+  | StickerExtra;
 
-export type SupportedAsset =
-  | ImageAsset
-  | GifAsset
-  | OverlayAsset
-  | StickerAsset;
+export interface BackgroundExtra {
+  width: Asset['width'];
+  height: Asset['height'];
+  animation?: Asset['animation'];
+  tileable?: Asset['tileable'];
+}
+export interface BorderExtra {
+  width: Asset['width'];
+  height: Asset['height'];
+  animation?: Asset['animation'];
+  tileable?: Asset['tileable'];
+}
+export interface FontExtra {
+  font: NonNullable<Asset['font']>;
+}
+export interface GifExtra {
+  animation: Exclude<Asset['animation'], undefined>;
+}
+export interface ImageExtra {
+  width: Asset['width'];
+  height: Asset['height'];
+  animation?: Asset['animation'];
+  tileable?: Asset['tileable'];
+}
+export interface OverlayExtra {
+  blendMode: Asset['blendMode'];
+}
+export interface StickerExtra {
+  width: Asset['width'];
+  height: Asset['height'];
+  animation?: Asset['animation'];
+}

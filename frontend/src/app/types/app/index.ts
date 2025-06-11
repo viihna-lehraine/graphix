@@ -2,18 +2,15 @@
 
 export type {
   AnimationGroup,
-  AnimationProps,
-  AssetClass,
-  AssetManifestEntry,
-  BaseAsset,
-  BackgroundAsset,
-  BorderAsset,
-  FontAsset,
-  GifAsset,
-  ImageAsset,
-  OverlayAsset,
-  StickerAsset,
-  SupportedAsset
+  Asset,
+  AssetsExtra,
+  BackgroundExtra,
+  BorderExtra,
+  FontExtra,
+  GifExtra,
+  ImageExtra,
+  OverlayExtra,
+  StickerExtra
 } from './assets.js';
 export type {
   Cache,

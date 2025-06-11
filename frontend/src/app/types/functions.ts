@@ -136,7 +136,7 @@ export interface IOFunctions {
     fileName?: string
   ) => Promise<void>;
   handleDownload(
-    targetRef: React.RefObject<HTMLDivElement | null>,
+    targetRef: { current: HTMLDivElement | null } | null,
     core: Core,
     fileName?: string
   ): Promise<void>;

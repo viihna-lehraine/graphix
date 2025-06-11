@@ -72,6 +72,7 @@ async function exportGif(
       resolve();
     });
 
+    // eslint-disable-next-line
     (gif as any).on('error', (error: unknown) => {
       reject(error);
     });
@@ -92,7 +93,7 @@ async function exportStaticFile(
       config: { defaults }
     },
     helpers,
-    services: { errors },
+    services: { errors, log },
     utils
   } = core;
   if (!fileName) fileName = defaults.fileName + '.png';
@@ -108,7 +109,7 @@ async function exportStaticFile(
     offCtx.clearRect(0, 0, width, height);
 
     // draw all layers
-    utils.canvas.drawVisualLayersToContext(offCtx, layers, helpers);
+    utils.canvas.drawVisualLayersToContext(offCtx, layers, helpers, log);
 
     // export as PNG
     offscreenCanvas.toBlob(blob => {
@@ -125,7 +126,7 @@ async function exportStaticFile(
 }
 
 async function handleDownload(
-  targetRef: React.RefObject<HTMLDivElement | null>,
+  targetRef: { current: HTMLDivElement | null } | null,
   core: Core,
   fileName?: string
 ): Promise<void> {
@@ -138,7 +139,7 @@ async function handleDownload(
   if (!fileName) fileName = defaults.fileName;
 
   return errors.handleAsync(async () => {
-    if (!targetRef.current) {
+    if (!targetRef || !targetRef.current) {
       log.error('Target reference is null or undefined.', 'handleDownload');
       return;
     }

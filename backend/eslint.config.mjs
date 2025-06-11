@@ -1,4 +1,4 @@
-// File: frontend/eslint.config.mjs
+// File: backend/eslint.config.mjs
 
 import prettierPlugin from 'eslint-plugin-prettier';
 import typescriptParser from '@typescript-eslint/parser';
