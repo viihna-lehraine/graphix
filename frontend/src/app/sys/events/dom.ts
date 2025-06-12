@@ -1,8 +1,5 @@
 // File: frontend/src/app/sys/events/dom.ts
 
-// ================================================== //
-// ================================================== //
-
 export function onDOMContentLoaded(cb: () => void): void {
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', cb);

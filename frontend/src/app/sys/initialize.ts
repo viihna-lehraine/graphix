@@ -7,13 +7,13 @@ import type {
   Services,
   Utilities
 } from '../types/index.js';
-import { RenderingEngine } from '../features/engine/RenderingEngine.js';
+import { RenderingEngine } from '@engine/RenderingEngine.js';
 
 export async function initializeData(): Promise<Required<Data>> {
   console.log(`Initializing Data object...`);
 
   try {
-    const { data } = await import('../data/index.js');
+    const { data } = await import('@data/index.js');
 
     return data;
   } catch (error) {
@@ -26,7 +26,7 @@ async function initializeHelpers(): Promise<Required<Helpers>> {
   console.log(`Initializing Helpers object...`);
 
   try {
-    const { helpersFactory } = await import('../core/factories/helpers.js');
+    const { helpersFactory } = await import('@core/factories/helpers.js');
 
     const helpers: Helpers = await helpersFactory();
 
@@ -39,14 +39,15 @@ async function initializeHelpers(): Promise<Required<Helpers>> {
 
 async function initializeServices(
   data: Data,
-  helpers: Helpers
+  helpers: Helpers,
+  utils: Utilities
 ): Promise<Required<Services>> {
   console.log(`Initializing Services object...`);
 
   try {
-    const { serviceFactory } = await import('../core/factories/services.js');
+    const { serviceFactory } = await import('@core/factories/services.js');
 
-    const services: Services = await serviceFactory(data, helpers);
+    const services: Services = await serviceFactory(data, helpers, utils);
 
     return services;
   } catch (error) {
@@ -55,17 +56,17 @@ async function initializeServices(
   }
 }
 
-async function initializeUtilities(
-  services: Services
-): Promise<Required<Utilities>> {
+async function initializeUtilities(): Promise<Required<Utilities>> {
   console.log(`Initializing Utilities object...`);
 
-  return await services.errors.handleAsync(async () => {
-    const { utilitiesFactory } = await import('../core/factories/utilities.js');
-    const utilities: Utilities = await utilitiesFactory(services);
+  try {
+    const { utilitiesFactory } = await import('@core/factories/utilities.js');
+    const utilities: Utilities = await utilitiesFactory();
 
     return utilities;
-  }, `Utilities initialization failed.`);
+  } catch (error) {
+    throw new Error(`Utilities initialization failed.`);
+  }
 }
 
 // ================================================== //
@@ -81,11 +82,11 @@ export async function initializeCore(): Promise<Core> {
   const helpers = await initializeHelpers();
   core.helpers = helpers;
 
-  const services = await initializeServices(data, helpers);
-  core.services = services;
-
-  const utils = await initializeUtilities(services);
+  const utils = await initializeUtilities();
   core.utils = utils;
+
+  const services = await initializeServices(data, helpers, utils);
+  core.services = services;
 
   const log = services.log;
   log.info(`All dependencies initialized successfully.`);
@@ -130,11 +131,9 @@ export async function initializeUI(core: Core): Promise<RenderingEngine> {
     const canvasRefs = { canvas, ctx };
     const renderingEngine = await initializeRenderingEngine(ctx, core);
 
-    const { io } = await import('../features/engine/io.js');
-    const { overlayFns: overlay } = await import(
-      '../features/engine/overlays.js'
-    );
-    const { initializeCanvasUI } = await import('../features/engine/start.js');
+    const { io } = await import('@engine/io.js');
+    const { overlayFns: overlay } = await import('@engine/overlays.js');
+    const { initializeCanvasUI } = await import('@engine/start.js');
 
     await initializeCanvasUI(io, overlay, core, renderingEngine);
 

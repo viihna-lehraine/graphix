@@ -3,15 +3,14 @@
 import type {
   Core,
   GifAnimation,
-  IOFunctions,
-  SupportedExt,
-  VisualLayer
+  Layer,
+  IOFunctions
 } from '../../types/index.js';
 import GIF from 'gif.js';
 import html2canvas from 'html2canvas';
 
 async function exportGif(
-  layers: VisualLayer[],
+  layers: Layer[],
   width: number,
   height: number,
   frameCount: number = 60,
@@ -49,8 +48,10 @@ async function exportGif(
     for (let frameIndex = 0; frameIndex < frameCount; frameIndex++) {
       // step GIF layers to this frame
       for (const layer of layers) {
-        if (layer.type === 'gif') {
-          layer.currentFrame = frameIndex % layer.gifFrames.length;
+        for (const elem of layer.elements) {
+          if (elem.kind === 'animated_image') {
+            elem.currentFrame = frameIndex % elem.gifFrames.length;
+          }
         }
       }
 
@@ -82,7 +83,7 @@ async function exportGif(
 }
 
 async function exportStaticFile(
-  layers: VisualLayer[],
+  layers: Layer[],
   width: number,
   height: number,
   core: Core,
@@ -92,8 +93,7 @@ async function exportStaticFile(
     data: {
       config: { defaults }
     },
-    helpers,
-    services: { errors, log },
+    services: { errors },
     utils
   } = core;
   if (!fileName) fileName = defaults.fileName + '.png';
@@ -109,7 +109,7 @@ async function exportStaticFile(
     offCtx.clearRect(0, 0, width, height);
 
     // draw all layers
-    utils.canvas.drawVisualLayersToContext(offCtx, layers, helpers, log);
+    utils.canvas.drawVisualLayersToContext(offCtx, layers);
 
     // export as PNG
     offscreenCanvas.toBlob(blob => {
@@ -180,7 +180,7 @@ async function handleUpload(
     const ctx = helpers.canvas.get2DContext(canvas);
 
     // GIF support
-    if (ext === ('gif' as SupportedExt)) {
+    if (ext === 'gif') {
       const arrayBuffer = await file.arrayBuffer();
       const anim = createGifAnimation(arrayBuffer);
 

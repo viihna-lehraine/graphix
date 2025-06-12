@@ -1,6 +1,10 @@
 // FileL frontend/src/app/features/engine/overlays.ts
 
-import type { Core, OverlayFunctions, TextElement } from '../../types/index.js';
+import type {
+  Core,
+  OverlayFunctions,
+  TextLayerElement
+} from '../../types/index.js';
 
 function removeExistingOverlay(className: string): void {
   document.querySelectorAll(`.${className}`).forEach(e => e.remove());
@@ -8,7 +12,7 @@ function removeExistingOverlay(className: string): void {
 
 function showTextElementOverlay(
   canvas: HTMLCanvasElement,
-  elem: TextElement,
+  elem: TextLayerElement,
   index: number,
   core: Core,
   redraw: () => void
@@ -29,8 +33,10 @@ function showTextElementOverlay(
   ctx.font = `${elem.fontWeight ?? 'bold'} ${elem.fontSize ?? 32}px ${elem.fontFamily ?? 'sans-serif'}`;
   const width = ctx.measureText(elem.text).width + 16;
   const height = (elem.fontSize ?? 32) + 8;
-  const x = rect.left + elem.x * (rect.width / canvas.width) - width / 2;
-  const y = rect.top + elem.y * (rect.height / canvas.height) - height / 2;
+  const x =
+    rect.left + elem.position.x * (rect.width / canvas.width) - width / 2;
+  const y =
+    rect.top + elem.position.y * (rect.height / canvas.height) - height / 2;
 
   // overlay
   const overlay = document.createElement('div');
@@ -115,7 +121,7 @@ function showTextElementOverlay(
       text: textInput.value,
       fontFamily: fontSelect.value,
       fontSize: parseInt(sizeInput.value, 10),
-      color: colorInput.value as TextElement['color']
+      color: colorInput.value as TextLayerElement['color']
     });
     overlay.remove();
     redraw();

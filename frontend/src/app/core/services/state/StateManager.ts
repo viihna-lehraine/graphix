@@ -3,19 +3,21 @@
 import type {
   CanvasState,
   ClientState,
-  Core,
+  Data,
   GifAnimation,
+  Layer,
+  Services,
   State,
   StateLifecycleHook,
   StateManagerContract,
   Subscriber,
-  TextElement,
-  VisualLayer
+  TextLayerElement,
+  Utilities
 } from '../../../types/index.js';
 import { CanvasStateService, ClientStateService } from '../index.js';
 
-// ================================================== //
-// ================================================== //
+// ======================================================== //
+// ======================================================== //
 
 export class StateManager implements StateManagerContract {
   static #instance: StateManager | null = null;
@@ -26,16 +28,18 @@ export class StateManager implements StateManagerContract {
   #canvas: CanvasStateService;
   #client: ClientStateService;
 
-  #data: Core['data'];
-  #errors: Core['services']['errors'];
-  #log: Core['services']['log'];
+  #data: Data;
+  #errors: Services['errors'];
+  #log: Services['log'];
+  #utils: Utilities;
 
   // ================================================= //
 
   private constructor(
-    data: Core['data'],
-    errors: Core['services']['errors'],
-    log: Core['services']['log']
+    data: Data,
+    errors: Services['errors'],
+    log: Services['log'],
+    utils: Utilities
   ) {
     try {
       log.info('Initializing StateManager...', '[StateManager constructor]');
@@ -43,6 +47,8 @@ export class StateManager implements StateManagerContract {
       this.#data = data;
       this.#errors = errors;
       this.#log = log;
+      this.#utils = utils;
+
       this.#version = data.version;
 
       // hydrate state
@@ -79,7 +85,9 @@ export class StateManager implements StateManagerContract {
 
       this.#canvas = CanvasStateService.getInstance(
         initialState.canvas,
-        this.#data
+        this.#data,
+        this.#log,
+        this.#utils
       );
       this.#client = ClientStateService.getInstance(initialState.client);
 
@@ -100,9 +108,10 @@ export class StateManager implements StateManagerContract {
   // ================================================== //
 
   static getInstance(
-    data: Core['data'],
-    errors: Core['services']['errors'],
-    log: Core['services']['log']
+    data: Data,
+    errors: Services['errors'],
+    log: Services['log'],
+    utils: Utilities
   ): StateManager {
     try {
       log.info('Calling StateManager.getInstance()...');
@@ -111,7 +120,12 @@ export class StateManager implements StateManagerContract {
         log.info(
           'No existing StateManager instance found. Creating new instance.'
         );
-        return (StateManager.#instance = new StateManager(data, errors, log));
+        return (StateManager.#instance = new StateManager(
+          data,
+          errors,
+          log,
+          utils
+        ));
       }
 
       log.info('Returning existing StateManager instance.');
@@ -160,13 +174,13 @@ export class StateManager implements StateManagerContract {
   // ================================================= //
   // PROXY CANVAS STATE ACCESS //
 
-  addLayer(layer: VisualLayer): void {
+  addLayer(layer: Layer): void {
     this.#canvas.addLayer(layer);
     for (const hook of this.#lifecycleHooks) {
       hook('addLayer', this.getCanvas());
     }
   }
-  addTextElement(elem: TextElement): void {
+  addTextElement(elem: TextLayerElement): void {
     this.#canvas.addTextElement(elem);
   }
   canRedoCanvas(): boolean {
@@ -191,8 +205,13 @@ export class StateManager implements StateManagerContract {
   moveLayer(index: number, newIndex: number): void {
     this.#canvas.moveLayer(index, newIndex);
   }
-  moveTextElement(index: number, x: number, y: number): void {
-    this.#canvas.moveTextElement(index, x, y);
+  moveTextElement(
+    layerIndex: number,
+    elemIndex: number,
+    x: number,
+    y: number
+  ): void {
+    this.#canvas.moveTextElement(layerIndex, elemIndex, x, y);
   }
   redoCanvas(): void {
     this.#canvas.redo();
@@ -200,8 +219,8 @@ export class StateManager implements StateManagerContract {
   removeLayer(index: number): void {
     this.#canvas.removeLayer(index);
   }
-  removeTextElement(index: number): void {
-    this.#canvas.removeTextElement(index);
+  removeTextElement(layerIndex: number, elemIndex: number): void {
+    this.#canvas.removeTextElement(layerIndex, elemIndex);
   }
   resetCanvas(): void {
     this.#canvas.reset();
@@ -227,10 +246,10 @@ export class StateManager implements StateManagerContract {
   undoCanvas(): void {
     this.#canvas.undo();
   }
-  updateLayer(index: number, newLayer: VisualLayer): void {
+  updateLayer(index: number, newLayer: Layer): void {
     this.#canvas.updateLayer(index, newLayer);
   }
-  updateTextElement(index: number, newElem: TextElement): void {
+  updateTextElement(index: number, newElem: TextLayerElement): void {
     this.#canvas.updateTextElement(index, newElem);
   }
 

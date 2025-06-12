@@ -26,6 +26,7 @@ const defaults: Defaults = {
   animation: {
     frameCount: defaultAnimationFrameCount
   },
+  blendMode: 'normal',
   canvasWidth: defaultCanvasWidth,
   canvasHeight: defaultCanvasHeight,
   debounceWait: defaultDebounceWait,
@@ -40,6 +41,7 @@ const defaults: Defaults = {
 // ================================================== //
 
 const paths: Paths = {
+  asset_manifest: '/assets/user/assets.manifest.json',
   gifWorkerScript: '/assets/scripts/gif.worker.js'
 } as const;
 

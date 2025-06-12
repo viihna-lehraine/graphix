@@ -1,6 +1,12 @@
 // File: frontend/src/app/types/functions.ts
 
-import type { Data, GifAnimation, TextElement, VisualLayer } from './index.js';
+import type {
+  Data,
+  GifAnimation,
+  Layer,
+  LayerElement,
+  TextLayerElement
+} from './index.js';
 import {
   AnimationGroupManager,
   CacheManager,
@@ -66,12 +72,12 @@ export interface CanvasHelpers {
   };
   isOverResizeHandle(
     mouse: { x: number; y: number },
-    elem: TextElement,
+    elem: LayerElement,
     ctx: CanvasRenderingContext2D
   ): boolean;
   isPointInText(
     pt: { x: number; y: number },
-    elem: TextElement,
+    elem: LayerElement,
     ctx: CanvasRenderingContext2D
   ): boolean;
   mapBlendMode: (blendMode?: string) => GlobalCompositeOperation;
@@ -96,10 +102,15 @@ export interface TimeHelpers {
 export interface CanvasUtils {
   drawVisualLayersToContext(
     ctx: CanvasRenderingContext2D,
-    layers: VisualLayer[],
-    helpers: Helpers,
-    log: Services['log']
+    layers: Layer[]
   ): void;
+  findNthTextElement: (
+    layers: Layer[],
+    n: number
+  ) => { layer: Layer; elemIndex: number } | null;
+  findTextElements(
+    layers: Layer[]
+  ): { elem: TextLayerElement; layerIndex: number; elemIndex: number }[];
 }
 
 export interface DataUtils {
@@ -121,7 +132,7 @@ export interface MathUtils {
 
 export interface IOFunctions {
   exportGif: (
-    layers: VisualLayer[],
+    layers: Layer[],
     width: number,
     height: number,
     frameCount: number,
@@ -129,7 +140,7 @@ export interface IOFunctions {
     fileName?: string
   ) => Promise<void>;
   exportStaticFile: (
-    layers: VisualLayer[],
+    layers: Layer[],
     width: number,
     height: number,
     core: Core,
@@ -151,7 +162,7 @@ export interface OverlayFunctions {
   removeExistingOverlay(className: string): void;
   showTxtElemOverlay: (
     canvas: HTMLCanvasElement,
-    elem: TextElement,
+    elem: TextLayerElement,
     index: number,
     core: Core,
     redraw: () => void

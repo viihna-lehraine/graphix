@@ -3,7 +3,7 @@
 import('./sys/events/dom.js').then(({ onDOMContentLoaded }) => {
   onDOMContentLoaded(async () => {
     try {
-      const { launchApp } = await import('./sys/launch.js');
+      const { launchApp } = await import('@sys/launch.js');
       const {
         core: {
           data: {

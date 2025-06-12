@@ -1,8 +1,6 @@
 // File: frontend/src/app/core/helpers/canvas.ts
 
-import type { CanvasHelpers, TextElement } from '../../types/index.js';
-
-// ================================================== //
+import type { CanvasHelpers, TextLayerElement } from '../../types/index.js';
 
 export const canvasHelpersFactory = (): CanvasHelpers => {
   return {
@@ -32,7 +30,7 @@ export const canvasHelpersFactory = (): CanvasHelpers => {
 
     isOverResizeHandle(
       mouse: { x: number; y: number },
-      elem: TextElement,
+      elem: TextLayerElement,
       ctx: CanvasRenderingContext2D
     ): boolean {
       const fontSize = elem.fontSize ?? 32;
@@ -44,8 +42,8 @@ export const canvasHelpersFactory = (): CanvasHelpers => {
       const height = fontSize;
 
       const handleSize = 10;
-      const handleX = elem.x + width / 2 - handleSize / 2;
-      const handleY = elem.y + height / 2 - handleSize / 2;
+      const handleX = elem.position.x + width / 2 - handleSize / 2;
+      const handleY = elem.position.y + height / 2 - handleSize / 2;
 
       return (
         mouse.x >= handleX &&
@@ -57,7 +55,7 @@ export const canvasHelpersFactory = (): CanvasHelpers => {
 
     isPointInText(
       pt: { x: number; y: number },
-      elem: TextElement,
+      elem: TextLayerElement,
       ctx: CanvasRenderingContext2D
     ): boolean {
       ctx.save();
@@ -72,10 +70,10 @@ export const canvasHelpersFactory = (): CanvasHelpers => {
       ctx.restore();
 
       return (
-        pt.x >= elem.x - width / 2 &&
-        pt.x <= elem.x + width / 2 &&
-        pt.y >= elem.y - height / 2 &&
-        pt.y <= elem.y + height / 2
+        pt.x >= elem.position.x - width / 2 &&
+        pt.x <= elem.position.x + width / 2 &&
+        pt.y >= elem.position.y - height / 2 &&
+        pt.y <= elem.position.y + height / 2
       );
     },
 

@@ -1,20 +1,7 @@
 // File: frontend/src/app/features/engine/start.ts
 
-import type {
-  Core,
-  IOFunctions,
-  OverlayFunctions,
-  TextVisualLayer
-} from '../../types/index.js';
+import type { Core, IOFunctions, OverlayFunctions } from '../../types/index.js';
 import { RenderingEngine } from '../../features/engine/RenderingEngine.js';
-
-let selectedTextIndex: number | null = null;
-let dragging = false;
-let dragOffset = { x: 0, y: 0 };
-let isResizing = false;
-let resizeTargetIndex: number | null = null;
-let initialMouseY = 0;
-let initialFontSize = 32;
 
 function initAssetBrowserToggleBtn(core: Core): void {
   const {
@@ -121,7 +108,9 @@ function initDownloadBtn(core: Core, io: IOFunctions): void {
       }
 
       const state = stateManager.getCanvas();
-      const hasAnimatedLayer = state.layers.some(layer => layer.type === 'gif');
+      const hasAnimatedLayer = state.layers.some(layer =>
+        layer.elements.some(elem => elem.kind === 'animated_image')
+      );
 
       const width = canvas.width;
       const height = canvas.height;
@@ -146,6 +135,7 @@ function initDownloadBtn(core: Core, io: IOFunctions): void {
 function initTextInputForm(core: Core): void {
   const {
     data: {
+      assets: { dummyTextAsset },
       dom: { ids }
     },
     services: { errors, stateManager }
@@ -159,36 +149,38 @@ function initTextInputForm(core: Core): void {
       ids.textInput
     ) as HTMLInputElement | null;
 
-    if (!textForm) {
-      throw new Error(`Text form not found in DOM.`);
-    }
-    if (!textInput) {
-      throw new Error(`Text input not found in DOM.`);
-    }
+    if (!textForm) throw new Error(`Text form not found in DOM.`);
+    if (!textInput) throw new Error(`Text input not found in DOM.`);
 
-    // grab the canvas/context
     const canvas = document.getElementById(
       ids.canvas
     ) as HTMLCanvasElement | null;
-    if (!canvas) {
-      throw new Error(`Canvas element not found in DOM!`);
-    }
+    if (!canvas) throw new Error(`Canvas element not found in DOM!`);
 
     textForm.addEventListener('submit', (e: Event) => {
       e.preventDefault();
 
       const text = textInput.value.trim();
       if (!text) return;
+      const position = { x: canvas.width / 2, y: canvas.height / 2 };
 
       stateManager.addTextElement({
+        kind: 'text',
+        id: crypto.randomUUID(),
+        asset: dummyTextAsset,
         text,
-        x: canvas.width / 2,
-        y: canvas.height / 2,
-        font: 'bold 32px sans-serif',
-        fontSize: 32,
-        color: '#000000',
+        position,
         align: 'center',
-        baseline: 'middle'
+        baseline: 'middle',
+        color: '#000000',
+        font: 'bold 32px sans-serif',
+        fontFamily: 'sans-serif',
+        fontSize: 32,
+        fontWeight: 'bold',
+        fontStyle: 'normal',
+        rotation: 0,
+        scale: { x: 1, y: 1 },
+        element: null
       });
 
       textInput.value = '';
@@ -240,46 +232,51 @@ function setupTextDragHandlers(
   core: Core,
   renderingEngine: RenderingEngine
 ): void {
-  const { helpers, services } = core;
+  const { helpers, services, utils } = core;
   const { errors, stateManager } = services;
+
+  // drag state
+  let dragging = false;
+  let isResizing = false;
+  let dragTarget = null as null | { layerIndex: number; elemIndex: number };
+  let resizeTarget = null as null | { layerIndex: number; elemIndex: number };
+  let dragOffset = { x: 0, y: 0 };
+  let initialMouseY = 0;
+  let initialFontSize = 32;
 
   return errors.handleSync(() => {
     canvas.addEventListener('mousedown', (e: MouseEvent) => {
       dragging = false;
       isResizing = false;
-      selectedTextIndex = null;
-      resizeTargetIndex = null;
+      dragTarget = null;
+      resizeTarget = null;
 
-      const state = stateManager.getState();
+      const state = stateManager.getCanvas();
       const mouse = helpers.canvas.getMousePosition(canvas, e);
       const ctx = canvas.getContext('2d')!;
 
-      const textLayer = state.canvas.layers.find(
-        (layer): layer is TextVisualLayer => layer.type === 'text'
-      );
+      const textElems = utils.canvas.findTextElements(state.layers);
 
-      if (!textLayer) return;
+      for (let i = textElems.length - 1; i >= 0; i--) {
+        const { elem, layerIndex, elemIndex } = textElems[i];
 
-      for (let i = textLayer.textElements.length - 1; i >= 0; i--) {
-        const elem = textLayer.textElements[i];
-
+        // check resize handle first
         if (helpers.canvas.isOverResizeHandle(mouse, elem, ctx)) {
           isResizing = true;
-          resizeTargetIndex = i;
+          resizeTarget = { layerIndex, elemIndex };
           initialMouseY = mouse.y;
           initialFontSize = elem.fontSize ?? 32;
-          stateManager.setSelectedLayerIndex(i);
-
+          stateManager.setSelectedLayerIndex(layerIndex);
           return;
         }
-
+        // check if point in text
         if (helpers.canvas.isPointInText(mouse, elem, ctx)) {
-          selectedTextIndex = i;
           dragging = true;
-          dragOffset.x = mouse.x - elem.x;
-          dragOffset.y = mouse.y - elem.y;
-          stateManager.setSelectedLayerIndex(i);
-          break;
+          dragTarget = { layerIndex, elemIndex };
+          dragOffset.x = mouse.x - elem.position.x;
+          dragOffset.y = mouse.y - elem.position.y;
+          stateManager.setSelectedLayerIndex(layerIndex);
+          return;
         }
       }
     });
@@ -288,36 +285,37 @@ function setupTextDragHandlers(
       const ctx = canvas.getContext('2d')!;
       const state = stateManager.getCanvas();
 
-      const textLayer = state.layers.find(layer => layer.type === 'text') as
-        | TextVisualLayer
-        | undefined;
+      if (isResizing && resizeTarget) {
+        const { layerIndex, elemIndex } = resizeTarget;
+        const elem = state.layers[layerIndex].elements[elemIndex];
+        if (elem.kind !== 'text') return;
 
-      if (!textLayer) return;
-
-      if (isResizing && resizeTargetIndex !== null) {
-        const elem = textLayer.textElements[resizeTargetIndex];
         const mouse = helpers.canvas.getMousePosition(canvas, e);
         const deltaY = mouse.y - initialMouseY;
         const newFontSize = Math.max(10, initialFontSize + deltaY);
 
-        // update element
         const updatedElem = { ...elem, fontSize: newFontSize };
-        textLayer.textElements[resizeTargetIndex] = updatedElem;
+        state.layers[layerIndex].elements[elemIndex] = updatedElem;
 
         renderingEngine.redraw(ctx, stateManager.getCanvas());
         return;
       }
 
-      if (dragging && selectedTextIndex !== null) {
-        const elem = textLayer.textElements[selectedTextIndex];
+      if (dragging && dragTarget) {
+        const { layerIndex, elemIndex } = dragTarget;
+        const elem = state.layers[layerIndex].elements[elemIndex];
+        if (elem.kind !== 'text') return;
+
         const mouse = helpers.canvas.getMousePosition(canvas, e);
 
         const updatedElem = {
           ...elem,
-          x: mouse.x - dragOffset.x,
-          y: mouse.y - dragOffset.y
+          position: {
+            x: mouse.x - dragOffset.x,
+            y: mouse.y - dragOffset.y
+          }
         };
-        textLayer.textElements[selectedTextIndex] = updatedElem;
+        state.layers[layerIndex].elements[elemIndex] = updatedElem;
 
         renderingEngine.redraw(ctx, stateManager.getCanvas());
       }
@@ -326,38 +324,29 @@ function setupTextDragHandlers(
     canvas.addEventListener('mouseup', () => {
       dragging = false;
       isResizing = false;
-      resizeTargetIndex = null;
+      dragTarget = null;
+      resizeTarget = null;
     });
 
     canvas.addEventListener('mouseleave', () => {
       dragging = false;
       isResizing = false;
-      resizeTargetIndex = null;
+      dragTarget = null;
+      resizeTarget = null;
     });
 
     canvas.addEventListener('dblclick', (e: MouseEvent) => {
       const state = stateManager.getCanvas();
       const mouse = helpers.canvas.getMousePosition(canvas, e);
+      const ctx = canvas.getContext('2d')!;
+      const textElems = core.utils.canvas.findTextElements(state.layers);
 
-      const textLayer = state.layers.find(layer => layer.type === 'text') as
-        | TextVisualLayer
-        | undefined;
-
-      if (!textLayer) return;
-
-      for (let i = textLayer.textElements.length - 1; i >= 0; i--) {
-        const elem = textLayer.textElements[i];
-
-        if (
-          helpers.canvas.isPointInText(mouse, elem, canvas.getContext('2d')!)
-        ) {
-          overlay.showTxtElemOverlay(canvas, elem, i, core, () =>
-            renderingEngine.redraw(
-              canvas.getContext('2d')!,
-              stateManager.getCanvas()
-            )
+      for (let i = textElems.length - 1; i >= 0; i--) {
+        const { elem, elemIndex } = textElems[i];
+        if (helpers.canvas.isPointInText(mouse, elem, ctx)) {
+          overlay.showTxtElemOverlay(canvas, elem, elemIndex, core, () =>
+            renderingEngine.redraw(ctx, stateManager.getCanvas())
           );
-
           break;
         }
       }

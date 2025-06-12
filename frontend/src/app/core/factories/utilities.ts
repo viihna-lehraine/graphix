@@ -5,17 +5,12 @@ import type {
   DataUtils,
   DomUtils,
   MathUtils,
-  Services,
   Utilities
 } from '../../types/index.js';
 
-export async function utilitiesFactory(
-  services: Services
-): Promise<Required<Utilities>> {
-  const { errors, log } = services;
-
-  return errors.handleAsync(async () => {
-    log.info(`Creating 'Utilities' object.`);
+export async function utilitiesFactory(): Promise<Required<Utilities>> {
+  try {
+    console.log(`Creating 'Utilities' object.`);
 
     const utils = {} as Utilities;
     const { canvasUtilityFactory } = await import('../utils/canvas.js');
@@ -33,8 +28,14 @@ export async function utilitiesFactory(
     utils.dom = domUtils;
     utils.math = mathUtils;
 
-    log.info(`'Utilities' object has been successfully created.`);
+    console.log(`'Utilities' object has been successfully created.`);
 
     return utils;
-  }, `Utilities initialization failed.`);
+  } catch (error) {
+    throw new Error(
+      `Failed to create 'Utilities' object: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
+  }
 }

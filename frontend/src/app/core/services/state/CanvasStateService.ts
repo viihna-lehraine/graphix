@@ -1,14 +1,17 @@
 // File: frontend/src/app/core/services/state/CanvasStateService.ts
 
 import type {
+  Asset,
   CanvasState,
   CanvasStateServiceContract,
   Data,
   GifAnimation,
+  Layer,
+  LayerElement,
+  Services,
   Subscriber,
-  TextElement,
-  TextVisualLayer,
-  VisualLayer
+  TextLayerElement,
+  Utilities
 } from '../../../types/index.js';
 
 // ================================================== //
@@ -24,10 +27,18 @@ export class CanvasStateService implements CanvasStateServiceContract {
   #future: CanvasState[];
 
   #data: Data;
+  #log: Services['log'];
+  #utils: Utilities;
 
   // ================================================= //
 
-  private constructor(initial: CanvasState, data: Data) {
+  private constructor(
+    initial: CanvasState,
+    data: Data,
+    log: Services['log'],
+    utils: Utilities
+  ) {
+    this.#log = log;
     this.#canvasState = { ...initial };
     this.#canvasState.layers = initial.layers || [];
     this.#canvasState.selectedLayerIndex = initial.selectedLayerIndex ?? null;
@@ -35,15 +46,28 @@ export class CanvasStateService implements CanvasStateServiceContract {
     this.#subscribers = new Set();
     this.#history = [];
     this.#future = [];
+
     this.#data = data;
+    this.#log = log;
+    this.#utils = utils;
   }
 
   // ================================================= //
 
-  static getInstance(initial: CanvasState, data: Data): CanvasStateService {
+  static getInstance(
+    initial: CanvasState,
+    data: Data,
+    log: Services['log'],
+    utils: Utilities
+  ): CanvasStateService {
     try {
       if (!CanvasStateService.#instance) {
-        CanvasStateService.#instance = new CanvasStateService(initial, data);
+        CanvasStateService.#instance = new CanvasStateService(
+          initial,
+          data,
+          log,
+          utils
+        );
       }
 
       return CanvasStateService.#instance;
@@ -56,38 +80,35 @@ export class CanvasStateService implements CanvasStateServiceContract {
 
   // ================================================= //
 
-  addLayer(layer: VisualLayer): void {
+  addLayer(layer: Layer): void {
     this.#history.push({ ...this.#canvasState });
     this.#canvasState.layers.push(layer);
     this.#notify();
   }
 
-  addTextElement(elem: TextElement): void {
-    let textLayer = this.#canvasState.layers.find(
-      (layer): layer is TextVisualLayer => layer.type === 'text'
+  addTextElement(elem: TextLayerElement): void {
+    // find any layer that contains at least one text element
+    let textLayer = this.#canvasState.layers.find(layer =>
+      layer.elements.some(e => e.kind === 'text')
     );
 
     if (!textLayer) {
+      // if no text layer, create a new layer with just this text element
       textLayer = {
         id: crypto.randomUUID(),
-        type: 'text',
-        assetRef: {
-          name: 'TextLayer',
-          class: 'text',
-          src: '',
-          size_kb: 0,
-          hash_sha256: '',
-          extension: 'txt'
-        },
+        name: 'Text Layer',
         opacity: 1,
         visible: true,
         zIndex: this.#canvasState.layers.length,
-        textElements: []
+        blendMode: 'normal',
+        elements: [elem]
       };
       this.#canvasState.layers.push(textLayer);
+    } else {
+      // push into existing layer's elements
+      textLayer.elements.push(elem);
     }
 
-    textLayer.textElements!.push(elem);
     this.#notify();
   }
 
@@ -118,7 +139,7 @@ export class CanvasStateService implements CanvasStateServiceContract {
     return this.#canvasState.aspectRatio;
   }
 
-  getLayers(): VisualLayer[] {
+  getLayers(): Layer[] {
     return [...this.#canvasState.layers];
   }
 
@@ -132,18 +153,20 @@ export class CanvasStateService implements CanvasStateServiceContract {
     this.#notify();
   }
 
-  moveTextElement(index: number, x: number, y: number): void {
-    const textLayer = this.#canvasState.layers.find(
-      (layer): layer is TextVisualLayer => layer.type === 'text'
-    );
+  moveTextElement(
+    layerIndex: number,
+    elemIndex: number,
+    x: number,
+    y: number
+  ): void {
+    const layer = this.#canvasState.layers[layerIndex];
+    if (!layer) return;
 
-    if (textLayer) {
-      const elem = textLayer.textElements[index];
-      if (elem) {
-        elem.x = x;
-        elem.y = y;
-        this.#notify();
-      }
+    const elem = layer.elements[elemIndex];
+    if (elem && elem.kind === 'text') {
+      elem.position.x = x;
+      elem.position.y = y;
+      this.#notify();
     }
   }
 
@@ -161,15 +184,17 @@ export class CanvasStateService implements CanvasStateServiceContract {
     this.#notify();
   }
 
-  removeTextElement(index: number): void {
-    const textLayer = this.#canvasState.layers.find(
-      (layer): layer is TextVisualLayer => layer.type === 'text'
-    );
-
-    if (textLayer) {
-      textLayer.textElements.splice(index, 1);
-      this.#notify();
+  removeTextElement(layerIndex: number, elemIndex: number): void {
+    const layer = this.#canvasState.layers[layerIndex];
+    if (!layer) return;
+    if (layer.elements[elemIndex]?.kind !== 'text') {
+      this.#log.warn(
+        `Attempted to remove non-text element at index ${elemIndex} in layer ${layerIndex} but failed. The element is not a text element or does not exist.`
+      );
+      return;
     }
+    layer.elements.splice(elemIndex, 1);
+    this.#notify();
   }
 
   reset() {
@@ -188,35 +213,57 @@ export class CanvasStateService implements CanvasStateServiceContract {
   }
 
   setAnimation(anim: GifAnimation | null): void {
+    // remove any layer with an animated_image element
     this.#canvasState.layers = this.#canvasState.layers.filter(
-      layer => layer.type !== 'gif'
+      layer => !layer.elements.some(el => el.kind === 'animated_image')
     );
 
     if (anim) {
-      const gifLayer: VisualLayer = {
-        id: crypto.randomUUID(),
+      const asset: Asset = {
         type: 'gif',
-        assetRef: {
-          name: 'GifAnimation',
-          class: 'gif',
-          src: '',
-          size_kb: 0,
-          hash_sha256: '',
-          extension: 'gif'
-        },
-        opacity: 1,
-        visible: true,
-        zIndex: this.#canvasState.layers.length,
+        name: 'GifAnimation',
+        class: 'animated',
+        src: '',
+        ext: 'gif',
+        tags: [],
+        size_kb: 0,
+        hash_sha256: '',
+        credits: false,
+        license: false,
+        tileable: false,
+        width: false,
+        height: false,
+        font: false,
+        animation: {
+          frames: {
+            count: anim.frames.length,
+            rate: 24 // TODO: readdress
+          },
+          rotation: false
+        }
+      };
+
+      const gifElement: LayerElement = {
+        kind: 'animated_image',
+        id: crypto.randomUUID(),
+        asset,
+        position: { x: 0, y: 0 },
+        scale: { x: 1, y: 1 },
+        rotation: false,
         gifFrames: anim.frames,
         currentFrame: 0,
         frameElapsed: 0,
-        position: { x: 0, y: 0 },
-        scale: { x: 1, y: 1 },
-        rotation: {
-          speed: 0,
-          direction: 'n/a',
-          currentAngle: 0
-        }
+        element: null
+      };
+
+      const gifLayer: Layer = {
+        id: crypto.randomUUID(),
+        name: 'GIF Layer',
+        opacity: 1,
+        visible: true,
+        zIndex: this.#canvasState.layers.length,
+        blendMode: 'normal',
+        elements: [gifElement]
       };
 
       this.#canvasState.layers.push(gifLayer);
@@ -232,35 +279,49 @@ export class CanvasStateService implements CanvasStateServiceContract {
 
   setCanvasImage(imageDataUrl: string | undefined): void {
     this.#canvasState.layers = this.#canvasState.layers.filter(
-      layer => layer.type !== 'image'
+      layer => !layer.elements.some(el => el.kind === 'static_image')
     );
 
     if (imageDataUrl) {
       const img = new Image();
       img.src = imageDataUrl;
 
-      const imageLayer: VisualLayer = {
-        id: crypto.randomUUID(),
+      const asset: Asset = {
         type: 'image',
-        assetRef: {
-          name: 'ImageLayer',
-          src: imageDataUrl,
-          class: 'image',
-          size_kb: 0,
-          hash_sha256: '',
-          extension: 'png'
-        },
+        name: 'ImageLayer',
+        class: 'static',
+        src: imageDataUrl,
+        ext: 'png',
+        tags: [],
+        size_kb: 0,
+        hash_sha256: '',
+        credits: false,
+        license: false,
+        tileable: false,
+        width: false,
+        height: false,
+        font: false,
+        animation: false
+      };
+
+      const imageElement: LayerElement = {
+        kind: 'static_image',
+        id: crypto.randomUUID(),
+        asset,
+        position: { x: 0, y: 0 },
+        scale: { x: 1, y: 1 },
+        rotation: 0,
+        element: img
+      };
+
+      const imageLayer: Layer = {
+        id: crypto.randomUUID(),
+        name: 'Image Layer',
         opacity: 1,
         visible: true,
         zIndex: 0,
-        element: img,
-        position: { x: 0, y: 0 },
-        scale: { x: 1, y: 1 },
-        rotation: {
-          speed: 0,
-          direction: 'n/a',
-          currentAngle: 0
-        }
+        blendMode: 'normal',
+        elements: [imageElement]
       };
 
       this.#canvasState.layers.unshift(imageLayer);
@@ -288,20 +349,22 @@ export class CanvasStateService implements CanvasStateServiceContract {
     }
   }
 
-  updateLayer(index: number, newLayer: VisualLayer): void {
+  updateLayer(index: number, newLayer: Layer): void {
     this.#canvasState.layers[index] = newLayer;
     this.#notify();
   }
 
-  updateTextElement(index: number, newElem: TextElement): void {
-    const textLayer = this.#canvasState.layers.find(
-      (layer): layer is TextVisualLayer => layer.type === 'text'
+  updateTextElement(
+    globalTextElemIndex: number,
+    newElem: TextLayerElement
+  ): void {
+    const found = this.#utils.canvas.findNthTextElement(
+      this.#canvasState.layers,
+      globalTextElemIndex
     );
-
-    if (textLayer) {
-      textLayer.textElements[index] = newElem;
-      this.#notify();
-    }
+    if (!found) return;
+    found.layer.elements[found.elemIndex] = newElem;
+    this.#notify();
   }
 
   // ================================================= //

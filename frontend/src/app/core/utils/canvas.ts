@@ -1,18 +1,15 @@
 // File: frontend/src/app/core/utils/canvas.ts
 
 import type {
-  Helpers,
   CanvasUtils,
-  Services,
-  VisualLayer
+  Layer,
+  TextLayerElement
 } from '../../types/index.js';
 
 export const canvasUtilityFactory = (): CanvasUtils => ({
   drawVisualLayersToContext(
     ctx: CanvasRenderingContext2D,
-    layers: VisualLayer[],
-    helpers: Helpers,
-    log: Services['log']
+    layers: Layer[]
   ): void {
     layers
       .slice()
@@ -21,65 +18,70 @@ export const canvasUtilityFactory = (): CanvasUtils => ({
         if (!layer.visible) return;
 
         ctx.save();
-
-        // default blend mode
         ctx.globalCompositeOperation = 'source-over';
         ctx.globalAlpha = layer.opacity;
 
-        // apply transform
-        const x = layer.position?.x ?? 0;
-        const y = layer.position?.y ?? 0;
-        const scaleX = layer.scale?.x ?? 1;
-        const scaleY = layer.scale?.y ?? 1;
-        const rotation = layer.rotation?.currentAngle ?? 0;
+        for (const elem of layer.elements) {
+          ctx.save();
 
-        ctx.translate(x, y);
-        ctx.rotate((rotation * Math.PI) / 180);
-        ctx.scale(scaleX, scaleY);
+          // per-element transform: position, rotation, scale
+          ctx.translate(elem.position.x, elem.position.y);
 
-        switch (layer.type) {
-          case 'gif': {
-            const frame = layer.gifFrames[layer.currentFrame];
-            if (frame && frame.imageData instanceof ImageData) {
-              ctx.putImageData(frame.imageData, 0, 0);
-            } else {
-              log.warn(`GIF frame not found or invalid for layer ${layer.id}`);
+          // --- rotation ---
+          if (elem.kind === 'static_image' || elem.kind === 'text') {
+            ctx.rotate(((elem.rotation ?? 0) * Math.PI) / 180);
+          } else if (
+            elem.kind === 'animated_image' &&
+            elem.rotation &&
+            typeof elem.rotation === 'object'
+          ) {
+            ctx.rotate(((elem.rotation.currentAngle ?? 0) * Math.PI) / 180);
+          }
+
+          // --- scale ---
+          ctx.scale(elem.scale.x, elem.scale.y);
+
+          // --- draw ---
+          switch (elem.kind) {
+            case 'animated_image': {
+              const frame = elem.gifFrames[elem.currentFrame];
+              if (frame && frame.imageData instanceof ImageData) {
+                ctx.putImageData(frame.imageData, 0, 0);
+              } else {
+                console.warn(
+                  `GIF frame not found or invalid for element ${elem.id}`
+                );
+              }
+              break;
             }
-            break;
-          }
-          case 'image': {
-            if (
-              layer.element &&
-              layer.element.complete &&
-              layer.element.naturalWidth > 0
-            ) {
-              ctx.drawImage(layer.element, 0, 0);
+
+            case 'static_image': {
+              if (
+                elem.element &&
+                elem.element.complete &&
+                elem.element.naturalWidth > 0
+              ) {
+                ctx.drawImage(elem.element, 0, 0);
+              }
+              break;
             }
-            break;
+
+            case 'text': {
+              // you can draw text here, or in your text overlay renderer
+              // Example:
+              const fontSize = elem.fontSize ?? 32;
+              const fontWeight = elem.fontWeight ?? 'bold';
+              const fontFamily = elem.fontFamily ?? 'sans-serif';
+              ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+              ctx.fillStyle = elem.color ?? '#000';
+              ctx.textAlign = elem.align ?? 'center';
+              ctx.textBaseline = elem.baseline ?? 'middle';
+              ctx.fillText(elem.text, 0, 0);
+              break;
+            }
           }
 
-          case 'overlay': {
-            ctx.globalCompositeOperation = helpers.canvas.mapBlendMode(
-              layer.blendMode
-            );
-            ctx.drawImage(layer.element, 0, 0);
-            break;
-          }
-
-          case 'sticker': {
-            ctx.drawImage(layer.element, 0, 0);
-            break;
-          }
-
-          case 'video': {
-            ctx.drawImage(layer.element, 0, 0);
-            break;
-          }
-
-          case 'text': {
-            // no draw here — text layers are drawn in drawTextAndSelection()
-            break;
-          }
+          ctx.restore();
         }
 
         ctx.restore();
@@ -87,5 +89,39 @@ export const canvasUtilityFactory = (): CanvasUtils => ({
 
     ctx.globalAlpha = 1.0;
     ctx.globalCompositeOperation = 'source-over';
+  },
+
+  findNthTextElement(
+    layers: Layer[],
+    n: number
+  ): { layer: Layer; elemIndex: number } | null {
+    let count = 0;
+    for (const layer of layers) {
+      for (let i = 0; i < layer.elements.length; ++i) {
+        if (layer.elements[i].kind === 'text') {
+          if (count === n) return { layer, elemIndex: i };
+          count++;
+        }
+      }
+    }
+    return null;
+  },
+
+  findTextElements(
+    layers: Layer[]
+  ): { elem: TextLayerElement; layerIndex: number; elemIndex: number }[] {
+    const results: {
+      elem: TextLayerElement;
+      layerIndex: number;
+      elemIndex: number;
+    }[] = [];
+    layers.forEach((layer, layerIndex) => {
+      layer.elements.forEach((element, elemIndex) => {
+        if (element.kind === 'text') {
+          results.push({ elem: element, layerIndex, elemIndex });
+        }
+      });
+    });
+    return results;
   }
 });

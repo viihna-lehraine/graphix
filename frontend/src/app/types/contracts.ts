@@ -6,14 +6,15 @@ import type {
   ClientState,
   ErrorHandlerOptions,
   GifAnimation,
+  Layer,
+  LayerElement,
   NotifierLevel,
   RedrawPlugin,
   ResizePlugin,
   State,
   StateLifecycleHook,
   Subscriber,
-  TextElement,
-  VisualLayer
+  TextLayerElement
 } from './index.js';
 
 // ================================================== //
@@ -50,6 +51,23 @@ export interface ErrorHandlerServiceContract {
   ): T;
 }
 
+export interface LayerManagerContract {
+  addElementToLayer: (layerId: string, element: LayerElement) => void;
+  addLayer: (layer: Layer) => void;
+  getElementById(layerId: string, elementId: string): LayerElement | undefined;
+  getLayerById(layerId: string): Layer | undefined;
+  getLayers: () => Layer[];
+  moveLayers(fromIndex: number, toIndex: number): void;
+  removeElementFromLayer(layerId: string, elementId: string): void;
+  removeLayer: (layerId: string) => void;
+  subscribe(fn: () => void): () => void;
+  updateElement: (
+    layerId: string,
+    elementId: string,
+    updatedElement: LayerElement
+  ) => void;
+}
+
 export interface LoggerServiceContract {
   debug: (message: string, caller?: string) => void;
   error: (message: string, caller?: string) => void;
@@ -77,9 +95,9 @@ export interface ResizeManagerContract {
 // ================================================== //
 
 export interface StateManagerContract {
-  addLayer(layer: VisualLayer): void;
-  addLifecycleHook(hook: StateLifecycleHook): void;
-  addTextElement(elem: TextElement): void;
+  addLayer: (layer: Layer) => void;
+  addLifecycleHook: (hook: StateLifecycleHook) => void;
+  addTextElement(elem: TextLayerElement): void;
   canRedoCanvas: () => boolean;
   canUndoCanvas: () => boolean;
   clearCanvasAll(): void;
@@ -89,7 +107,12 @@ export interface StateManagerContract {
   getClient: () => ClientState;
   getState: () => State;
   moveLayer: (index: number, newIndex: number) => void;
-  moveTextElement: (index: number, x: number, y: number) => void;
+  moveTextElement: (
+    layerIndex: number,
+    elemIndex: number,
+    x: number,
+    y: number
+  ) => void;
   removeLayer: (index: number) => void;
   resetCanvas: () => void;
   setCanvas: (width: number, height: number) => void;
@@ -102,26 +125,31 @@ export interface StateManagerContract {
   subscribeToClient: (fn: Subscriber<ClientState>) => () => void;
   redoCanvas: () => void;
   undoCanvas: () => void;
-  updateLayer: (index: number, newLayer: VisualLayer) => void;
-  updateTextElement: (index: number, newElem: TextElement) => void;
+  updateLayer: (index: number, newLayer: Layer) => void;
+  updateTextElement: (index: number, newElem: TextLayerElement) => void;
 }
 
 export interface CanvasStateServiceContract {
-  addLayer(layer: VisualLayer): void;
-  addTextElement: (elem: TextElement) => void;
+  addLayer(layer: Layer): void;
+  addTextElement: (elem: TextLayerElement) => void;
   canRedo: () => boolean;
   canUndo: () => boolean;
   clearAll: () => void;
   clearAnimation: () => void;
   get: () => CanvasState;
   getAspectRatio: () => number | undefined;
-  getLayers(): VisualLayer[];
+  getLayers(): Layer[];
   getSelectedLayerIndex(): number | null;
   moveLayer(index: number, newIndex: number): void;
-  moveTextElement: (index: number, x: number, y: number) => void;
+  moveTextElement: (
+    layerIndex: number,
+    elemIndex: number,
+    x: number,
+    y: number
+  ) => void;
   redo: () => void;
   removeLayer(index: number): void;
-  removeTextElement: (index: number) => void;
+  removeTextElement(layerIndex: number, elemIndex: number): void;
   reset: () => void;
   set: (width: number, height: number) => void;
   setAnimation: (anim: GifAnimation) => void;
@@ -130,8 +158,11 @@ export interface CanvasStateServiceContract {
   setSelectedLayerIndex(index: number | null): void;
   subscribe: (fn: Subscriber<CanvasState>) => () => void;
   undo: () => void;
-  updateLayer(index: number, newLayer: VisualLayer): void;
-  updateTextElement: (index: number, newElem: TextElement) => void;
+  updateLayer(index: number, newLayer: Layer): void;
+  updateTextElement: (
+    globalTextElemIndex: number,
+    newElem: TextLayerElement
+  ) => void;
 }
 
 export interface ClientStateServiceContract {

@@ -33,19 +33,4 @@ export type ResizePlugin = () => void;
 
 export type Subscriber<T> = (state: T) => void;
 
-export interface TextElement {
-  text: string;
-  x: number;
-  y: number;
-  align: CanvasTextAlign;
-  baseline: CanvasTextBaseline;
-  color: string;
-  font: string;
-  fontFamily?: string;
-  fontSize: number;
-  fontWeight?: string;
-  rotation?: number;
-  scale?: number;
-}
-
 export type UIInitializer = (core: Core) => void | Promise<void>;

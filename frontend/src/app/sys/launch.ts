@@ -1,7 +1,7 @@
 // File: frontend/src/app/sys/launch.ts
 
 import type { Core } from '../types/index.js';
-import { RenderingEngine } from '../features/engine/RenderingEngine.js';
+import { RenderingEngine } from '@engine/RenderingEngine.js';
 
 export async function launchApp(): Promise<{
   core: Core;

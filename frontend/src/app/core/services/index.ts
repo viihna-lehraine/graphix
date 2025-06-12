@@ -1,6 +1,6 @@
 // File: frontend/src/app/core/services/index.ts
 
-export { AnimationGroupManager } from './AnimationGroupManager.js';
+export { AnimationGroupManager } from '../../features/engine/AnimationGroupManager.js';
 export { CacheManager } from './CacheManager.js';
 export { CanvasStateService } from './state/CanvasStateService.js';
 export { ClientStateService } from './state/ClientStateService.js';

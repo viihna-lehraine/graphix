@@ -4,11 +4,13 @@ import type {
   CanvasResizeOptions,
   CanvasState,
   Core,
-  ImageVisualLayer,
+  Data,
+  Helpers,
+  Layer,
   RedrawPlugin,
+  Services,
   RenderingEngineContract,
-  TextVisualLayer,
-  VisualLayer
+  Utilities
 } from '../../types/index.js';
 
 // ====================================================== //
@@ -17,18 +19,18 @@ import type {
 export class RenderingEngine implements RenderingEngineContract {
   static #instance: RenderingEngine | null = null;
 
-  #data: Core['data'];
-  #devMode: Core['data']['flags']['devMode'];
+  #data: Data;
+  #devMode: Data['flags']['devMode'];
   #redrawPlugins: RedrawPlugin[] = [];
 
   #ctx: CanvasRenderingContext2D | null = null;
 
   #core: Core;
-  #errors: Core['services']['errors'];
-  #helpers: Core['helpers'];
-  #log: Core['services']['log'];
-  #stateManager: Core['services']['stateManager'];
-  #utils: Core['utils'];
+  #errors: Services['errors'];
+  #helpers: Helpers;
+  #log: Services['log'];
+  #stateManager: Services['stateManager'];
+  #utils: Utilities;
 
   // ==================================================== //
 
@@ -94,11 +96,7 @@ export class RenderingEngine implements RenderingEngineContract {
 
       // 4. draw all layers (z-index, blend mode, etc.)
       if (state.layers.length > 0) {
-        this.#utils.canvas.drawVisualLayersToContext(
-          this.#ctx!,
-          state.layers,
-          this.#helpers
-        );
+        this.#utils.canvas.drawVisualLayersToContext(this.#ctx!, state.layers);
       }
       // 5. draw text and selection overlays
       this.#drawTextAndSelection(
@@ -122,10 +120,8 @@ export class RenderingEngine implements RenderingEngineContract {
     }, 'RENDERING_ENGINE: Failed to add redraw plugin.');
   }
 
-  attachImageOnLoadHandler(layer: ImageVisualLayer): void {
-    if (layer.element && !layer.element.complete) {
-      this.render();
-    }
+  attachImageOnLoadHandler(state: CanvasState): void {
+    this.render(state);
   }
 
   autoResize({
@@ -201,11 +197,7 @@ export class RenderingEngine implements RenderingEngineContract {
     return this.#errors.handleSync(() => {
       this.clearCanvas(ctx);
       this.drawBoundary(ctx);
-      this.#utils.canvas.drawVisualLayersToContext(
-        ctx,
-        state.layers,
-        this.#helpers
-      );
+      this.#utils.canvas.drawVisualLayersToContext(ctx, state.layers);
       this.#drawTextAndSelection(ctx, state.layers, state.selectedLayerIndex);
     }, 'Unhandled canvas redraw error.');
   }
@@ -254,39 +246,34 @@ export class RenderingEngine implements RenderingEngineContract {
 
   #drawTextAndSelection(
     ctx: CanvasRenderingContext2D,
-    layers: VisualLayer[],
+    layers: Layer[],
     selectedLayerIndex: number | null
   ): void {
     return this.#errors.handleSync(() => {
-      const textLayer = layers.find(
-        (l): l is TextVisualLayer => l.type === 'text'
-      );
-
-      if (!textLayer) return;
-
-      for (const elem of textLayer.textElements!) {
-        ctx.save();
-        const fontSize = elem.fontSize ?? 32;
-        const fontWeight = elem.fontWeight ?? 'bold';
-        const fontFamily = elem.fontFamily ?? 'sans-serif';
-        ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
-        ctx.fillStyle = elem.color;
-        ctx.textAlign = elem.align;
-        ctx.textBaseline = elem.baseline;
-        ctx.fillText(elem.text, elem.x, elem.y);
-        ctx.restore();
+      for (const layer of layers) {
+        for (const elem of layer.elements) {
+          if (elem.kind === 'text') {
+            ctx.save();
+            const fontSize = elem.fontSize ?? 32;
+            const fontWeight = elem.fontWeight ?? 'bold';
+            const fontFamily = elem.fontFamily ?? 'sans-serif';
+            ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+            ctx.fillStyle = elem.color;
+            ctx.textAlign = elem.align;
+            ctx.textBaseline = elem.baseline;
+            ctx.fillText(elem.text, elem.position.x, elem.position.y);
+            ctx.restore();
+          }
+        }
       }
 
       if (selectedLayerIndex !== null) {
-        const selectedLayer = layers[selectedLayerIndex];
-        if (selectedLayer?.type === 'text') {
-          ctx.save();
-          ctx.strokeStyle = '#00F6';
-          ctx.lineWidth = 2;
-          ctx.setLineDash([4, 2]);
-          ctx.strokeRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-          ctx.restore();
-        }
+        ctx.save();
+        ctx.strokeStyle = '#00F6';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 2]);
+        ctx.strokeRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        ctx.restore();
       }
     }, 'Unhandled canvas text and selection drawing error.');
   }

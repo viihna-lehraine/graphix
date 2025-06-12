@@ -1,12 +1,15 @@
 // File: frontend/src/app/types/index.ts
 
 export type {
+  AnimatedAssetProps,
   AnimationGroup,
   Asset,
+  AssetClass,
   AssetsExtra,
+  AssetType,
   BackgroundExtra,
   BorderExtra,
-  BaseVisualLayer,
+  BlendMode,
   Cache,
   CanvasLifecycleEvent,
   CanvasResizeOptions,
@@ -17,26 +20,21 @@ export type {
   GifAnimation,
   GifExtra,
   GifFrame,
-  GifVisualLayer,
   ImageExtra,
-  ImageVisualLayer,
+  Layer,
+  LayerElement,
   ListenerRegistration,
   NotifierLevel,
   OverlayExtra,
-  OverlayVisualLayer,
   Plugin,
   RedrawPlugin,
   ResizePlugin,
   State,
   StateLifecycleHook,
   StickerExtra,
-  StickerVisualLayer,
   Subscriber,
-  TextElement,
-  TextVisualLayer,
-  UIInitializer,
-  VideoVisualLayer,
-  VisualLayer
+  TextLayerElement,
+  UIInitializer
 } from './app/index.js';
 export type {
   AnimationGroupManagerContract,
@@ -45,6 +43,7 @@ export type {
   ClientStateServiceContract,
   ErrorHandlerServiceContract,
   IStorageService,
+  LayerManagerContract,
   NotifierServiceContract,
   LoggerServiceContract,
   RenderingEngineContract,
@@ -72,11 +71,7 @@ export type {
   Flags,
   MessageData,
   Paths,
-  Regex,
-  SupportedExt,
-  SupportedExts,
-  UnsupportedExt,
-  UnsupportedExts
+  Regex
 } from './data.js';
 export type {
   AppHelpers,

@@ -1,11 +1,11 @@
 // File: frontend/src/app/types/app/state.ts
 
-import type { VisualLayer } from './layers.js';
+import type { Layer } from './index.js';
 
 export type CanvasState = {
   width: number;
   height: number;
-  layers: VisualLayer[];
+  layers: Layer[];
   selectedLayerIndex: number | null;
   aspectRatio?: number | undefined;
 };

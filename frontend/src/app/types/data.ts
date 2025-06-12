@@ -1,24 +1,19 @@
 // File: frontend/src/app/types/data.ts
 
-import type { AssetClass } from './index.js';
+import type { Asset, BlendMode } from './index.js';
 
 export interface AssetData {
+  dummyTextAsset: Asset;
   exts: AssetExts;
   tags: AssetTags;
 }
 
 export interface AssetExts {
-  supported: SupportedExts;
-  unsupported: UnsupportedExts;
+  supported: string[];
+  unsupported: string[];
 }
 
-export type AssetManifest = {
-  name: string;
-  class: AssetClass;
-  ext: string;
-  type: string;
-  src: string;
-}[];
+export type AssetManifest = Asset[];
 
 export type AssetTags = string[];
 
@@ -36,6 +31,7 @@ export interface Defaults {
   animation: {
     frameCount: number;
   };
+  blendMode: BlendMode;
   canvasWidth: number;
   canvasHeight: number;
   debounceWait: number;
@@ -105,6 +101,7 @@ export interface MessageData {
 }
 
 export interface Paths {
+  asset_manifest: '/assets/user/assets.manifest.json';
   gifWorkerScript: '/assets/scripts/gif.worker.js';
 }
 
@@ -114,14 +111,6 @@ export interface Regex {
   integerString: RegExp;
   numberString: RegExp;
 }
-
-export type SupportedExt = 'gif' | 'jpeg' | 'jpg' | 'png' | 'webp';
-
-export type SupportedExts = Readonly<SupportedExt[]>;
-
-export type UnsupportedExt = 'svg';
-
-export type UnsupportedExts = Readonly<UnsupportedExt[]>;
 
 // ================================================== //
 

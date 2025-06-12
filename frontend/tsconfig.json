@@ -12,6 +12,7 @@
     "lib": ["DOM", "ES2022"],
     "module": "ES2022",
     "moduleResolution": "bundler",
+    "noEmit": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
     "noImplicitReturns": true,
@@ -19,6 +20,14 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "outDir": "./public/dist",
+    "paths": {
+      "@core/*": ["src/app/core/*"],
+      "@data/*": ["src/app/data/*"],
+      "@engine/*": ["src/app/features/engine/*"],
+      "@features/*": ["src/app/features/*"],
+      "@sys/*": ["src/app/sys/*"],
+      "@types/*": ["src/app/types/*"]
+    },
     "resolveJsonModule": true,
     "rootDir": "./src",
     "skipLibCheck": true,
@@ -28,5 +37,5 @@
     "useUnknownInCatchVariables": true
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "public/js", "dist"]
+  "exclude": ["src/build", "node_modules", "public/js", "dist"]
 }

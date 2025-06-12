@@ -1,33 +1,23 @@
 // File: frontend/src/app/features/asset_browser.ts
 
-import type {
-  Core,
-  GifAsset,
-  ImageAsset,
-  OverlayAsset,
-  StickerAsset
-} from '../../types/index.js';
+import type { Core, Layer, LayerElement } from '../../types/index.js';
 
 function fileExtensionToVisualLayerType(
   core: Core,
   ext: string
-): 'image' | 'gif' | 'overlay' | 'sticker' | 'text' | 'video' {
+): 'static_image' | 'animated_image' {
   switch (ext.toLowerCase()) {
     case 'jpg':
     case 'jpeg':
     case 'png':
     case 'webp':
-      return 'image';
+      return 'static_image';
 
     case 'gif':
-      return 'gif';
-
-    case 'mp4':
-    case 'webm':
-      return 'video';
+      return 'animated_image';
     default:
       core.services.log.warn(`Unsupported file extension: ${ext}`);
-      return 'image';
+      return 'static_image';
   }
 }
 
@@ -36,7 +26,7 @@ async function renderAssetBrowser(core: Core): Promise<void> {
     data: {
       dom: { classes, ids }
     },
-    services: { log, stateManager }
+    services: { stateManager }
   } = core;
   const browser = document.getElementById(ids.assetBrowserDiv);
   if (!browser) return;
@@ -44,8 +34,6 @@ async function renderAssetBrowser(core: Core): Promise<void> {
   browser.innerHTML = '';
 
   const { loadAssetManifest } = await import('../../core/config/manifest.js');
-  const { createLayer } = await import('./layers.js');
-
   const asset_manifest = await loadAssetManifest();
 
   asset_manifest.forEach(asset => {
@@ -55,54 +43,50 @@ async function renderAssetBrowser(core: Core): Promise<void> {
     thumb.className = classes.assetBrowserThumb;
 
     thumb.addEventListener('click', () => {
-      const fullAsset = {
-        ...asset,
-        size_kb: (asset as any).size_kb ?? 0,
-        hash_sha256: (asset as any).hash_sha256 ?? '',
-        extension: asset.extension ?? ''
-      };
+      // determine layer element type from asset
+      const elemKind = fileExtensionToVisualLayerType(core, asset.ext);
 
-      let newLayer;
-
-      switch (asset.class) {
-        case 'animation':
-          newLayer = createLayer.gif(
-            fullAsset as GifAsset,
-            stateManager.getCanvas().layers.length
-          );
-          break;
-
-        case 'image':
-          newLayer = createLayer.image(
-            fullAsset as ImageAsset,
-            stateManager.getCanvas().layers.length
-          );
-          break;
-
-        case 'overlay':
-          newLayer = createLayer.overlay(
-            fullAsset as OverlayAsset,
-            stateManager.getCanvas().layers.length
-          );
-          break;
-
-        case 'sticker':
-          newLayer = createLayer.sticker(
-            fullAsset as StickerAsset,
-            stateManager.getCanvas().layers.length
-          );
-          break;
-
-        default:
-          log.warn(`Unsupported asset class: ${asset.class}`);
-          newLayer = createLayer.image(
-            fullAsset as ImageAsset,
-            stateManager.getCanvas().layers.length
-          );
+      let element: LayerElement;
+      if (elemKind === 'animated_image') {
+        element = {
+          kind: 'animated_image',
+          id: crypto.randomUUID(),
+          asset,
+          position: { x: 0, y: 0 },
+          scale: { x: 1, y: 1 },
+          rotation: false,
+          gifFrames: [],
+          currentFrame: 0,
+          frameElapsed: 0,
+          element: null
+        };
+      } else {
+        element = {
+          kind: 'static_image',
+          id: crypto.randomUUID(),
+          asset,
+          position: { x: 0, y: 0 },
+          scale: { x: 1, y: 1 },
+          rotation: 0,
+          element: null
+        };
       }
+
+      // build a Layer to hold this element
+      const newLayer: Layer = {
+        id: crypto.randomUUID(),
+        name: asset.name,
+        opacity: 1,
+        visible: true,
+        zIndex: stateManager.getCanvas().layers.length,
+        blendMode: asset.blendMode ?? 'normal',
+        elements: [element]
+      };
 
       stateManager.addLayer(newLayer);
     });
+
+    browser.appendChild(thumb);
   });
 }
 

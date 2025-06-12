@@ -1,14 +1,12 @@
 // File: frontend/src/app/cpre/helpers/time.ts
 
-import type { Data, Helpers } from '../../types/index.js';
+import type { Data, TimeHelpers } from '../../types/index.js';
 
 const { data } = await import('../../data/index.js');
 const defaultDebounceWait: Data['config']['defaults']['debounceWait'] =
   data.config.defaults.debounceWait;
 
-// ================================================== //
-
-export const timeHelpersFactory = (): Helpers['time'] => ({
+export const timeHelpersFactory = (): TimeHelpers => ({
   debounce<T extends (...args: Record<string, unknown>[]) => void>(
     fn: T,
     wait?: number

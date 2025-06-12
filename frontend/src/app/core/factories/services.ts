@@ -1,6 +1,6 @@
 // File: frontend/src/app/core/factories/services.ts
 
-import type { Data, Helpers, Services } from '../../types/index.js';
+import type { Data, Helpers, Services, Utilities } from '../../types/index.js';
 import {
   AnimationGroupManager,
   CacheManager,
@@ -15,7 +15,8 @@ import {
 
 export async function serviceFactory(
   data: Data,
-  helpers: Helpers
+  helpers: Helpers,
+  utils: Utilities
 ): Promise<Required<Services>> {
   console.log(`Starting service factory...`);
   const services = {} as Services;
@@ -28,7 +29,8 @@ export async function serviceFactory(
   services.stateManager = StateManager.getInstance(
     data,
     services.errors,
-    services.log
+    services.log,
+    utils
   );
   services.cache = CacheManager.getInstance(services.errors, services.log);
   services.resizeManager = ResizeManager.getInstance(

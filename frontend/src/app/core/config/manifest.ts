@@ -1,8 +1,8 @@
 // File: frontend/src/app/core/config/manifest.ts
 
-import type { AssetManifestEntry } from '../../types/index.js';
+import type { Asset } from '../../types/index.js';
 
-export async function loadAssetManifest(): Promise<AssetManifestEntry[]> {
+export async function loadAssetManifest(): Promise<Asset[]> {
   const resp = await fetch('/assets/userManifest.json');
   if (!resp.ok)
     throw new Error(`Failed to load asset manifest: ${resp.statusText}`);
