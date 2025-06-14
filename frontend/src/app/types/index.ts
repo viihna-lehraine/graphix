@@ -3,11 +3,13 @@
 export type {
   AnimatedAssetProps,
   AnimationGroup,
+  AnyLayer,
   Asset,
   AssetClass,
   AssetsExtra,
   AssetType,
   BackgroundExtra,
+  BackgroundLayer,
   BorderExtra,
   BlendMode,
   Cache,

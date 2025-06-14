@@ -1,6 +1,8 @@
 // File: frontend/src/app/features/engine/io.ts
 
 import type {
+  Asset,
+  BlendMode,
   Core,
   GifAnimation,
   Layer,
@@ -229,10 +231,64 @@ async function handleUpload(
         }
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+
+        const canvasWidth = canvas.width;
+        const canvasHeight = canvas.height;
+
+        // get current number of image layers
+        const layers = stateManager.getCanvas().layers;
+        const imageLayerCount = layers.filter(l =>
+          l.elements.some(e => e.kind === 'static_image')
+        ).length;
+
+        const asset: Asset = {
+          type: 'image',
+          name: fileName,
+          class: 'static',
+          src: img.src,
+          ext: ext,
+          tags: [],
+          size_kb: file.size / 1024,
+          hash_sha256: '',
+          credits: false,
+          license: false,
+          tileable: false,
+          width: img.width,
+          height: img.height,
+          font: false,
+          animation: false
+        } as const;
+
+        const imageElement = {
+          kind: 'static_image',
+          id: crypto.randomUUID(),
+          asset,
+          position: {
+            x: canvasWidth / 2 + 20 * imageLayerCount,
+            y: canvasHeight / 2 - 20 * imageLayerCount
+          },
+          scale: { x: 1, y: 1 },
+          rotation: 0,
+          element: img
+        } as const;
+
+        const imageLayer: Layer = {
+          id: crypto.randomUUID(),
+          name: 'Image Layer',
+          opacity: 1,
+          visible: true,
+          zIndex: layers.length,
+          blendMode: 'normal' as BlendMode,
+          elements: [imageElement]
+        } as const;
+
+        stateManager.addLayer(imageLayer);
       };
       img.src = e.target?.result as string;
     };
     reader.readAsDataURL(file);
+
+    console.log(`Current layers:`, stateManager.getCanvas().layers);
   }, 'File upload processing failed.');
 }
 

@@ -25,10 +25,7 @@ export async function launchApp(): Promise<{
     const {
       services: { log }
     } = core;
-    log.info(
-      `Successfully initialized the Application Core.`,
-      JSON.stringify(core, null, 2)
-    );
+    log.info(`Successfully initialized the Application Core.`);
 
     // 3. Global One-Off Setup (error handlers, etc.)
     log.info(`Executing bootstrap processes...`);

@@ -3,11 +3,13 @@
 export type {
   AnimatedAssetProps,
   AnimationGroup,
+  AnyLayer,
   Asset,
   AssetClass,
   AssetsExtra,
   AssetType,
   BackgroundExtra,
+  BackgroundLayer,
   BlendMode,
   BorderExtra,
   FontAssetProps,
@@ -16,9 +18,11 @@ export type {
   GifFrame,
   GifExtra,
   ImageExtra,
+  ImageLayer,
   Layer,
   LayerElement,
   OverlayExtra,
+  OverlayLayer,
   StickerExtra,
   TextLayerElement
 } from './assets.js';

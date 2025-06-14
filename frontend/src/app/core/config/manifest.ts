@@ -3,7 +3,7 @@
 import type { Asset } from '../../types/index.js';
 
 export async function loadAssetManifest(): Promise<Asset[]> {
-  const resp = await fetch('/assets/userManifest.json');
+  const resp = await fetch('/assets/assets.manifest.json');
   if (!resp.ok)
     throw new Error(`Failed to load asset manifest: ${resp.statusText}`);
   return resp.json();

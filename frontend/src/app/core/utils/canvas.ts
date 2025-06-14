@@ -2,14 +2,14 @@
 
 import type {
   CanvasUtils,
-  Layer,
+  AnyLayer,
   TextLayerElement
 } from '../../types/index.js';
 
 export const canvasUtilityFactory = (): CanvasUtils => ({
   drawVisualLayersToContext(
     ctx: CanvasRenderingContext2D,
-    layers: Layer[]
+    layers: AnyLayer[]
   ): void {
     layers
       .slice()
@@ -21,67 +21,66 @@ export const canvasUtilityFactory = (): CanvasUtils => ({
         ctx.globalCompositeOperation = 'source-over';
         ctx.globalAlpha = layer.opacity;
 
-        for (const elem of layer.elements) {
-          ctx.save();
-
-          // per-element transform: position, rotation, scale
-          ctx.translate(elem.position.x, elem.position.y);
-
-          // --- rotation ---
-          if (elem.kind === 'static_image' || elem.kind === 'text') {
-            ctx.rotate(((elem.rotation ?? 0) * Math.PI) / 180);
-          } else if (
-            elem.kind === 'animated_image' &&
-            elem.rotation &&
-            typeof elem.rotation === 'object'
-          ) {
-            ctx.rotate(((elem.rotation.currentAngle ?? 0) * Math.PI) / 180);
-          }
-
-          // --- scale ---
-          ctx.scale(elem.scale.x, elem.scale.y);
-
-          // --- draw ---
-          switch (elem.kind) {
-            case 'animated_image': {
-              const frame = elem.gifFrames[elem.currentFrame];
-              if (frame && frame.imageData instanceof ImageData) {
-                ctx.putImageData(frame.imageData, 0, 0);
-              } else {
-                console.warn(
-                  `GIF frame not found or invalid for element ${elem.id}`
-                );
-              }
-              break;
+        switch (layer.kind) {
+          case 'background':
+            // Always fills canvas
+            if (
+              layer.element &&
+              layer.element.complete &&
+              layer.element.naturalWidth > 0
+            ) {
+              ctx.drawImage(
+                layer.element,
+                0,
+                0,
+                ctx.canvas.width,
+                ctx.canvas.height
+              );
             }
+            break;
 
-            case 'static_image': {
+          case 'image':
+            // One or more sticker elements, each with position/scale/rotation
+            for (const elem of layer.elements) {
+              ctx.save();
+              ctx.translate(elem.position.x, elem.position.y);
+              ctx.rotate(((elem.rotation ?? 0) * Math.PI) / 180);
+              ctx.scale(elem.scale.x, elem.scale.y);
+
               if (
+                elem.kind === 'static_image' &&
                 elem.element &&
                 elem.element.complete &&
                 elem.element.naturalWidth > 0
               ) {
                 ctx.drawImage(elem.element, 0, 0);
               }
-              break;
+              ctx.restore();
             }
+            break;
 
-            case 'text': {
-              // you can draw text here, or in your text overlay renderer
-              // Example:
-              const fontSize = elem.fontSize ?? 32;
-              const fontWeight = elem.fontWeight ?? 'bold';
-              const fontFamily = elem.fontFamily ?? 'sans-serif';
-              ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
-              ctx.fillStyle = elem.color ?? '#000';
-              ctx.textAlign = elem.align ?? 'center';
-              ctx.textBaseline = elem.baseline ?? 'middle';
-              ctx.fillText(elem.text, 0, 0);
-              break;
+          case 'overlay':
+            // Always fills canvas, can have transparency
+            ctx.globalAlpha = layer.opacity ?? 0.5;
+            if (
+              layer.element &&
+              layer.element.complete &&
+              layer.element.naturalWidth > 0
+            ) {
+              ctx.drawImage(
+                layer.element,
+                0,
+                0,
+                ctx.canvas.width,
+                ctx.canvas.height
+              );
             }
-          }
+            break;
 
-          ctx.restore();
+          // Add more cases as needed (e.g., text, filters, etc)
+          default:
+            // Optionally call your current per-element logic if you have unknowns
+            break;
         }
 
         ctx.restore();
@@ -92,9 +91,9 @@ export const canvasUtilityFactory = (): CanvasUtils => ({
   },
 
   findNthTextElement(
-    layers: Layer[],
+    layers: AnyLayer[],
     n: number
-  ): { layer: Layer; elemIndex: number } | null {
+  ): { layer: AnyLayer; elemIndex: number } | null {
     let count = 0;
     for (const layer of layers) {
       for (let i = 0; i < layer.elements.length; ++i) {
@@ -108,7 +107,7 @@ export const canvasUtilityFactory = (): CanvasUtils => ({
   },
 
   findTextElements(
-    layers: Layer[]
+    layers: AnyLayer[]
   ): { elem: TextLayerElement; layerIndex: number; elemIndex: number }[] {
     const results: {
       elem: TextLayerElement;

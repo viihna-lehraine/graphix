@@ -278,10 +278,6 @@ export class CanvasStateService implements CanvasStateServiceContract {
   }
 
   setCanvasImage(imageDataUrl: string | undefined): void {
-    this.#canvasState.layers = this.#canvasState.layers.filter(
-      layer => !layer.elements.some(el => el.kind === 'static_image')
-    );
-
     if (imageDataUrl) {
       const img = new Image();
       img.src = imageDataUrl;
@@ -319,12 +315,12 @@ export class CanvasStateService implements CanvasStateServiceContract {
         name: 'Image Layer',
         opacity: 1,
         visible: true,
-        zIndex: 0,
+        zIndex: this.#canvasState.layers.length,
         blendMode: 'normal',
         elements: [imageElement]
       };
 
-      this.#canvasState.layers.unshift(imageLayer);
+      this.#canvasState.layers.push(imageLayer);
     }
 
     this.#notify();

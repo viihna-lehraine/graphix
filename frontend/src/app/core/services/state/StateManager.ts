@@ -71,6 +71,15 @@ export class StateManager implements StateManagerContract {
       if (saved) {
         try {
           Object.assign(initialState, JSON.parse(saved));
+
+          if (Array.isArray(initialState.canvas.layers)) {
+            initialState.canvas.layers.forEach(layer => {
+              if (!Array.isArray(layer.elements)) {
+                layer.elements = [];
+              }
+            });
+          }
+
           log.info(
             `StateManager hydrated from localStorage.`,
             '[StateManager constructor]'

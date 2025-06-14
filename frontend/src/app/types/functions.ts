@@ -1,6 +1,7 @@
 // File: frontend/src/app/types/functions.ts
 
 import type {
+  AnyLayer,
   Data,
   GifAnimation,
   Layer,
@@ -102,14 +103,14 @@ export interface TimeHelpers {
 export interface CanvasUtils {
   drawVisualLayersToContext(
     ctx: CanvasRenderingContext2D,
-    layers: Layer[]
+    layers: AnyLayer[]
   ): void;
   findNthTextElement: (
-    layers: Layer[],
+    layers: AnyLayer[],
     n: number
-  ) => { layer: Layer; elemIndex: number } | null;
+  ) => { layer: AnyLayer; elemIndex: number } | null;
   findTextElements(
-    layers: Layer[]
+    layers: AnyLayer[]
   ): { elem: TextLayerElement; layerIndex: number; elemIndex: number }[];
 }
 

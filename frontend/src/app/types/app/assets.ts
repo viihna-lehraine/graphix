@@ -1,5 +1,7 @@
 // File: frontend/src/app/types/assets.ts
 
+export type AnyLayer = BackgroundLayer | ImageLayer | OverlayLayer;
+
 export type AssetClass = 'animated' | 'static';
 
 export interface AnimatedAssetProps {
@@ -67,6 +69,11 @@ export interface BackgroundExtra {
   tileable: Asset['tileable'];
 }
 
+export interface BackgroundLayer extends Layer {
+  kind: 'background';
+  element: HTMLImageElement;
+}
+
 export type BlendMode =
   | 'normal'
   | 'multiply'
@@ -121,6 +128,11 @@ export interface ImageExtra {
   height: Asset['height'];
   animation: AnimatedAssetProps | false;
   tileable: Asset['tileable'];
+}
+
+export interface ImageLayer extends Layer {
+  kind: 'image';
+  elements: LayerElement[];
 }
 
 export interface Layer {
@@ -182,6 +194,12 @@ export type LayerElement =
 
 export interface OverlayExtra {
   blendMode: BlendMode;
+}
+
+export interface OverlayLayer extends Layer {
+  kind: 'overlay';
+  element: HTMLImageElement;
+  opacity: number;
 }
 
 export interface StickerExtra {

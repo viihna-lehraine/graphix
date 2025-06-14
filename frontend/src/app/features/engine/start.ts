@@ -216,10 +216,12 @@ async function initUploadBtn(core: Core, io: IOFunctions): Promise<void> {
 
     // file select triggers upload logic
     imgInput.addEventListener('change', () => {
-      const file = imgInput.files?.[0];
-      if (!file) return;
+      const files = imgInput.files;
+      if (!files) return;
 
-      io.handleUpload(file, core, createGifAnimation);
+      for (const file of Array.from(files)) {
+        io.handleUpload(file, core, createGifAnimation);
+      }
     });
   }, 'Failed to initialize upload UI.');
 }

@@ -285,7 +285,7 @@ function scanDir(dir: string, base: string = '', data: Data): Asset[] {
 if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
 if (!fs.existsSync(assetDir)) {
   console.warn(
-    `generateAssetManifest.mjs - Asset directory ${assetDir} does not exist! Writing an empty manifest.`
+    `Asset directory ${assetDir} not found. Writing empty manifest.`
   );
   fs.writeFileSync(outFile, '[]', 'utf-8');
   process.exit(0);

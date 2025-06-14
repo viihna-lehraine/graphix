@@ -13,7 +13,7 @@
     "format": "prettier --write \"**/*.{ts,js,json,css,md,html}\"",
     "lint": "eslint --ext .ts src/",
     "lint:fix": "eslint --fix --ext .ts src/",
-    "prebuild": "rm -rf public/assets && mkdir -p public && cp -r ../assets public",
+    "prebuild": "rm -rf public/assets && mkdir -p public && cp -r assets public",
     "preview": "vite preview",
     "reinit": "pnpm clean && pnpm install",
     "test": "vitest run",
