@@ -1,8 +1,8 @@
 // File: frontend/src/app/types/assets.ts
 
-export type AnyLayer = BackgroundLayer | ImageLayer | OverlayLayer;
-
-export type AssetClass = 'animated' | 'static';
+// ================================================== //
+// =============== 1. ASSETS ======================== //
+// ================================================== //
 
 export interface AnimatedAssetProps {
   frames: NonNullable<{
@@ -15,13 +15,6 @@ export interface AnimatedAssetProps {
         direction: 'clockwise' | 'counter-clockwise' | 'n/a';
       }
     | false;
-}
-
-export interface AnimationGroup {
-  id: string;
-  layers: Layer[];
-  isPlaying: boolean;
-  playbackRate: number;
 }
 
 export interface Asset {
@@ -43,6 +36,8 @@ export interface Asset {
   blendMode?: BlendMode;
 }
 
+export type AssetClass = 'animated' | 'static';
+
 export type AssetsExtra =
   | BackgroundExtra
   | BorderExtra
@@ -63,36 +58,17 @@ export type AssetType =
   | 'text';
 
 export interface BackgroundExtra {
-  width: Asset['width'];
-  height: Asset['height'];
+  width: number;
+  height: number;
   animation: AnimatedAssetProps | false;
-  tileable: Asset['tileable'];
+  tileable: number;
 }
-
-export interface BackgroundLayer extends Layer {
-  kind: 'background';
-  element: HTMLImageElement;
-}
-
-export type BlendMode =
-  | 'normal'
-  | 'multiply'
-  | 'screen'
-  | 'overlay'
-  | 'darken'
-  | 'lighten'
-  | 'color-dodge'
-  | 'color-burn'
-  | 'hard-light'
-  | 'soft-light'
-  | 'difference'
-  | 'exclusion';
 
 export interface BorderExtra {
-  width: Asset['width'];
-  height: Asset['height'];
+  width: number;
+  height: number;
   animation: AnimatedAssetProps | false;
-  tileable: Asset['tileable'];
+  tileable: boolean;
 }
 
 export type FontAssetProps = {
@@ -106,43 +82,33 @@ export type FontExtra = {
   font: FontAssetProps;
 };
 
-export interface GifAnimation {
-  frames: GifFrame[];
-  isPlaying: () => boolean;
-  pause: () => void;
-  play: (ctx: CanvasRenderingContext2D, loop?: boolean) => void;
-  stop: () => void;
-}
-
-export interface GifFrame {
-  imageData: ImageData;
-  delay: number; // in ms
-}
-
 export type GifExtra = {
   animation: AnimatedAssetProps;
 };
 
 export interface ImageExtra {
-  width: Asset['width'];
-  height: Asset['height'];
+  width: number;
+  height: number;
   animation: AnimatedAssetProps | false;
-  tileable: Asset['tileable'];
+  tileable: number;
 }
 
-export interface ImageLayer extends Layer {
-  kind: 'image';
-  elements: LayerElement[];
+// ================================================== //
+// =============== 2. LAYERS ======================== //
+// ================================================== //
+
+export interface BackgroundLayer extends BaseLayer {
+  kind: 'background';
+  element: HTMLImageElement;
 }
 
-export interface Layer {
+export interface BaseLayer {
   id: string;
   name: string;
   opacity: number;
   visible: boolean;
   zIndex: number;
   blendMode: BlendMode;
-  elements: LayerElement[];
 }
 
 export type LayerElement =
@@ -192,20 +158,65 @@ export type LayerElement =
       element: HTMLDivElement | null;
     };
 
+export interface ImageLayer extends BaseLayer {
+  kind: 'image';
+  element: LayerElement;
+}
+
+export type Layer = BackgroundLayer | ImageLayer | OverlayLayer;
+
+export interface OverlayLayer extends BaseLayer {
+  kind: 'overlay';
+  opacity: number;
+  element: HTMLImageElement;
+}
+
+export type TextLayerElement = Extract<LayerElement, { kind: 'text' }>;
+
+// ================================================== //
+// ================ 3. OTHER ======================== //
+// ================================================== //
+
+export interface AnimationGroup {
+  id: string;
+  layers: Layer[];
+  isPlaying: boolean;
+  playbackRate: number;
+}
+
+export type BlendMode =
+  | 'normal'
+  | 'multiply'
+  | 'screen'
+  | 'overlay'
+  | 'darken'
+  | 'lighten'
+  | 'color-dodge'
+  | 'color-burn'
+  | 'hard-light'
+  | 'soft-light'
+  | 'difference'
+  | 'exclusion';
+
+export interface GifAnimation {
+  frames: GifFrame[];
+  isPlaying: () => boolean;
+  pause: () => void;
+  play: (ctx: CanvasRenderingContext2D, loop?: boolean) => void;
+  stop: () => void;
+}
+
+export interface GifFrame {
+  imageData: ImageData;
+  delay: number; // in ms
+}
+
 export interface OverlayExtra {
   blendMode: BlendMode;
 }
 
-export interface OverlayLayer extends Layer {
-  kind: 'overlay';
-  element: HTMLImageElement;
-  opacity: number;
-}
-
 export interface StickerExtra {
-  width: Asset['width'];
-  height: Asset['height'];
+  width: number;
+  height: number;
   animation: AnimatedAssetProps | false;
 }
-
-export type TextLayerElement = Extract<LayerElement, { kind: 'text' }>;

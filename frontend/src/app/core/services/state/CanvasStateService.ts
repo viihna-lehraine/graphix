@@ -87,28 +87,17 @@ export class CanvasStateService implements CanvasStateServiceContract {
   }
 
   addTextElement(elem: TextLayerElement): void {
-    // find any layer that contains at least one text element
-    let textLayer = this.#canvasState.layers.find(layer =>
-      layer.elements.some(e => e.kind === 'text')
-    );
-
-    if (!textLayer) {
-      // if no text layer, create a new layer with just this text element
-      textLayer = {
-        id: crypto.randomUUID(),
-        name: 'Text Layer',
-        opacity: 1,
-        visible: true,
-        zIndex: this.#canvasState.layers.length,
-        blendMode: 'normal',
-        elements: [elem]
-      };
-      this.#canvasState.layers.push(textLayer);
-    } else {
-      // push into existing layer's elements
-      textLayer.elements.push(elem);
-    }
-
+    const textLayer: Layer = {
+      id: crypto.randomUUID(),
+      name: 'Text Layer',
+      opacity: 1,
+      visible: true,
+      zIndex: this.#canvasState.layers.length,
+      blendMode: 'normal',
+      kind: 'image',
+      element: elem
+    };
+    this.#canvasState.layers.push(textLayer);
     this.#notify();
   }
 
@@ -153,21 +142,18 @@ export class CanvasStateService implements CanvasStateServiceContract {
     this.#notify();
   }
 
-  moveTextElement(
-    layerIndex: number,
-    elemIndex: number,
-    x: number,
-    y: number
-  ): void {
-    const layer = this.#canvasState.layers[layerIndex];
-    if (!layer) return;
-
-    const elem = layer.elements[elemIndex];
-    if (elem && elem.kind === 'text') {
-      elem.position.x = x;
-      elem.position.y = y;
-      this.#notify();
-    }
+  moveTextLayer(oldIndex: number, newIndex: number): void {
+    const layers = this.#canvasState.layers;
+    if (
+      oldIndex < 0 ||
+      oldIndex >= layers.length ||
+      newIndex < 0 ||
+      newIndex >= layers.length
+    )
+      return;
+    const [moved] = layers.splice(oldIndex, 1);
+    layers.splice(newIndex, 0, moved);
+    this.#notify();
   }
 
   redo(): void {
@@ -184,17 +170,17 @@ export class CanvasStateService implements CanvasStateServiceContract {
     this.#notify();
   }
 
-  removeTextElement(layerIndex: number, elemIndex: number): void {
+  removeTextElement(layerIndex: number): void {
     const layer = this.#canvasState.layers[layerIndex];
     if (!layer) return;
-    if (layer.elements[elemIndex]?.kind !== 'text') {
+    if (layer.kind === 'image' && layer.element.kind === 'text') {
+      this.#canvasState.layers.splice(layerIndex, 1);
+      this.#notify();
+    } else {
       this.#log.warn(
-        `Attempted to remove non-text element at index ${elemIndex} in layer ${layerIndex} but failed. The element is not a text element or does not exist.`
+        `Attempted to remove non-text layer at index ${layerIndex}, skipping.`
       );
-      return;
     }
-    layer.elements.splice(elemIndex, 1);
-    this.#notify();
   }
 
   reset() {
@@ -213,9 +199,12 @@ export class CanvasStateService implements CanvasStateServiceContract {
   }
 
   setAnimation(anim: GifAnimation | null): void {
-    // remove any layer with an animated_image element
     this.#canvasState.layers = this.#canvasState.layers.filter(
-      layer => !layer.elements.some(el => el.kind === 'animated_image')
+      layer =>
+        !(
+          layer.kind === 'image' &&
+          (layer.element as LayerElement).kind === 'animated_image'
+        )
     );
 
     if (anim) {
@@ -263,7 +252,8 @@ export class CanvasStateService implements CanvasStateServiceContract {
         visible: true,
         zIndex: this.#canvasState.layers.length,
         blendMode: 'normal',
-        elements: [gifElement]
+        kind: 'image',
+        element: gifElement
       };
 
       this.#canvasState.layers.push(gifLayer);
@@ -317,7 +307,8 @@ export class CanvasStateService implements CanvasStateServiceContract {
         visible: true,
         zIndex: this.#canvasState.layers.length,
         blendMode: 'normal',
-        elements: [imageElement]
+        kind: 'image',
+        element: imageElement
       };
 
       this.#canvasState.layers.push(imageLayer);
@@ -350,16 +341,13 @@ export class CanvasStateService implements CanvasStateServiceContract {
     this.#notify();
   }
 
-  updateTextElement(
-    globalTextElemIndex: number,
-    newElem: TextLayerElement
-  ): void {
+  updateTextElement(globalTextElemIndex: number): void {
     const found = this.#utils.canvas.findNthTextElement(
       this.#canvasState.layers,
       globalTextElemIndex
     );
     if (!found) return;
-    found.layer.elements[found.elemIndex] = newElem;
+    found.layer.element;
     this.#notify();
   }
 

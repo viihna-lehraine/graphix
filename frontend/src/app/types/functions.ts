@@ -1,9 +1,10 @@
 // File: frontend/src/app/types/functions.ts
 
 import type {
-  AnyLayer,
   Data,
+  DebounceOptions,
   GifAnimation,
+  ImageLayer,
   Layer,
   LayerElement,
   TextLayerElement
@@ -52,6 +53,7 @@ export interface Utilities {
   data: DataUtils;
   dom: DomUtils;
   math: MathUtils;
+  typeguards: Typeguards;
 }
 
 // ================================================== //
@@ -86,6 +88,11 @@ export interface CanvasHelpers {
 
 export interface DataHelpers {
   clone: <T>(data: T) => T;
+  debounce<T extends (...args: unknown[]) => void>(
+    fn: T,
+    waitMs: number,
+    options: DebounceOptions
+  ): (...args: Parameters<T>) => void;
   getFileSizeInKB: (file: File | Blob) => number;
   getFileSHA256: (file: File | Blob) => Promise<string>;
 }
@@ -103,14 +110,14 @@ export interface TimeHelpers {
 export interface CanvasUtils {
   drawVisualLayersToContext(
     ctx: CanvasRenderingContext2D,
-    layers: AnyLayer[]
+    layers: Layer[]
   ): void;
   findNthTextElement: (
-    layers: AnyLayer[],
+    layers: Layer[],
     n: number
-  ) => { layer: AnyLayer; elemIndex: number } | null;
+  ) => { layer: Layer; elemIndex: number } | null;
   findTextElements(
-    layers: AnyLayer[]
+    layers: Layer[]
   ): { elem: TextLayerElement; layerIndex: number; elemIndex: number }[];
 }
 
@@ -129,7 +136,16 @@ export interface MathUtils {
   toRadians: (deg: number) => number;
 }
 
+export interface Typeguards {
+  isImageLayer: (layer: Layer) => layer is ImageLayer;
+}
+
 // ================================================== //
+
+export interface EngineHandlers {
+  addImageLayerFromFile: (file: File, core: Core) => Promise<void>;
+  setBackgroundFromFile: (file: File, core: Core) => Promise<void>;
+}
 
 export interface IOFunctions {
   exportGif: (

@@ -1,7 +1,34 @@
 // File: frontend/src/app/features/engine/start.ts
 
-import type { Core, IOFunctions, OverlayFunctions } from '../../types/index.js';
+import type {
+  Core,
+  EngineHandlers,
+  IOFunctions,
+  LayerElement,
+  OverlayFunctions
+} from '../../types/index.js';
 import { RenderingEngine } from '../../features/engine/RenderingEngine.js';
+
+let uploadMode: 'background' | 'image' | null = null;
+
+function initAddImgBtn(core: Core) {
+  const {
+    dom: { ids }
+  } = core.data;
+  const btn = document.getElementById(
+    ids.addImgBtn
+  ) as HTMLButtonElement | null;
+  const imgInput = document.getElementById(
+    ids.imgUploadInput
+  ) as HTMLInputElement | null;
+  if (!btn) throw new Error('Add Image Button not found!');
+  if (!imgInput) throw new Error('Image Upload Input not found!');
+
+  btn.addEventListener('click', () => {
+    uploadMode = 'image';
+    imgInput.click();
+  });
+}
 
 function initAssetBrowserToggleBtn(core: Core): void {
   const {
@@ -108,8 +135,10 @@ function initDownloadBtn(core: Core, io: IOFunctions): void {
       }
 
       const state = stateManager.getCanvas();
-      const hasAnimatedLayer = state.layers.some(layer =>
-        layer.elements.some(elem => elem.kind === 'animated_image')
+      const hasAnimatedLayer = state.layers.some(
+        layer =>
+          layer.kind === 'image' &&
+          (layer.element as LayerElement).kind === 'animated_image'
       );
 
       const width = canvas.width;
@@ -128,6 +157,27 @@ function initDownloadBtn(core: Core, io: IOFunctions): void {
 
     log.debug(`Download Button listener successfully attached.`);
   }, 'Unhandled Download Button initialization error.');
+}
+
+// --------------------------------------------------- //
+
+function initSetBackgroundBtn(core: Core) {
+  const {
+    dom: { ids }
+  } = core.data;
+  const btn = document.getElementById(
+    ids.setBackgroundBtn
+  ) as HTMLButtonElement | null;
+  const imgInput = document.getElementById(
+    ids.imgUploadInput
+  ) as HTMLInputElement | null;
+  if (!btn) throw new Error('Set Background Button not found!');
+  if (!imgInput) throw new Error('Image Upload Input not found!');
+
+  btn.addEventListener('click', () => {
+    uploadMode = 'background';
+    imgInput.click();
+  });
 }
 
 // --------------------------------------------------- //
@@ -190,40 +240,26 @@ function initTextInputForm(core: Core): void {
 
 // --------------------------------------------------- //
 
-async function initUploadBtn(core: Core, io: IOFunctions): Promise<void> {
+function setupUploadHandlers(core: Core, handlers: EngineHandlers) {
   const {
-    data: {
-      dom: { ids }
-    },
-    services
-  } = core;
-  const { errors } = services;
-  const { createGifAnimation } = await import('./animation.js');
+    dom: { ids }
+  } = core.data;
+  const imgInput = document.getElementById(
+    ids.imgUploadInput
+  ) as HTMLInputElement | null;
+  if (!imgInput) throw new Error('Image upload input not found!');
 
-  return errors.handleAsync(async () => {
-    const uploadBtn = document.getElementById(
-      ids.uploadBtn
-    ) as HTMLButtonElement | null;
-    const imgInput = document.getElementById(
-      ids.imgUploadInput
-    ) as HTMLInputElement | null;
-
-    if (!uploadBtn) throw new Error('Upload button not found.');
-    if (!imgInput) throw new Error('Image upload input not found.');
-
-    // button click opens file dialog
-    uploadBtn.addEventListener('click', () => imgInput.click());
-
-    // file select triggers upload logic
-    imgInput.addEventListener('change', () => {
-      const files = imgInput.files;
-      if (!files) return;
-
-      for (const file of Array.from(files)) {
-        io.handleUpload(file, core, createGifAnimation);
-      }
-    });
-  }, 'Failed to initialize upload UI.');
+  imgInput.addEventListener('change', async () => {
+    const file = imgInput.files?.[0];
+    if (!file) return;
+    if (uploadMode === 'background') {
+      await handlers.setBackgroundFromFile(file, core);
+    } else if (uploadMode === 'image') {
+      await handlers.addImageLayerFromFile(file, core);
+    }
+    uploadMode = null;
+    imgInput.value = '';
+  });
 }
 
 // --------------------------------------------------- //
@@ -288,38 +324,47 @@ function setupTextDragHandlers(
       const state = stateManager.getCanvas();
 
       if (isResizing && resizeTarget) {
-        const { layerIndex, elemIndex } = resizeTarget;
-        const elem = state.layers[layerIndex].elements[elemIndex];
-        if (elem.kind !== 'text') return;
+        const { layerIndex } = resizeTarget;
+        const layer = state.layers[layerIndex];
 
-        const mouse = helpers.canvas.getMousePosition(canvas, e);
-        const deltaY = mouse.y - initialMouseY;
-        const newFontSize = Math.max(10, initialFontSize + deltaY);
+        if (core.utils.typeguards.isImageLayer(layer)) {
+          const elem = layer.element;
+          if (elem.kind !== 'text') return;
 
-        const updatedElem = { ...elem, fontSize: newFontSize };
-        state.layers[layerIndex].elements[elemIndex] = updatedElem;
+          const mouse = helpers.canvas.getMousePosition(canvas, e);
+          const deltaY = mouse.y - initialMouseY;
+          const newFontSize = Math.max(10, initialFontSize + deltaY);
 
-        renderingEngine.redraw(ctx, stateManager.getCanvas());
+          const updatedElem = { ...elem, fontSize: newFontSize };
+          layer.element = updatedElem;
+
+          renderingEngine.redraw(ctx, stateManager.getCanvas());
+        }
+
         return;
       }
 
       if (dragging && dragTarget) {
-        const { layerIndex, elemIndex } = dragTarget;
-        const elem = state.layers[layerIndex].elements[elemIndex];
-        if (elem.kind !== 'text') return;
+        const { layerIndex } = dragTarget;
+        const layer = state.layers[layerIndex];
 
-        const mouse = helpers.canvas.getMousePosition(canvas, e);
+        if (core.utils.typeguards.isImageLayer(layer)) {
+          const elem = layer.element;
+          if (elem.kind !== 'text') return;
 
-        const updatedElem = {
-          ...elem,
-          position: {
-            x: mouse.x - dragOffset.x,
-            y: mouse.y - dragOffset.y
-          }
-        };
-        state.layers[layerIndex].elements[elemIndex] = updatedElem;
+          const mouse = helpers.canvas.getMousePosition(canvas, e);
 
-        renderingEngine.redraw(ctx, stateManager.getCanvas());
+          const updatedElem = {
+            ...elem,
+            position: {
+              x: mouse.x - dragOffset.x,
+              y: mouse.y - dragOffset.y
+            }
+          };
+          layer.element = updatedElem;
+
+          renderingEngine.redraw(ctx, stateManager.getCanvas());
+        }
       }
     });
 
@@ -378,12 +423,21 @@ export async function initializeCanvasUI(
     throw new Error(`Canvas element not found in DOM!`);
   }
 
+  const handlers: EngineHandlers = await import('./handlers.js').then(
+    mod => mod.handlers
+  );
+
   return errors.handleAsync(async () => {
     initAssetBrowserToggleBtn(core);
     initClearBtn(core);
     initDownloadBtn(core, io);
-    await initUploadBtn(core, io);
+
+    initAddImgBtn(core);
+    initSetBackgroundBtn(core);
+
     initTextInputForm(core);
     setupTextDragHandlers(canvas, overlay, core, renderingEngine);
+
+    setupUploadHandlers(core, handlers);
   }, 'Canvas UI initialization failed.');
 }

@@ -12,6 +12,15 @@ export interface CanvasResizeOptions {
   preserveAspectRatio?: boolean;
 }
 
+export type DebounceOptions = {
+  // if true, function is triggered on the leading edge instead of the trailing.
+  leading?: boolean;
+  // If true, ensures the function is called after the wait time even if it's still being debounced.
+  trailing?: boolean;
+  // max time the function is allowed to be delayed before it's forcibly invoked.
+  maxWaitMs?: number;
+};
+
 export interface ErrorHandlerOptions {
   context?: Record<string, unknown> | string;
   fallback?: unknown;

@@ -3,13 +3,13 @@
 export type {
   AnimatedAssetProps,
   AnimationGroup,
-  AnyLayer,
   Asset,
   AssetClass,
   AssetsExtra,
   AssetType,
   BackgroundExtra,
   BackgroundLayer,
+  BaseLayer,
   BlendMode,
   BorderExtra,
   FontAssetProps,
@@ -29,6 +29,7 @@ export type {
 export type {
   Cache,
   CanvasResizeOptions,
+  DebounceOptions,
   ErrorHandlerOptions,
   ListenerRegistration,
   NotifierLevel,

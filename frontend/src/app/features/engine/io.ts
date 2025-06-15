@@ -50,10 +50,14 @@ async function exportGif(
     for (let frameIndex = 0; frameIndex < frameCount; frameIndex++) {
       // step GIF layers to this frame
       for (const layer of layers) {
-        for (const elem of layer.elements) {
-          if (elem.kind === 'animated_image') {
-            elem.currentFrame = frameIndex % elem.gifFrames.length;
-          }
+        if (
+          layer.kind === 'image' &&
+          typeof layer.element === 'object' &&
+          'kind' in layer.element &&
+          layer.element.kind === 'animated_image'
+        ) {
+          const elem = layer.element;
+          elem.currentFrame = frameIndex % elem.gifFrames.length;
         }
       }
 
@@ -235,10 +239,13 @@ async function handleUpload(
         const canvasWidth = canvas.width;
         const canvasHeight = canvas.height;
 
-        // get current number of image layers
         const layers = stateManager.getCanvas().layers;
-        const imageLayerCount = layers.filter(l =>
-          l.elements.some(e => e.kind === 'static_image')
+        const imageLayerCount = layers.filter(
+          l =>
+            l.kind === 'image' &&
+            typeof l.element === 'object' &&
+            'kind' in l.element &&
+            l.element.kind === 'static_image'
         ).length;
 
         const asset: Asset = {
@@ -279,7 +286,8 @@ async function handleUpload(
           visible: true,
           zIndex: layers.length,
           blendMode: 'normal' as BlendMode,
-          elements: [imageElement]
+          kind: 'image',
+          element: imageElement
         } as const;
 
         stateManager.addLayer(imageLayer);

@@ -5,7 +5,8 @@ import type {
   DataUtils,
   DomUtils,
   MathUtils,
-  Utilities
+  Utilities,
+  Typeguards
 } from '../../types/index.js';
 
 export async function utilitiesFactory(): Promise<Required<Utilities>> {
@@ -17,8 +18,11 @@ export async function utilitiesFactory(): Promise<Required<Utilities>> {
     const { dataUtilityFactory } = await import('../utils/data.js');
     const { domUtilityFactory } = await import('../utils/dom.js');
     const { mathUtilityFactory } = await import('../utils/math.js');
+    const { typeguardFactory } = await import('../utils/typeguards.js');
 
-    const canvasUtils: CanvasUtils = canvasUtilityFactory();
+    const typeguards: Typeguards = typeguardFactory();
+
+    const canvasUtils: CanvasUtils = canvasUtilityFactory(typeguards);
     const dataUtils: DataUtils = dataUtilityFactory();
     const domUtils: DomUtils = domUtilityFactory();
     const mathUtils: MathUtils = mathUtilityFactory();
@@ -27,6 +31,7 @@ export async function utilitiesFactory(): Promise<Required<Utilities>> {
     utils.data = dataUtils;
     utils.dom = domUtils;
     utils.math = mathUtils;
+    utils.typeguards = typeguards;
 
     console.log(`'Utilities' object has been successfully created.`);
 

@@ -98,6 +98,7 @@ export class RenderingEngine implements RenderingEngineContract {
       if (state.layers.length > 0) {
         this.#utils.canvas.drawVisualLayersToContext(this.#ctx!, state.layers);
       }
+
       // 5. draw text and selection overlays
       this.#drawTextAndSelection(
         this.#ctx!,
@@ -193,6 +194,18 @@ export class RenderingEngine implements RenderingEngineContract {
     }, 'RENDERING_ENGINE: Failed to draw dev overlay.');
   }
 
+  drawResizeHandle(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+    ctx.save();
+    ctx.fillStyle = '#fff';
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.rect(x - 5, y - 5, 10, 10);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  }
+
   redraw(ctx: CanvasRenderingContext2D, state: CanvasState): void {
     return this.#errors.handleSync(() => {
       this.clearCanvas(ctx);
@@ -250,8 +263,13 @@ export class RenderingEngine implements RenderingEngineContract {
     selectedLayerIndex: number | null
   ): void {
     return this.#errors.handleSync(() => {
+      // 1. Draw text for all text layers (no handles here)
       for (const layer of layers) {
-        for (const elem of layer.elements) {
+        if (
+          layer.kind === 'image' &&
+          this.#utils.typeguards.isImageLayer(layer)
+        ) {
+          const elem = layer.element;
           if (elem.kind === 'text') {
             ctx.save();
             const fontSize = elem.fontSize ?? 32;
@@ -267,13 +285,49 @@ export class RenderingEngine implements RenderingEngineContract {
         }
       }
 
+      // 2. draw selection rectangle & resize handle ONLY for selected layer
       if (selectedLayerIndex !== null) {
+        const layer = layers[selectedLayerIndex];
         ctx.save();
         ctx.strokeStyle = '#00F6';
         ctx.lineWidth = 2;
         ctx.setLineDash([4, 2]);
         ctx.strokeRect(0, 0, ctx.canvas.width, ctx.canvas.height);
         ctx.restore();
+
+        if (this.#core.utils.typeguards.isImageLayer(layer)) {
+          const elem = layer.element;
+
+          // TEXT HANDLE
+          if (elem.kind === 'text') {
+            const fontSize = elem.fontSize ?? 32;
+            this.drawResizeHandle(
+              ctx,
+              elem.position.x + fontSize,
+              elem.position.y
+            );
+          }
+
+          // STATIC IMAGE HANDLE
+          if (elem.kind === 'static_image' && elem.element) {
+            const img = elem.element as HTMLImageElement;
+            this.drawResizeHandle(
+              ctx,
+              elem.position.x + img.width * elem.scale.x,
+              elem.position.y + img.height * elem.scale.y
+            );
+          }
+
+          // ANIMATED IMAGE HANDLE
+          if (elem.kind === 'animated_image' && elem.element) {
+            const img = elem.element as HTMLImageElement;
+            this.drawResizeHandle(
+              ctx,
+              elem.position.x + img.width * elem.scale.x,
+              elem.position.y + img.height * elem.scale.y
+            );
+          }
+        }
       }
     }, 'Unhandled canvas text and selection drawing error.');
   }

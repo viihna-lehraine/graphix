@@ -28,6 +28,7 @@ const classes: DomClasses = {
 
 // ================================================== //
 
+const addImgBtn = 'add-img-btn';
 const assetBrowserDiv = 'asset-browser';
 const canvas = 'main-canvas';
 const canvasContainerDiv = 'canvas-container';
@@ -35,14 +36,17 @@ const canvasToolbarDiv = 'canvas-toolbar';
 const clearBtn = 'clear-btn';
 const downloadBtn = 'download-btn';
 const imgUploadInput = 'img-upload-input';
+const setBackgroundBtn = 'set-background-btn';
 const textInput = 'text-input';
 const textForm = 'text-form';
 const toggleAssetBrowserBtn = 'toggle-asset-browser-btn';
 const uploadBtn = 'upload-btn';
 
 const btns: DomBtnIds = {
+  addImgBtn,
   clearBtn,
   downloadBtn,
+  setBackgroundBtn,
   toggleAssetBrowserBtn,
   uploadBtn
 } as const;

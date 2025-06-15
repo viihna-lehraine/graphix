@@ -71,15 +71,7 @@ export class StateManager implements StateManagerContract {
       if (saved) {
         try {
           Object.assign(initialState, JSON.parse(saved));
-
-          if (Array.isArray(initialState.canvas.layers)) {
-            initialState.canvas.layers.forEach(layer => {
-              if (!Array.isArray(layer.elements)) {
-                layer.elements = [];
-              }
-            });
-          }
-
+          // No need to touch layer.element!
           log.info(
             `StateManager hydrated from localStorage.`,
             '[StateManager constructor]'
@@ -214,22 +206,14 @@ export class StateManager implements StateManagerContract {
   moveLayer(index: number, newIndex: number): void {
     this.#canvas.moveLayer(index, newIndex);
   }
-  moveTextElement(
-    layerIndex: number,
-    elemIndex: number,
-    x: number,
-    y: number
-  ): void {
-    this.#canvas.moveTextElement(layerIndex, elemIndex, x, y);
-  }
   redoCanvas(): void {
     this.#canvas.redo();
   }
   removeLayer(index: number): void {
     this.#canvas.removeLayer(index);
   }
-  removeTextElement(layerIndex: number, elemIndex: number): void {
-    this.#canvas.removeTextElement(layerIndex, elemIndex);
+  removeTextElement(layerIndex: number): void {
+    this.#canvas.removeTextElement(layerIndex);
   }
   resetCanvas(): void {
     this.#canvas.reset();
@@ -258,8 +242,8 @@ export class StateManager implements StateManagerContract {
   updateLayer(index: number, newLayer: Layer): void {
     this.#canvas.updateLayer(index, newLayer);
   }
-  updateTextElement(index: number, newElem: TextLayerElement): void {
-    this.#canvas.updateTextElement(index, newElem);
+  updateTextElement(index: number): void {
+    this.#canvas.updateTextElement(index);
   }
 
   // ================================================= //

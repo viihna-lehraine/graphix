@@ -4,6 +4,4 @@ import type { Plugin } from '../../types/index.js';
 
 export const plugins: Plugin[] = [];
 
-// ================================================== //
-
 export function registerPlugin(_plugin: Plugin): void {}

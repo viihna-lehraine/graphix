@@ -116,13 +116,7 @@ function showTextElementOverlay(
 
   // commit logic
   function commitEdit() {
-    stateManager.updateTextElement(index, {
-      ...elem,
-      text: textInput.value,
-      fontFamily: fontSelect.value,
-      fontSize: parseInt(sizeInput.value, 10),
-      color: colorInput.value as TextLayerElement['color']
-    });
+    stateManager.updateTextElement(index);
     overlay.remove();
     redraw();
   }

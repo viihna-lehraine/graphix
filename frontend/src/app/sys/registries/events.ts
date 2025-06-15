@@ -27,8 +27,7 @@ export const eventListeners: ListenerRegistration[] = [
 
           if (found) {
             stateManager.removeTextElement(
-              stateManager.getCanvas().layers.indexOf(found.layer),
-              found.elemIndex
+              stateManager.getCanvas().layers.indexOf(found.layer)
             );
             // Optionally clear the selection after deletion:
             stateManager.setSelectedLayerIndex(null);

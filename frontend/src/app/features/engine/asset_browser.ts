@@ -43,7 +43,6 @@ async function renderAssetBrowser(core: Core): Promise<void> {
     thumb.className = classes.assetBrowserThumb;
 
     thumb.addEventListener('click', () => {
-      // determine layer element type from asset
       const elemKind = fileExtensionToVisualLayerType(core, asset.ext);
 
       let element: LayerElement;
@@ -80,7 +79,8 @@ async function renderAssetBrowser(core: Core): Promise<void> {
         visible: true,
         zIndex: stateManager.getCanvas().layers.length,
         blendMode: asset.blendMode ?? 'normal',
-        elements: [element]
+        kind: 'image',
+        element
       };
 
       stateManager.addLayer(newLayer);

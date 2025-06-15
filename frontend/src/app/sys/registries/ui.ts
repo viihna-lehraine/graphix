@@ -2,6 +2,4 @@
 
 import type { UIInitializer } from '../../types/index.js';
 
-// ================================================== //
-
 export const uiInitializers: UIInitializer[] = [];

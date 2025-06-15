@@ -2,14 +2,15 @@
 
 import type {
   CanvasUtils,
-  AnyLayer,
-  TextLayerElement
+  Layer,
+  TextLayerElement,
+  Typeguards
 } from '../../types/index.js';
 
-export const canvasUtilityFactory = (): CanvasUtils => ({
+export const canvasUtilityFactory = (typeguards: Typeguards): CanvasUtils => ({
   drawVisualLayersToContext(
     ctx: CanvasRenderingContext2D,
-    layers: AnyLayer[]
+    layers: Layer[]
   ): void {
     layers
       .slice()
@@ -23,14 +24,13 @@ export const canvasUtilityFactory = (): CanvasUtils => ({
 
         switch (layer.kind) {
           case 'background':
-            // Always fills canvas
             if (
               layer.element &&
-              layer.element.complete &&
-              layer.element.naturalWidth > 0
+              (layer.element as HTMLImageElement).complete &&
+              (layer.element as HTMLImageElement).naturalWidth > 0
             ) {
               ctx.drawImage(
-                layer.element,
+                layer.element as HTMLImageElement,
                 0,
                 0,
                 ctx.canvas.width,
@@ -40,46 +40,54 @@ export const canvasUtilityFactory = (): CanvasUtils => ({
             break;
 
           case 'image':
-            // One or more sticker elements, each with position/scale/rotation
-            for (const elem of layer.elements) {
-              ctx.save();
-              ctx.translate(elem.position.x, elem.position.y);
-              ctx.rotate(((elem.rotation ?? 0) * Math.PI) / 180);
-              ctx.scale(elem.scale.x, elem.scale.y);
+            const elem = layer.element;
+            ctx.save();
+            ctx.translate(elem.position.x, elem.position.y);
 
+            let rotation = 0;
+            if (elem.kind === 'static_image' || elem.kind === 'text') {
+              rotation = typeof elem.rotation === 'number' ? elem.rotation : 0;
+            } else if (elem.kind === 'animated_image') {
               if (
-                elem.kind === 'static_image' &&
-                elem.element &&
-                elem.element.complete &&
-                elem.element.naturalWidth > 0
+                elem.rotation &&
+                typeof elem.rotation === 'object' &&
+                'currentAngle' in elem.rotation
               ) {
-                ctx.drawImage(elem.element, 0, 0);
+                rotation = elem.rotation.currentAngle ?? 0;
+              } else {
+                rotation = 0;
               }
-              ctx.restore();
             }
+            ctx.rotate((rotation * Math.PI) / 180);
+            ctx.scale(elem.scale.x, elem.scale.y);
+
+            if (
+              elem.kind === 'static_image' &&
+              elem.element &&
+              elem.element.complete &&
+              elem.element.naturalWidth > 0
+            ) {
+              ctx.drawImage(elem.element, 0, 0);
+            }
+
+            ctx.restore();
             break;
 
           case 'overlay':
-            // Always fills canvas, can have transparency
             ctx.globalAlpha = layer.opacity ?? 0.5;
             if (
               layer.element &&
-              layer.element.complete &&
-              layer.element.naturalWidth > 0
+              (layer.element as HTMLImageElement).complete &&
+              (layer.element as HTMLImageElement).naturalWidth > 0
             ) {
               ctx.drawImage(
-                layer.element,
+                layer.element as HTMLImageElement,
                 0,
                 0,
                 ctx.canvas.width,
                 ctx.canvas.height
               );
             }
-            break;
-
-          // Add more cases as needed (e.g., text, filters, etc)
-          default:
-            // Optionally call your current per-element logic if you have unknowns
             break;
         }
 
@@ -91,23 +99,21 @@ export const canvasUtilityFactory = (): CanvasUtils => ({
   },
 
   findNthTextElement(
-    layers: AnyLayer[],
+    layers: Layer[],
     n: number
-  ): { layer: AnyLayer; elemIndex: number } | null {
+  ): { layer: Layer; elemIndex: number } | null {
     let count = 0;
     for (const layer of layers) {
-      for (let i = 0; i < layer.elements.length; ++i) {
-        if (layer.elements[i].kind === 'text') {
-          if (count === n) return { layer, elemIndex: i };
-          count++;
-        }
+      if (typeguards.isImageLayer(layer) && layer.element.kind === 'text') {
+        if (count === n) return { layer, elemIndex: 0 };
+        count++;
       }
     }
     return null;
   },
 
   findTextElements(
-    layers: AnyLayer[]
+    layers: Layer[]
   ): { elem: TextLayerElement; layerIndex: number; elemIndex: number }[] {
     const results: {
       elem: TextLayerElement;
@@ -115,11 +121,13 @@ export const canvasUtilityFactory = (): CanvasUtils => ({
       elemIndex: number;
     }[] = [];
     layers.forEach((layer, layerIndex) => {
-      layer.elements.forEach((element, elemIndex) => {
-        if (element.kind === 'text') {
-          results.push({ elem: element, layerIndex, elemIndex });
-        }
-      });
+      if (typeguards.isImageLayer(layer) && layer.element.kind === 'text') {
+        results.push({
+          elem: layer.element,
+          layerIndex,
+          elemIndex: 0
+        });
+      }
     });
     return results;
   }

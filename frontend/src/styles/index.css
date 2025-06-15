@@ -266,6 +266,10 @@ footer {
   animation: sparkleColor 2.5s linear infinite alternate;
 }
 
+.text-input-element {
+  margin: 0;
+}
+
 .tray {
   background: var(--p_white-bf);
   text-align: center;

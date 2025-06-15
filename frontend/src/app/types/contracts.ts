@@ -52,13 +52,12 @@ export interface ErrorHandlerServiceContract {
 }
 
 export interface LayerManagerContract {
-  addElementToLayer: (layerId: string, element: LayerElement) => void;
   addLayer: (layer: Layer) => void;
   getElementById(layerId: string, elementId: string): LayerElement | undefined;
   getLayerById(layerId: string): Layer | undefined;
   getLayers: () => Layer[];
   moveLayers(fromIndex: number, toIndex: number): void;
-  removeElementFromLayer(layerId: string, elementId: string): void;
+  removeElementById(elementId: string): void;
   removeLayer: (layerId: string) => void;
   subscribe(fn: () => void): () => void;
   updateElement: (
@@ -107,13 +106,8 @@ export interface StateManagerContract {
   getClient: () => ClientState;
   getState: () => State;
   moveLayer: (index: number, newIndex: number) => void;
-  moveTextElement: (
-    layerIndex: number,
-    elemIndex: number,
-    x: number,
-    y: number
-  ) => void;
   removeLayer: (index: number) => void;
+  removeTextElement(layerIndex: number): void;
   resetCanvas: () => void;
   setCanvas: (width: number, height: number) => void;
   setCanvasAnimation: (anim: GifAnimation | null) => void;
@@ -141,7 +135,7 @@ export interface CanvasStateServiceContract {
   getLayers(): Layer[];
   getSelectedLayerIndex(): number | null;
   moveLayer(index: number, newIndex: number): void;
-  moveTextElement: (
+  moveTextLayer: (
     layerIndex: number,
     elemIndex: number,
     x: number,
@@ -159,10 +153,7 @@ export interface CanvasStateServiceContract {
   subscribe: (fn: Subscriber<CanvasState>) => () => void;
   undo: () => void;
   updateLayer(index: number, newLayer: Layer): void;
-  updateTextElement: (
-    globalTextElemIndex: number,
-    newElem: TextLayerElement
-  ) => void;
+  updateTextElement: (globalTextElemIndex: number) => void;
 }
 
 export interface ClientStateServiceContract {

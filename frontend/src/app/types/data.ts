@@ -55,8 +55,10 @@ export interface DomDivIds {
 }
 
 export interface DomBtnIds {
+  addImgBtn: string;
   clearBtn: string;
   downloadBtn: string;
+  setBackgroundBtn: string;
   toggleAssetBrowserBtn: string;
   uploadBtn: string;
 }

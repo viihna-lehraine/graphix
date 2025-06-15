@@ -49,9 +49,9 @@ export class AnimationGroupManager implements AnimationGroupManagerContract {
       if (!group.isPlaying) return;
 
       group.layers.forEach(layer => {
-        // --- loop through each element in the layer ---
-        for (const elem of layer.elements) {
-          // --- advance rotation if present (animated_image only) ---
+        const elem = layer.element;
+
+        if (elem && typeof elem === 'object' && 'kind' in elem) {
           if (
             elem.kind === 'animated_image' &&
             elem.rotation &&
@@ -64,7 +64,6 @@ export class AnimationGroupManager implements AnimationGroupManagerContract {
               360;
           }
 
-          // --- advance GIF frames if applicable (animated_image only) ---
           if (elem.kind === 'animated_image' && elem.gifFrames) {
             elem.frameElapsed = (elem.frameElapsed ?? 0) + deltaTime * 1000;
             const frameRate =
@@ -78,7 +77,6 @@ export class AnimationGroupManager implements AnimationGroupManagerContract {
                 ((elem.currentFrame ?? 0) + 1) % elem.gifFrames.length;
             }
           }
-          // ...add other kind-specific logic here
         }
       });
     });

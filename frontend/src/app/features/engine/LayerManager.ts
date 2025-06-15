@@ -30,23 +30,17 @@ export class LayerManager implements LayerManagerContract {
 
   // *********************************************************** //
 
-  addElementToLayer(layerId: string, element: LayerElement): void {
-    const layer = this.#layers.find(l => l.id === layerId);
-    if (layer) {
-      layer.elements.push(element);
-      this.#notify();
-    }
-  }
-
   addLayer(layer: Layer): void {
     this.#layers.push(layer);
     this.#notify();
   }
 
-  getElementById(layerId: string, elementId: string): LayerElement | undefined {
-    const layer = this.#layers.find(l => l.id === layerId);
-    if (layer) {
-      return layer.elements.find(e => e.id === elementId);
+  getElementById(elementId: string): LayerElement | undefined {
+    for (const layer of this.#layers) {
+      const el = layer.element as LayerElement;
+      if ('kind' in el && el.id === elementId) {
+        return el;
+      }
     }
     return undefined;
   }
@@ -73,20 +67,11 @@ export class LayerManager implements LayerManagerContract {
     this.#notify();
   }
 
-  removeElementFromLayer(layerId: string, elementId: string): void {
-    const layer = this.#layers.find(l => l.id === layerId);
-    if (layer) {
-      const elementIndex = layer.elements.findIndex(e => e.id === elementId);
-      if (elementIndex !== -1) {
-        layer.elements.splice(elementIndex, 1);
-        this.#notify();
-      } else {
-        throw new Error(
-          `Element with id ${elementId} not found in layer ${layerId}`
-        );
-      }
-    } else {
-      throw new Error(`Layer with id ${layerId} not found`);
+  removeElementById(elementId: string): void {
+    const idx = this.#layers.findIndex(l => l.element.id === elementId);
+    if (idx !== -1) {
+      this.#layers.splice(idx, 1);
+      this.#notify();
     }
   }
 
@@ -113,34 +98,18 @@ export class LayerManager implements LayerManagerContract {
     updatedElement: LayerElement
   ): void {
     const layer = this.#layers.find(l => l.id === layerId);
-    if (layer) {
-      const elementIndex = layer.elements.findIndex(e => e.id === elementId);
-      if (elementIndex !== -1) {
-        layer.elements[elementIndex] = updatedElement;
-      } else {
-        throw new Error(
-          `Element with id ${elementId} not found in layer ${layerId}`
-        );
-      }
+    if (!layer) throw new Error(`Layer with id ${layerId} not found`);
+    if (layer.element.id === elementId) {
+      layer.element = updatedElement;
+      this.#notify();
     } else {
-      throw new Error(`Layer with id ${layerId} not found`);
+      throw new Error(
+        `Element with id ${elementId} not found in layer ${layerId}`
+      );
     }
-    this.#notify();
   }
 
   // *********************************************************** //
-
-  createEmptyLayer(name: string, zIndex: number): Layer {
-    return {
-      id: crypto.randomUUID(),
-      name,
-      opacity: 1,
-      visible: true,
-      zIndex,
-      blendMode: 'normal',
-      elements: []
-    };
-  }
 
   #notify(): void {
     for (const fn of this.#subscribers) fn();
@@ -150,7 +119,11 @@ export class LayerManager implements LayerManagerContract {
 // ************************************************************* //
 // ************************************************************* //
 
-export function createLayer(name: string, zIndex: number): Layer {
+export function createLayer(
+  name: string,
+  zIndex: number,
+  element: LayerElement
+): Layer {
   return {
     id: crypto.randomUUID(),
     name,
@@ -158,6 +131,7 @@ export function createLayer(name: string, zIndex: number): Layer {
     visible: true,
     zIndex,
     blendMode: 'normal',
-    elements: []
+    kind: 'image',
+    element
   };
 }
