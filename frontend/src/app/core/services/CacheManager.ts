@@ -15,14 +15,12 @@ export class CacheManager implements CacheManagerContract {
   #cache = {} as Cache;
 
   #errors: Services['errors'];
-  #log: Services['log'];
 
   // ====================================================== //
 
-  private constructor(errors: Services['errors'], log: Services['log']) {
+  private constructor(errors: Services['errors']) {
     try {
       this.#errors = errors;
-      this.#log = log;
 
       if (CacheManager.#instance) {
         throw new Error(
@@ -38,17 +36,16 @@ export class CacheManager implements CacheManagerContract {
 
   // ====================================================== //
 
-  public static getInstance(
-    errors: Services['errors'],
-    log: Services['log']
-  ): CacheManager {
+  public static getInstance(errors: Services['errors']): CacheManager {
     return errors.handleSync(() => {
       if (!CacheManager.#instance) {
-        log.info('Creating CanvasCacheService instance.');
-        CacheManager.#instance = new CacheManager(errors, log);
+        console.debug('Creating CanvasCacheService instance.');
+        CacheManager.#instance = new CacheManager(errors);
+
+        return CacheManager.#instance;
       }
 
-      log.info('Returning existing CanvasCacheService instance.');
+      console.debug('Returning existing CanvasCacheService instance.');
       return CacheManager.#instance;
     }, 'Unhandled CanvasCacheService getInstance error.');
   }
@@ -57,7 +54,7 @@ export class CacheManager implements CacheManagerContract {
 
   get cachedBgImg(): HTMLImageElement | null {
     return this.#errors.handleSync(() => {
-      this.#log.debug('Returning cached canvas background img');
+      console.debug('Returning cached canvas background img');
       return this.#cache.bgImg;
     }, 'Unhandled CanvasCacheService cachedBgImg getter error.');
   }

@@ -136,17 +136,11 @@ async function handleDownload(
   core: Core,
   fileName?: string
 ): Promise<void> {
-  const {
-    data: {
-      config: { defaults }
-    },
-    services: { errors, log }
-  } = core;
-  if (!fileName) fileName = defaults.fileName;
+  if (!fileName) fileName = core.data.config.defaults.fileName;
 
-  return errors.handleAsync(async () => {
+  return core.services.errors.handleAsync(async () => {
     if (!targetRef || !targetRef.current) {
-      log.error('Target reference is null or undefined.', 'handleDownload');
+      console.error('Target reference is null or undefined.', 'handleDownload');
       return;
     }
 
@@ -207,7 +201,12 @@ async function handleUpload(
         canvas.height = img.height;
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0);
+        core.utils.canvas.drawImagePreserveAspect(
+          ctx,
+          img,
+          canvas.width,
+          canvas.height
+        );
 
         const imgAspect = img.width / img.height;
         const imageDataUrl = e.target?.result as string;
@@ -220,21 +219,13 @@ async function handleUpload(
         canvas.style.width = 'auto';
         canvas.style.height = 'auto';
 
-        const canvasAspect = canvas.width / canvas.height;
-        let drawWidth, drawHeight, offsetX, offsetY;
-        if (imgAspect > canvasAspect) {
-          drawWidth = canvas.width;
-          drawHeight = canvas.width / imgAspect;
-          offsetX = 0;
-          offsetY = (canvas.height - drawHeight) / 2;
-        } else {
-          drawHeight = canvas.height;
-          drawWidth = canvas.height * imgAspect;
-          offsetY = 0;
-          offsetX = (canvas.width - drawWidth) / 2;
-        }
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+        core.utils.canvas.drawImagePreserveAspect(
+          ctx,
+          img,
+          canvas.width,
+          canvas.height
+        );
 
         const canvasWidth = canvas.width;
         const canvasHeight = canvas.height;
@@ -302,7 +293,7 @@ async function handleUpload(
 
 // =================================================== //
 
-export const io: IOFunctions = {
+export const ioFns: IOFunctions = {
   exportGif,
   exportStaticFile,
   handleDownload,

@@ -18,6 +18,10 @@ export type {
   CanvasState,
   ClientState,
   DebounceOptions,
+  EnvConfig,
+  EnvVarParser,
+  EnvVarParserMap,
+  EnvVars,
   ErrorHandlerOptions,
   FontExtra,
   GifAnimation,
@@ -49,7 +53,6 @@ export type {
   IStorageService,
   LayerManagerContract,
   NotifierServiceContract,
-  LoggerServiceContract,
   RenderingEngineContract,
   ResizeManagerContract,
   StateManagerContract
@@ -60,7 +63,6 @@ export type {
   AssetExts,
   AssetManifest,
   AssetTags,
-  BaseData,
   ConfigData,
   Data,
   Defaults,
@@ -75,16 +77,19 @@ export type {
   Flags,
   MessageData,
   Paths,
-  Regex
+  Regex,
+  StorageKeys
 } from './data.js';
 export type {
   AppHelpers,
+  AssetBrowserFunctions,
   CanvasHelpers,
   CanvasUtils,
   Core,
   DataHelpers,
   DataUtils,
   DomUtils,
+  Engine,
   EngineHandlers,
   Helpers,
   IOFunctions,

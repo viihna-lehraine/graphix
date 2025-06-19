@@ -1,23 +1,24 @@
 // File: frontend/src/app/types/functions.ts
 
 import type {
+  AssetType,
   Data,
   DebounceOptions,
+  EnvVars,
   GifAnimation,
   ImageLayer,
   Layer,
   LayerElement,
   TextLayerElement
 } from './index.js';
-import {
-  AnimationGroupManager,
-  CacheManager,
-  ErrorHandler,
-  Logger,
-  ResizeManager,
-  StateManager,
-  StorageManager
-} from '../core/services/index.js';
+import { AnimationGroupManager } from '@engine/AnimationGroupManager.js';
+import { CacheManager } from '@core/services/CacheManager.js';
+import { ErrorHandler } from '@core/services/ErrorHandler.js';
+import { LayerManager } from '@engine/LayerManager.js';
+import { RenderingEngine } from '@engine/RenderingEngine.js';
+import { ResizeManager } from '@core/services/ResizeManager.js';
+import { StateManager } from '@core/services/state/StateManager.js';
+import { StorageManager } from '@core/services/storage/StorageManager.js';
 
 // ================================================== //
 // ========= CORE FUNCTION OBJECTS ================== //
@@ -25,9 +26,20 @@ import {
 
 export interface Core {
   data: Required<Data>;
+  env: Required<EnvVars>;
   helpers: Required<Helpers>;
   services: Required<Services>;
   utils: Required<Utilities>;
+}
+
+export interface Engine {
+  animationGroupManager: AnimationGroupManager;
+  assetBrowserFns: AssetBrowserFunctions;
+  handlers: EngineHandlers;
+  ioFns: IOFunctions;
+  overlayFns: OverlayFunctions;
+  layerManager: LayerManager;
+  renderingEngine: RenderingEngine;
 }
 
 export interface Helpers {
@@ -42,7 +54,6 @@ export type Services = {
   animationGroupManager: AnimationGroupManager;
   cache: CacheManager;
   errors: ErrorHandler;
-  log: Logger;
   resizeManager: ResizeManager;
   stateManager: StateManager;
   storageManager: StorageManager;
@@ -83,6 +94,10 @@ export interface CanvasHelpers {
     elem: LayerElement,
     ctx: CanvasRenderingContext2D
   ): boolean;
+  makeAnimationTick: (
+    engine: Engine,
+    stateManager: StateManager
+  ) => (now: number) => void;
   mapBlendMode: (blendMode?: string) => GlobalCompositeOperation;
 }
 
@@ -93,8 +108,20 @@ export interface DataHelpers {
     waitMs: number,
     options: DebounceOptions
   ): (...args: Parameters<T>) => void;
+  getFileExtension: (file: File | Blob) => string;
+  getFileName: (file: File | Blob) => string;
   getFileSizeInKB: (file: File | Blob) => number;
   getFileSHA256: (file: File | Blob) => Promise<string>;
+  getFormattedTimestamp: () => string;
+  getGifInfo: (file: File | Blob) => Promise<{
+    width: number;
+    height: number;
+    frameCount: number;
+  }>;
+  getImageDimensions: (file: File | Blob) => Promise<{
+    width: number;
+    height: number;
+  }>;
 }
 export interface MathHelpers {
   weightedRandom: (min: number, max: number, weight: number) => number;
@@ -108,6 +135,12 @@ export interface TimeHelpers {
 }
 
 export interface CanvasUtils {
+  drawImagePreserveAspect(
+    ctx: CanvasRenderingContext2D,
+    img: HTMLImageElement,
+    canvasWidth: number,
+    canvasHeight: number
+  ): void;
   drawVisualLayersToContext(
     ctx: CanvasRenderingContext2D,
     layers: Layer[]
@@ -119,10 +152,27 @@ export interface CanvasUtils {
   findTextElements(
     layers: Layer[]
   ): { elem: TextLayerElement; layerIndex: number; elemIndex: number }[];
+  prepCanvasHiDPI: (ctx: CanvasRenderingContext2D) => void;
+  resizeCanvasToMatchImage: (
+    canvas: HTMLCanvasElement,
+    img: HTMLImageElement
+  ) => void;
+  setCanvasHiDPISize: (
+    canvas: HTMLCanvasElement,
+    cssWidth: number,
+    cssHeight: number
+  ) => void;
+  setCanvasToBackgroundImage: (
+    canvas: HTMLCanvasElement,
+    img: HTMLImageElement,
+    maxWidth: number,
+    maxHeight: number
+  ) => void;
 }
 
 export interface DataUtils {
   detectFileType: (file: File) => Promise<string | undefined>;
+  getAssetType: (relPath: string, ext: string) => AssetType;
 }
 
 export interface DomUtils {
@@ -141,6 +191,13 @@ export interface Typeguards {
 }
 
 // ================================================== //
+
+export interface AssetBrowserFunctions {
+  fileExtensionToVisualLayerType: (
+    ext: string
+  ) => 'static_image' | 'animated_image';
+  render: (core: Core) => Promise<void>;
+}
 
 export interface EngineHandlers {
   addImageLayerFromFile: (file: File, core: Core) => Promise<void>;

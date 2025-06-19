@@ -1,79 +1,58 @@
 // File: frontend/src/app/sys/launch.ts
 
-import type { Core } from '../types/index.js';
-import { RenderingEngine } from '@engine/RenderingEngine.js';
+import type { Core, Engine } from '../types/index.js';
 
 export async function launchApp(): Promise<{
   core: Core;
-  renderingEngine: RenderingEngine;
+  engine: Engine;
 }> {
   try {
     console.log(`Launching application...`);
 
-    // 1. Load Static Data
-    console.log(`Loading static Data object...`);
-    const { initializeData } = await import('./initialize.js');
-    const data = await initializeData();
-    console.log(
-      `Successfully loaded static Data object: ${JSON.stringify(data, null, 2)}`
-    );
-
-    // 2. Initialize App Core
-    console.log(`Initializing App Core...`);
-    const { initializeCore } = await import('./initialize.js');
+    console.debug(`Initializing App Core...`);
+    const { initializeCore } = await import('@init/core.js');
     const core = await initializeCore();
-    const {
-      services: { log }
-    } = core;
-    log.info(`Successfully initialized the Application Core.`);
+    console.debug(`Successfully initialized the Application Core.`);
 
-    // 3. Global One-Off Setup (error handlers, etc.)
-    log.info(`Executing bootstrap processes...`);
-    const { bootstrap } = await import('./bootstrap.js');
+    console.debug(`Executing bootstrap processes...`);
+    const { bootstrap } = await import('@bootstrap/main.js');
     await bootstrap(core);
-    log.info(`Bootstrap processes completed successfully.`);
+    console.debug(`Bootstrap processes completed successfully.`);
 
-    // 4. Register Event Listeners
-    log.info(`Registering event listeners...`);
+    console.debug(`Registering event listeners...`);
     const { eventListeners, registerEventListeners } = await import(
-      './registries/events.js'
+      '@sys_registries/events.js'
     );
     registerEventListeners(eventListeners, core);
-    log.info(`Event listeners registered successfully.`);
+    console.debug(`Event listeners registered successfully.`);
 
-    // 5. Register Plugins
-    log.info(`Registering plugins...`);
-    const { plugins } = await import('./registries/plugins.js');
+    console.debug(`Registering plugins...`);
+    const { plugins } = await import('@sys_registries/plugins.js');
     for (const plugin of plugins) await plugin.register(core);
-    log.info(`Plugins registered successfully.`);
+    console.debug(`Plugins registered successfully.`);
 
-    // 6. Initialize User Interface
-    log.info(`Initializing User Interface...`);
-    const { initializeUI } = await import('./initialize.js');
-    await initializeUI(core);
-    log.info(`User Interface initialized successfully.`);
+    console.debug(`Initializing central App Engine...`);
+    const { initializeEngine } = await import('@init/engine.js');
+    const engine = await initializeEngine(core);
+    console.debug(`User Interface initialized successfully.`);
 
-    // 7. Initialize Rendering Engine
-    log.info(`Initializing Rendering Engine...`);
-    const { initializeRenderingEngine } = await import('./initialize.js');
-    const ctx = document.querySelector('canvas')?.getContext('2d');
-    if (!ctx) {
-      throw new Error(`Failed to get 2D context from canvas element.`);
-    }
-    const renderingEngine = await initializeRenderingEngine(ctx, core);
+    await engine.assetBrowserFns
+      .render(core)
+      .then(() =>
+        console.debug(
+          `Asset Browser Rendering SubEngine initialized successfully.`
+        )
+      );
 
-    // 8. Initialise Asset Browser Rendering SubEngine
-    log.info(`Initializing Asset Browser Rendering SubEngine...`);
-    const { renderAssetBrowser } = await import(
-      '../features/engine/asset_browser.js'
+    console.debug(`Initializing User Interface...`);
+    const { registerEngineUIInitializers } = await import(
+      '@sys_registries/ui.js'
     );
-    await renderAssetBrowser(core).then(() =>
-      log.info(`Asset Browser Rendering SubEngine initialized successfully.`)
-    );
+    await registerEngineUIInitializers(core, engine);
 
     return {
       core,
-      renderingEngine
+      engine
     };
   } catch (error) {
     console.error(

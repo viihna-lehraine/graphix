@@ -12,8 +12,6 @@ export class IDBStorageService implements IStorageService {
     this.#db = db;
   }
 
-  // ======================================================= //
-
   static create(): Promise<IDBStorageService> {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open(IDBStorageService.DB_NAME, 1);
@@ -31,8 +29,6 @@ export class IDBStorageService implements IStorageService {
       };
     });
   }
-
-  // ======================================================= //
 
   clear(): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -65,8 +61,6 @@ export class IDBStorageService implements IStorageService {
       req.onerror = () => reject(req.error);
     });
   }
-
-  // ======================================================= //
 
   #tx(mode: IDBTransactionMode): IDBObjectStore {
     return this.#db

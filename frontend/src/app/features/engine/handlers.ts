@@ -15,16 +15,49 @@ async function setBackgroundFromFile(file: File, core: Core): Promise<void> {
 
   reader.onload = () => {
     const imgUrl = reader.result as string;
-
     const layers = stateManager.getCanvas().layers;
     const bgIdx = layers.findIndex(l => l.kind === 'background');
-    if (bgIdx !== -1) {
-      stateManager.removeLayer(bgIdx);
-    }
+
+    if (bgIdx !== -1) stateManager.removeLayer(bgIdx);
 
     const img = new window.Image();
     img.src = imgUrl;
-    img.onload = () => {
+
+    img.onload = async () => {
+      const ext = core.helpers.data.getFileExtension(file);
+      const assetType: AssetType = core.utils.data.getAssetType(imgUrl, ext);
+      const hash_sha256 = await core.helpers.data.getFileSHA256(file);
+      const { width, height } =
+        await core.helpers.data.getImageDimensions(file);
+
+      const asset = {
+        type: assetType,
+        name: file.name,
+        class: 'static' as AssetClass,
+        src: imgUrl,
+        ext,
+        tags: [],
+        size_kb: core.helpers.data.getFileSizeInKB(file),
+        hash_sha256,
+        credits: false as false,
+        license: false as false,
+        tileable: false as false,
+        width,
+        height,
+        font: false as false,
+        animation: false as false
+      };
+
+      const backgroundElement: LayerElement = {
+        kind: 'static_image',
+        id: crypto.randomUUID(),
+        asset,
+        position: { x: 0, y: 0 },
+        scale: { x: 1, y: 1 },
+        rotation: 0,
+        element: img
+      };
+
       const backgroundLayer: Layer = {
         id: crypto.randomUUID(),
         name: file.name,
@@ -33,8 +66,9 @@ async function setBackgroundFromFile(file: File, core: Core): Promise<void> {
         zIndex: 0,
         blendMode: 'normal',
         kind: 'background',
-        element: img
+        element: backgroundElement
       };
+
       stateManager.addLayer(backgroundLayer);
     };
   };

@@ -1,6 +1,11 @@
 // File: frontend/src/app/core/helpers/canvas.ts
 
-import type { CanvasHelpers, TextLayerElement } from '../../types/index.js';
+import type {
+  CanvasHelpers,
+  Engine,
+  TextLayerElement
+} from '../../types/index.js';
+import { StateManager } from '@core/services/state/StateManager.js';
 
 export const canvasHelpersFactory = (): CanvasHelpers => {
   return {
@@ -75,6 +80,47 @@ export const canvasHelpersFactory = (): CanvasHelpers => {
         pt.y >= elem.position.y - height / 2 &&
         pt.y <= elem.position.y + height / 2
       );
+    },
+
+    makeAnimationTick(
+      engine: Engine,
+      stateManager: StateManager
+    ): (now: number) => void {
+      let lastTimestamp = performance.now();
+
+      function animationTick(now: number): void {
+        const deltaTime = (now - lastTimestamp) / 1000;
+        lastTimestamp = now;
+
+        const canvasState = stateManager.getCanvas();
+
+        for (const layer of canvasState.layers) {
+          if (
+            layer.kind === 'image' &&
+            layer.element.kind === 'animated_image' &&
+            Array.isArray(layer.element.gifFrames) &&
+            layer.element.gifFrames.length > 0
+          ) {
+            const elem = layer.element;
+            const frame = elem.gifFrames[elem.currentFrame];
+
+            elem.frameElapsed += deltaTime;
+
+            if (frame && elem.frameElapsed >= frame.delay) {
+              elem.currentFrame =
+                (elem.currentFrame + 1) % elem.gifFrames.length;
+              elem.frameElapsed = 0;
+            }
+          }
+        }
+
+        engine.animationGroupManager.update(deltaTime);
+        engine.renderingEngine.render();
+
+        requestAnimationFrame(animationTick);
+      }
+
+      return animationTick;
     },
 
     mapBlendMode(blendMode?: string): GlobalCompositeOperation {

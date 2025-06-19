@@ -6,23 +6,16 @@ import type {
   Subscriber
 } from '../../../types/index.js';
 
-// ================================================== //
-// ================================================== //
-
 export class ClientStateService implements ClientStateServiceContract {
   static #instance: ClientStateService | null = null;
 
   #state: ClientState;
   #subscribers: Set<Subscriber<ClientState>>;
 
-  // ------------------------------------------------ //
-
   private constructor(initial: ClientState) {
     this.#state = { ...initial };
     this.#subscribers = new Set();
   }
-
-  // ------------------------------------------------ //
 
   static getInstance(initial: ClientState): ClientStateService {
     try {
@@ -38,13 +31,9 @@ export class ClientStateService implements ClientStateServiceContract {
     }
   }
 
-  // ------------------------------------------------ //
-
   get(): ClientState {
     return { ...this.#state };
   }
-
-  // ------------------------------------------------ //
 
   set(viewportWidth: number, viewportHeight: number): void {
     this.#state.viewportWidth = viewportWidth;
@@ -52,15 +41,11 @@ export class ClientStateService implements ClientStateServiceContract {
     this.#notify();
   }
 
-  // ------------------------------------------------ //
-
   subscribe(fn: Subscriber<ClientState>) {
     this.#subscribers.add(fn);
     fn(this.get());
     return () => this.#subscribers.delete(fn);
   }
-
-  // ------------------------------------------------ //
 
   #notify(): void {
     const state = this.get();

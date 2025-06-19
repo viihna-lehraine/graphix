@@ -14,8 +14,6 @@ export interface ErrorClasses {
   UserFacingError: typeof UserFacingError;
 }
 
-// ================================================== //
-
 export const errorClasses: ErrorClasses = {
   UserFacingError
 } as const;

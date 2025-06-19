@@ -40,4 +40,10 @@ export type {
   UIInitializer
 } from './core.js';
 export type { CanvasLifecycleEvent, StateLifecycleHook } from './engine.js';
+export type {
+  EnvConfig,
+  EnvVarParser,
+  EnvVarParserMap,
+  EnvVars
+} from './env.js';
 export type { CanvasState, ClientState, State } from './state.js';

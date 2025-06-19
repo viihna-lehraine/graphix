@@ -5,7 +5,6 @@ import type {
   CanvasState,
   Core,
   Data,
-  Helpers,
   Layer,
   RedrawPlugin,
   Services,
@@ -27,33 +26,19 @@ export class RenderingEngine implements RenderingEngineContract {
 
   #core: Core;
   #errors: Services['errors'];
-  #helpers: Helpers;
-  #log: Services['log'];
   #stateManager: Services['stateManager'];
   #utils: Utilities;
 
   // ==================================================== //
 
   private constructor(ctx: CanvasRenderingContext2D, core: Core) {
-    const {
-      data,
-      helpers,
-      services: { errors, log, stateManager },
-      utils
-    } = core;
-
     this.#ctx = ctx;
-
     this.#core = core;
-
-    this.#data = data;
-    this.#helpers = helpers;
-    this.#utils = utils;
-
-    this.#devMode = data.flags.devMode;
-    this.#errors = errors;
-    this.#log = log;
-    this.#stateManager = stateManager;
+    this.#data = core.data;
+    this.#utils = core.utils;
+    this.#devMode = core.data.flags.devMode;
+    this.#errors = core.services.errors;
+    this.#stateManager = core.services.stateManager;
 
     this.#stateManager.subscribeToCanvas(() => {
       this.render();
@@ -66,51 +51,42 @@ export class RenderingEngine implements RenderingEngineContract {
     ctx: CanvasRenderingContext2D,
     core: Core
   ): RenderingEngine {
-    const { errors, log } = core.services;
-    return errors.handleSync(() => {
-      log.info(`RENDERING_ENGINE: calling getInstance()...`);
+    return core.services.errors.handleSync(() => {
+      console.debug(`calling getInstance()...`);
 
       if (!RenderingEngine.#instance) {
-        log.info(
-          `RENDERING_ENGINE: No existing instance found. Creating new instance.`
-        );
+        console.debug(`No existing instance found. Creating new instance.`);
+
         RenderingEngine.#instance = new RenderingEngine(ctx, core);
       }
 
       return RenderingEngine.#instance;
-    }, 'RENDERING_ENGINE: Failed to get instance.');
+    }, 'Failed to get instance.');
   }
 
   // ==================================================== //
 
   render(state: CanvasState = this.#stateManager.getCanvas()): void {
     return this.#errors.handleSync(() => {
-      // 1. clear the canvas
       this.clearCanvas(this.#ctx!);
 
-      // 2. draw dev overlays
       if (this.#devMode) this.drawDevOverlay();
 
-      // 3. draw main boundary
       this.drawBoundary(this.#ctx!);
 
-      // 4. draw all layers (z-index, blend mode, etc.)
       if (state.layers.length > 0) {
         this.#utils.canvas.drawVisualLayersToContext(this.#ctx!, state.layers);
       }
 
-      // 5. draw text and selection overlays
       this.#drawTextAndSelection(
         this.#ctx!,
         state.layers,
         state.selectedLayerIndex
       );
-
-      // 6. run redraw plugins
       for (const plugin of this.#redrawPlugins) {
         plugin(this.#ctx!, this.#core);
       }
-    }, 'RENDERING_ENGINE: Failed to render canvas.');
+    }, 'Failed to render canvas.');
   }
 
   // ==================================================== //
@@ -118,13 +94,15 @@ export class RenderingEngine implements RenderingEngineContract {
   addRedrawPlugin(plugin: RedrawPlugin): void {
     return this.#errors.handleSync(() => {
       this.#redrawPlugins.push(plugin);
-    }, 'RENDERING_ENGINE: Failed to add redraw plugin.');
+    }, 'Failed to add redraw plugin.');
   }
 
   attachImageOnLoadHandler(state: CanvasState): void {
     this.render(state);
   }
 
+  // NOTE: deprecated for background-driven resizing
+  // kept for optional container-based resizing
   autoResize({
     canvas,
     container,
@@ -151,9 +129,7 @@ export class RenderingEngine implements RenderingEngineContract {
           canvas.style.height = `${rect.height}px`;
         }
       };
-
-      resize(); // initial resize call
-
+      resize();
       window.addEventListener('resize', resize);
 
       return () => window.removeEventListener('resize', resize);
@@ -163,7 +139,7 @@ export class RenderingEngine implements RenderingEngineContract {
   clearCanvas(ctx: CanvasRenderingContext2D): void {
     return this.#errors.handleSync(() => {
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    }, 'RENDERING_ENGINE: Unhandled canvas clear error.');
+    }, 'Unhandled canvas clear error.');
   }
 
   drawBoundary(ctx: CanvasRenderingContext2D): void {
@@ -191,7 +167,7 @@ export class RenderingEngine implements RenderingEngineContract {
       this.#ctx!.lineTo(this.#ctx!.canvas.width / 2, this.#ctx!.canvas.height);
       this.#ctx!.stroke();
       this.#ctx!.restore();
-    }, 'RENDERING_ENGINE: Failed to draw dev overlay.');
+    }, '/*  */Failed to draw dev overlay.');
   }
 
   drawResizeHandle(ctx: CanvasRenderingContext2D, x: number, y: number): void {
@@ -218,7 +194,7 @@ export class RenderingEngine implements RenderingEngineContract {
   removeRedrawPlugin(plugin: RedrawPlugin): void {
     return this.#errors.handleSync(() => {
       this.#redrawPlugins = this.#redrawPlugins.filter(fn => fn !== plugin);
-    }, 'RENDERING_ENGINE: Failed to remove redraw plugin.');
+    }, 'Failed to remove redraw plugin.');
   }
 
   renderTo(ctx: CanvasRenderingContext2D, state?: CanvasState): void {
@@ -229,9 +205,11 @@ export class RenderingEngine implements RenderingEngineContract {
       this.render(state);
       this.#ctx = origCtx;
       this.#devMode = prev;
-    }, 'RENDERING_ENGINE: Failed to render to provided context.');
+    }, 'Failed to render to provided context.');
   }
 
+  // NOTE: deprecated for background-driven workflow
+  // use resize utility instead
   resizeCanvasToParent(): void {
     return this.#errors.handleSync(() => {
       const canvas = document.getElementById(
@@ -298,6 +276,15 @@ export class RenderingEngine implements RenderingEngineContract {
         if (this.#core.utils.typeguards.isImageLayer(layer)) {
           const elem = layer.element;
 
+          if (
+            (elem.kind === 'static_image' || elem.kind === 'animated_image') &&
+            !elem.element
+          ) {
+            const img = new window.Image();
+            img.src = elem.asset.src;
+            elem.element = img;
+          }
+
           // TEXT HANDLE
           if (elem.kind === 'text') {
             const fontSize = elem.fontSize ?? 32;
@@ -330,15 +317,5 @@ export class RenderingEngine implements RenderingEngineContract {
         }
       }
     }, 'Unhandled canvas text and selection drawing error.');
-  }
-
-  // ==================================================== //
-
-  _(): void {
-    this.#data = this.#data;
-    this.#errors = this.#errors;
-    this.#helpers = this.#helpers;
-    this.#log = this.#log;
-    this.#utils = this.#utils;
   }
 }

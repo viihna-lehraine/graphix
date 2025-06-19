@@ -8,14 +8,10 @@ import type {
   GifAnimation,
   Layer,
   LayerElement,
-  Services,
   Subscriber,
   TextLayerElement,
   Utilities
 } from '../../../types/index.js';
-
-// ================================================== //
-// ================================================== //
 
 export class CanvasStateService implements CanvasStateServiceContract {
   static #instance: CanvasStateService | null = null;
@@ -27,18 +23,9 @@ export class CanvasStateService implements CanvasStateServiceContract {
   #future: CanvasState[];
 
   #data: Data;
-  #log: Services['log'];
   #utils: Utilities;
 
-  // ================================================= //
-
-  private constructor(
-    initial: CanvasState,
-    data: Data,
-    log: Services['log'],
-    utils: Utilities
-  ) {
-    this.#log = log;
+  private constructor(initial: CanvasState, data: Data, utils: Utilities) {
     this.#canvasState = { ...initial };
     this.#canvasState.layers = initial.layers || [];
     this.#canvasState.selectedLayerIndex = initial.selectedLayerIndex ?? null;
@@ -48,16 +35,12 @@ export class CanvasStateService implements CanvasStateServiceContract {
     this.#future = [];
 
     this.#data = data;
-    this.#log = log;
     this.#utils = utils;
   }
-
-  // ================================================= //
 
   static getInstance(
     initial: CanvasState,
     data: Data,
-    log: Services['log'],
     utils: Utilities
   ): CanvasStateService {
     try {
@@ -65,7 +48,6 @@ export class CanvasStateService implements CanvasStateServiceContract {
         CanvasStateService.#instance = new CanvasStateService(
           initial,
           data,
-          log,
           utils
         );
       }
@@ -77,8 +59,6 @@ export class CanvasStateService implements CanvasStateServiceContract {
       );
     }
   }
-
-  // ================================================= //
 
   addLayer(layer: Layer): void {
     this.#history.push({ ...this.#canvasState });
@@ -177,7 +157,7 @@ export class CanvasStateService implements CanvasStateServiceContract {
       this.#canvasState.layers.splice(layerIndex, 1);
       this.#notify();
     } else {
-      this.#log.warn(
+      console.warn(
         `Attempted to remove non-text layer at index ${layerIndex}, skipping.`
       );
     }
@@ -209,6 +189,7 @@ export class CanvasStateService implements CanvasStateServiceContract {
 
     if (anim) {
       const asset: Asset = {
+        index: 999999, // placeholder index
         type: 'gif',
         name: 'GifAnimation',
         class: 'animated',
@@ -273,6 +254,7 @@ export class CanvasStateService implements CanvasStateServiceContract {
       img.src = imageDataUrl;
 
       const asset: Asset = {
+        index: 999999, // placeholder index
         type: 'image',
         name: 'ImageLayer',
         class: 'static',
@@ -350,8 +332,6 @@ export class CanvasStateService implements CanvasStateServiceContract {
     found.layer.element;
     this.#notify();
   }
-
-  // ================================================= //
 
   #notify(): void {
     const state = this.get();

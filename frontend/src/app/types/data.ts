@@ -13,13 +13,9 @@ export interface AssetExts {
   unsupported: string[];
 }
 
-export type AssetManifest = Asset[];
+export type AssetManifest = { assets: Asset[] };
 
 export type AssetTags = string[];
-
-export interface BaseData {
-  version: string;
-}
 
 export interface ConfigData {
   defaults: Defaults;
@@ -60,7 +56,6 @@ export interface DomBtnIds {
   downloadBtn: string;
   setBackgroundBtn: string;
   toggleAssetBrowserBtn: string;
-  uploadBtn: string;
 }
 
 export type DomClasses = Record<string, string>;
@@ -82,7 +77,8 @@ export type DomIds = DomBtnIds &
   };
 
 export interface DomInputIds {
-  imgUploadInput: string;
+  addImgInput: string;
+  setBackgroundInput: string;
   textInput: string;
 }
 
@@ -92,6 +88,7 @@ export interface ErrorMessages {
 
 export interface Flags {
   devMode: boolean;
+  false: false;
 }
 
 export interface Manifests {
@@ -114,12 +111,17 @@ export interface Regex {
   numberString: RegExp;
 }
 
+export interface StorageKeys {
+  state: string;
+}
+
 // ================================================== //
 
-export interface Data extends BaseData {
+export interface Data {
   assets: AssetData;
   config: ConfigData;
   dom: DomData;
   flags: Flags;
   msgs: MessageData;
+  storage_keys: StorageKeys;
 }

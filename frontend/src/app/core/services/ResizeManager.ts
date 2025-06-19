@@ -16,20 +16,18 @@ export class ResizeManager implements ResizeManagerContract {
   #plugins: Set<ResizePlugin> = new Set();
 
   #errors: Services['errors'];
-  #log: Services['log'];
 
   // =================================================== //
 
-  private constructor(errors: Services['errors'], log: Services['log']) {
+  private constructor(errors: Services['errors']) {
     try {
-      log.info('Initializing ResizeManager...');
+      console.debug('Initializing ResizeManager...');
 
       this.#errors = errors;
-      this.#log = log;
 
       this.initialize();
 
-      log.info('ResizeManager initialized successfully.');
+      console.debug('ResizeManager initialized successfully.');
     } catch (error) {
       throw new Error(
         `Failed to initialize ResizeManager: ${error instanceof Error ? error.message : String(error)}`
@@ -39,13 +37,14 @@ export class ResizeManager implements ResizeManagerContract {
 
   // =================================================== //
 
-  static getInstance(
-    errors: Services['errors'],
-    log: Services['log']
-  ): ResizeManager {
+  static getInstance(errors: Services['errors']): ResizeManager {
     try {
       if (!ResizeManager.#instance) {
-        ResizeManager.#instance = new ResizeManager(errors, log);
+        console.debug(
+          'No ResizeManager instance exists yet. Creating new instance.'
+        );
+        ResizeManager.#instance = new ResizeManager(errors);
+        console.debug(`Returning ResizeManager instance created.`);
       }
 
       return ResizeManager.#instance;
@@ -60,7 +59,7 @@ export class ResizeManager implements ResizeManagerContract {
 
   initialize(): void {
     this.#errors.handleSync(() => {
-      this.#log.info('Registering Window Resize event listeners...');
+      console.debug('Registering Window Resize event listeners...');
 
       // window.addEventListener('resize', this.debouncedRunAll);
       document.addEventListener('DOMContentLoaded', this.runAll.bind(this));
@@ -70,17 +69,24 @@ export class ResizeManager implements ResizeManagerContract {
   // =================================================== //
 
   register(plugin: ResizePlugin): void {
-    this.#plugins.add(plugin);
+    return this.#errors.handleSync(() => {
+      console.debug(`Registering ResizeManager plugin: ${plugin.name}`);
+      this.#plugins.add(plugin);
+    }, 'ResizeManager plugin registration failed.');
   }
 
   // =================================================== //
 
   runAll(): void {
+    console.debug(`Running all registered resize plugins...`);
+
     this.#plugins.forEach(fn => {
       try {
         fn();
-      } catch (err) {
-        console.error('[ResizeManager] Plugin error:', err);
+      } catch (error) {
+        console.error(
+          `Plugin error: ${error instanceof Error ? error.message : String(error)}`
+        );
       }
     });
   }

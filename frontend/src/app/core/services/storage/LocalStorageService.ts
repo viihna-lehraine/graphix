@@ -2,9 +2,6 @@
 
 import type { IStorageService } from '../../../types/index.js';
 
-// ========================================================= //
-// ========================================================= //
-
 export class LocalStorageService implements IStorageService {
   get<T>(key: string): Promise<T | null> {
     return Promise.resolve(

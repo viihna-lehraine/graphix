@@ -1,6 +1,7 @@
 // File: frontend/src/app/core/helpers/data.ts
 
 import type { DataHelpers, DebounceOptions } from '../../types/index.js';
+import { parseGIF, decompressFrames } from 'gifuct-js';
 
 export const dataHelperFactory = async (): Promise<DataHelpers> => ({
   clone<T>(data: T): T {
@@ -24,7 +25,6 @@ export const dataHelperFactory = async (): Promise<DataHelpers> => ({
         lastCallTime = Date.now();
       }
     };
-
     const cancelTimers = () => {
       if (timeoutId !== null) {
         clearTimeout(timeoutId);
@@ -72,8 +72,24 @@ export const dataHelperFactory = async (): Promise<DataHelpers> => ({
     };
   },
 
+  getFileExtension(file: File | Blob): string {
+    if (file instanceof File) {
+      const parts = file.name.split('.');
+      return parts.length > 1 ? parts.pop() || '' : '';
+    } else if (file instanceof Blob) {
+      return file.type.split('/')[1] || '';
+    } else {
+      return '';
+    }
+  },
+
   getFileSizeInKB(file: File | Blob): number {
-    return Math.round(file.size / 1024);
+    try {
+      return file.size ? Math.round(file.size / 1024) : 0;
+    } catch (error) {
+      console.error(`Error getting file size for the file ${file}:`, error);
+      return 0;
+    }
   },
 
   async getFileSHA256(file: File | Blob): Promise<string> {
@@ -82,5 +98,66 @@ export const dataHelperFactory = async (): Promise<DataHelpers> => ({
     const hashArray = Array.from(new Uint8Array(hashBuffer));
 
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  },
+
+  getFileName(file: File | Blob): string {
+    if (file instanceof File) {
+      return file.name;
+    } else if (file instanceof Blob) {
+      return file.type ? `blob_${Date.now()}` : `blob_${crypto.randomUUID()}`;
+    } else {
+      return `file_upload_${crypto.randomUUID()}`;
+    }
+  },
+
+  getFormattedTimestamp(): string {
+    return new Date().toLocaleString('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
+  },
+
+  async getGifInfo(file: File | Blob): Promise<{
+    width: number;
+    height: number;
+    frameCount: number;
+  }> {
+    const buf = await file.arrayBuffer();
+    const gif = parseGIF(buf);
+    const frames = decompressFrames(gif, true);
+
+    return {
+      width: gif.lsd.width,
+      height: gif.lsd.height,
+      frameCount: frames.length
+    };
+  },
+
+  async getImageDimensions(file: File | Blob): Promise<{
+    width: number;
+    height: number;
+  }> {
+    return new Promise((resolve, _reject) => {
+      try {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = new Image();
+          img.onload = () => {
+            resolve({ width: img.width, height: img.height });
+          };
+          img.onerror = () => resolve({ width: 0, height: 0 });
+          img.src = reader.result as string;
+        };
+        reader.onerror = () => resolve({ width: 0, height: 0 });
+        reader.readAsDataURL(file);
+      } catch {
+        resolve({ width: 0, height: 0 });
+      }
+    });
   }
 });

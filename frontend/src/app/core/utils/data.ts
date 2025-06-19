@@ -1,6 +1,6 @@
 // File: frontend/src/app/core/utils/data.ts
 
-import type { DataUtils } from '../../types/index.js';
+import type { AssetType, DataUtils } from '../../types/index.js';
 
 export const dataUtilityFactory = (): DataUtils => ({
   detectFileType(file: File): Promise<string | undefined> {
@@ -24,5 +24,18 @@ export const dataUtilityFactory = (): DataUtils => ({
       reader.onerror = reject;
       reader.readAsArrayBuffer(file.slice(0, 16));
     });
+  },
+
+  getAssetType(relPath: string, ext: string): AssetType {
+    const rel = relPath.replace(/\\/g, '/').toLowerCase();
+
+    if (rel.includes('/overlays/')) return 'overlay' as AssetType;
+    if (ext === 'gif' || rel.includes('/gif/')) return 'gif' as AssetType;
+    if (rel.includes('/borders/')) return 'border' as AssetType;
+    if (rel.includes('/stickers/')) return 'sticker' as AssetType;
+    if (rel.includes('/fonts/')) return 'font' as AssetType;
+    if (rel.includes('/backgrounds/')) return 'background' as AssetType;
+
+    return 'image' as AssetType;
   }
 });

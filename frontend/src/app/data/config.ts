@@ -2,8 +2,6 @@
 
 import type { ConfigData, Defaults, Paths, Regex } from '../types/index.js';
 
-// ================================================== //
-
 const defaultCanvasWidth: number = 800;
 const defaultCanvasHeight: number = 600;
 const defaultDebounceWait: number = 100;
@@ -38,14 +36,10 @@ const defaults: Defaults = {
   textElement: defaultTextElement
 };
 
-// ================================================== //
-
 const paths: Paths = {
   asset_manifest: '/assets/user/assets.manifest.json',
   gifWorkerScript: '/assets/scripts/gif.worker.js'
 } as const;
-
-// ================================================== //
 
 const floatString: RegExp = /^[-+]?\d*\.\d+(e[-+]?\d+)?$/i;
 const hex: RegExp = /^#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
@@ -58,8 +52,6 @@ export const regex: Regex = {
   integerString,
   numberString
 } as const;
-
-// =================================================== //
 
 export const configData: ConfigData = {
   defaults,

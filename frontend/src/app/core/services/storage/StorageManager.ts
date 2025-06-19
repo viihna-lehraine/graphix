@@ -4,9 +4,6 @@ import type { IStorageService } from '../../../types/index.js';
 import { IDBStorageService } from './IDBStorageService.js';
 import { LocalStorageService } from './LocalStorageService.js';
 
-// ================================================== //
-// ================================================== //
-
 export class StorageManager implements IStorageService {
   static #instance: StorageManager | null = null;
 
@@ -31,8 +28,6 @@ export class StorageManager implements IStorageService {
     }
     return StorageManager.#instance;
   }
-
-  // ================================================ //
 
   get<T>(key: string): Promise<T | null> {
     return this.#backend.get<T>(key);

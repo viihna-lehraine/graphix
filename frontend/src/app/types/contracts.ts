@@ -52,26 +52,12 @@ export interface ErrorHandlerServiceContract {
 }
 
 export interface LayerManagerContract {
-  addLayer: (layer: Layer) => void;
-  getElementById(layerId: string, elementId: string): LayerElement | undefined;
-  getLayerById(layerId: string): Layer | undefined;
-  getLayers: () => Layer[];
-  moveLayers(fromIndex: number, toIndex: number): void;
-  removeElementById(elementId: string): void;
-  removeLayer: (layerId: string) => void;
-  subscribe(fn: () => void): () => void;
-  updateElement: (
-    layerId: string,
-    elementId: string,
-    updatedElement: LayerElement
-  ) => void;
-}
-
-export interface LoggerServiceContract {
-  debug: (message: string, caller?: string) => void;
-  error: (message: string, caller?: string) => void;
-  info: (message: string, caller?: string) => void;
-  warn: (message: string, caller?: string) => void;
+  createImageLayer: (src: string, file: File) => Promise<Layer>;
+  getElementById: (
+    layers: Layer[],
+    elementId: string
+  ) => LayerElement | undefined;
+  getLayerById: (layer: Layer[], layerId: string) => Layer | undefined;
 }
 
 export interface NotifierServiceContract {

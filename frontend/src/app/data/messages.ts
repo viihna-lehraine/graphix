@@ -9,8 +9,6 @@ const errorMessages: ErrorMessages = {
   unknownFatalError
 };
 
-// ================================================== //
-
 export const messageData: MessageData = {
   errors: errorMessages
 } as const;

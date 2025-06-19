@@ -4,9 +4,11 @@ import type {
   CanvasState,
   ClientState,
   Data,
+  EnvVars,
   GifAnimation,
+  Helpers,
   Layer,
-  Services,
+  LayerElement,
   State,
   StateLifecycleHook,
   StateManagerContract,
@@ -14,10 +16,10 @@ import type {
   TextLayerElement,
   Utilities
 } from '../../../types/index.js';
-import { CanvasStateService, ClientStateService } from '../index.js';
-
-// ======================================================== //
-// ======================================================== //
+import { CanvasStateService } from './CanvasStateService.js';
+import { ClientStateService } from './ClientStateService.js';
+import { ErrorHandler } from '../ErrorHandler.js';
+import { LayerManager } from '@engine/LayerManager.js';
 
 export class StateManager implements StateManagerContract {
   static #instance: StateManager | null = null;
@@ -27,33 +29,35 @@ export class StateManager implements StateManagerContract {
 
   #canvas: CanvasStateService;
   #client: ClientStateService;
+  #layerManager: LayerManager;
 
   #data: Data;
-  #errors: Services['errors'];
-  #log: Services['log'];
+  #env: EnvVars;
+  #errors: ErrorHandler;
+  #helpers: Helpers;
   #utils: Utilities;
-
-  // ================================================= //
 
   private constructor(
     data: Data,
-    errors: Services['errors'],
-    log: Services['log'],
+    env: EnvVars,
+    errors: ErrorHandler,
+    helpers: Helpers,
     utils: Utilities
   ) {
     try {
-      log.info('Initializing StateManager...', '[StateManager constructor]');
+      console.debug('Initializing StateManager...');
 
       this.#data = data;
+      this.#env = env;
       this.#errors = errors;
-      this.#log = log;
+      this.#helpers = helpers;
       this.#utils = utils;
 
-      this.#version = data.version;
+      this.#version = this.#env.VERSION;
 
       // hydrate state
       let initialState: State = {
-        version: this.#data.version,
+        version: this.#env.VERSION,
         canvas: {
           width: this.#data.config.defaults.canvasWidth,
           height: this.#data.config.defaults.canvasHeight,
@@ -71,15 +75,10 @@ export class StateManager implements StateManagerContract {
       if (saved) {
         try {
           Object.assign(initialState, JSON.parse(saved));
-          // No need to touch layer.element!
-          log.info(
-            `StateManager hydrated from localStorage.`,
-            '[StateManager constructor]'
-          );
+          console.debug(`StateManager hydrated from localStorage.`);
         } catch (error) {
-          log.warn(
-            'Failed to parse localStorage state. Using default values.',
-            '[StateManager constructor]'
+          console.warn(
+            'Failed to parse localStorage state. Using default values.'
           );
         }
       }
@@ -87,18 +86,15 @@ export class StateManager implements StateManagerContract {
       this.#canvas = CanvasStateService.getInstance(
         initialState.canvas,
         this.#data,
-        this.#log,
         this.#utils
       );
       this.#client = ClientStateService.getInstance(initialState.client);
+      this.#layerManager = LayerManager.getInstance(this.#helpers);
 
       this.#canvas.subscribe(() => this.#persistToStorage());
       this.#client.subscribe(() => this.#persistToStorage());
 
-      log.info(
-        'StateManager initialized successfully.',
-        '[StateManager constructor]'
-      );
+      console.info('StateManager initialized successfully.');
     } catch (error) {
       throw new Error(
         `Failed to initialize StateManager: ${error instanceof Error ? error.message : String(error)}`
@@ -106,30 +102,30 @@ export class StateManager implements StateManagerContract {
     }
   }
 
-  // ================================================== //
-
   static getInstance(
     data: Data,
-    errors: Services['errors'],
-    log: Services['log'],
+    env: EnvVars,
+    errors: ErrorHandler,
+    helpers: Helpers,
     utils: Utilities
   ): StateManager {
     try {
-      log.info('Calling StateManager.getInstance()...');
+      console.debug('Calling StateManager.getInstance()...');
 
       if (!StateManager.#instance) {
-        log.info(
+        console.debug(
           'No existing StateManager instance found. Creating new instance.'
         );
         return (StateManager.#instance = new StateManager(
           data,
+          env,
           errors,
-          log,
+          helpers,
           utils
         ));
       }
 
-      log.info('Returning existing StateManager instance.');
+      console.debug('Returning existing StateManager instance.');
       return StateManager.#instance;
     } catch (error) {
       throw new Error(
@@ -138,31 +134,24 @@ export class StateManager implements StateManagerContract {
     }
   }
 
-  // ================================================= //
-  // CORE CLASS METHODS //
+  // ====================================================================
 
   addLifecycleHook(hook: StateLifecycleHook): void {
     this.#errors.handleSync(() => {
-      this.#log.info(
-        'Adding lifecycle hook.',
-        'StateManager.addLifecycleHook()'
-      );
+      console.debug('Adding lifecycle hook.');
 
       if (typeof hook !== 'function') {
         throw new Error('Lifecycle hook must be a function.');
       }
 
       this.#lifecycleHooks.push(hook);
-      this.#log.info(
-        'Lifecycle hook added successfully.',
-        'StateManager.addLifecycleHook()'
-      );
+      console.debug('Lifecycle hook added successfully.');
     }, 'Failed to add lifecycle hook.');
   }
 
   getState(): State {
     return this.#errors.handleSync(() => {
-      this.#log.info('Returning current state.', 'StateManager.getState()');
+      console.debug('Returning current state.');
 
       return {
         version: this.#version!,
@@ -172,8 +161,7 @@ export class StateManager implements StateManagerContract {
     }, 'Failed to return state.');
   }
 
-  // ================================================= //
-  // PROXY CANVAS STATE ACCESS //
+  // ====================================================================
 
   addLayer(layer: Layer): void {
     this.#canvas.addLayer(layer);
@@ -246,8 +234,7 @@ export class StateManager implements StateManagerContract {
     this.#canvas.updateTextElement(index);
   }
 
-  // ================================================= //
-  // PROXY CLIENT STATE ACCESS //
+  // ====================================================================
 
   getClient(): ClientState {
     return this.#client.get();
@@ -259,12 +246,68 @@ export class StateManager implements StateManagerContract {
     return this.#client.subscribe(fn);
   }
 
-  // ================================================= //
-  // PRIVATE METHODS //
+  // ====================================================================
+
+  moveLayerById(layerId: string, newIndex: number): void {
+    const layers = this.getCanvas().layers;
+    const index = layers.findIndex(l => l.id === layerId);
+    if (index !== -1) {
+      this.moveLayer(index, newIndex);
+    } else {
+      throw new Error(`Layer with id ${layerId} not found`);
+    }
+  }
+
+  removeElementById(elementId: string): void {
+    const layers = this.getCanvas().layers;
+    const index = layers.findIndex(l => l.element.id === elementId);
+    if (index !== -1) {
+      this.removeLayer(index);
+    } else {
+      throw new Error(`Element with id ${elementId} not found`);
+    }
+  }
+
+  removeLayerById(layerId: string): void {
+    const layers = this.getCanvas().layers;
+    const index = layers.findIndex(l => l.id === layerId);
+
+    if (index !== -1) {
+      this.removeLayer(index);
+    } else {
+      throw new Error(`Layer with ID ${layerId} not found.`);
+    }
+  }
+
+  updateElement(
+    layerId: string,
+    elementId: string,
+    updatedElement: LayerElement
+  ): void {
+    const layers = this.getCanvas().layers;
+    const index = layers.findIndex(l => l.id === layerId);
+
+    if (index === -1) throw new Error(`Layer with id ${layerId} not found`);
+    if (layers[index].element.id === elementId) {
+      this.updateLayer(index, { ...layers[index], element: updatedElement });
+    } else {
+      throw new Error(
+        `Element with id ${elementId} not found in layer ${layerId}`
+      );
+    }
+  }
+
+  // ====================================================================
 
   #persistToStorage(): void {
     return this.#errors.handleSync(() => {
       window.localStorage.setItem('appState', JSON.stringify(this.getState()));
     }, 'Failed to persist state to localStorage.');
+  }
+
+  // ====================================================================
+
+  _(): void {
+    this.#layerManager = this.#layerManager;
   }
 }

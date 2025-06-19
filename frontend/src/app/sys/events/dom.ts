@@ -8,8 +8,6 @@ export function onDOMContentLoaded(cb: () => void): void {
   }
 }
 
-// ================================================== //
-
 export function onResize(cb: () => void): void {
   window.addEventListener('resize', cb);
 }

@@ -1,13 +1,7 @@
 // File: frontend/vite.config.ts
 
 import { defineConfig } from 'vite';
-import { fileURLToPath } from 'url';
 import path from 'path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// *************************************************** //
 
 export default defineConfig({
   root: 'src',
@@ -25,12 +19,29 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@core': path.resolve(__dirname, 'src/app/core'),
-      '@data': path.resolve(__dirname, 'src/app/data'),
-      '@engine': path.resolve(__dirname, 'src/app/features/engine'),
-      '@features': path.resolve(__dirname, '/src/app/features'),
-      '@sys': path.resolve(__dirname, 'src/app/sys'),
-      '@types': path.resolve(__dirname, 'src/app/types')
+      '@AnimationGroupManager': path.resolve(
+        import.meta.dirname,
+        'src/app/features/engine/AnimationGroupManager.js'
+      ),
+      '@bootstrap': path.resolve(import.meta.dirname, 'src/app/sys/bootstrap'),
+      '@build': path.resolve(import.meta.dirname, 'src/app/build'),
+      '@core': path.resolve(import.meta.dirname, 'src/app/core'),
+      '@data': path.resolve(import.meta.dirname, 'src/app/data'),
+      '@engine': path.resolve(import.meta.dirname, 'src/app/features/engine'),
+      '@features': path.resolve(import.meta.dirname, '/src/app/features'),
+      '@init': path.resolve(import.meta.dirname, 'src/app/sys/init'),
+      '@launch': path.resolve(import.meta.dirname, 'src/app/sys/launch.js'),
+      '@RenderingEngine': path.resolve(
+        import.meta.dirname,
+        'src/app/features/engine/RenderingEngine.js'
+      ),
+      '@services': path.resolve(import.meta.dirname, 'src/app/services'),
+      '@sys': path.resolve(import.meta.dirname, 'src/app/sys'),
+      '@sys_registries': path.resolve(
+        import.meta.dirname,
+        'src/app/sys/registries'
+      ),
+      '@types': path.resolve(import.meta.dirname, 'src/app/types')
     },
     extensions: ['.js', '.mjs', '.ts', '.json']
   }

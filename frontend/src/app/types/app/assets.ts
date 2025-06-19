@@ -18,6 +18,7 @@ export interface AnimatedAssetProps {
 }
 
 export interface Asset {
+  index?: number;
   type: AssetType;
   name: string;
   class: AssetClass;
@@ -61,7 +62,7 @@ export interface BackgroundExtra {
   width: number;
   height: number;
   animation: AnimatedAssetProps | false;
-  tileable: number;
+  tileable: boolean;
 }
 
 export interface BorderExtra {
@@ -90,7 +91,7 @@ export interface ImageExtra {
   width: number;
   height: number;
   animation: AnimatedAssetProps | false;
-  tileable: number;
+  tileable: boolean;
 }
 
 // ================================================== //
@@ -99,7 +100,7 @@ export interface ImageExtra {
 
 export interface BackgroundLayer extends BaseLayer {
   kind: 'background';
-  element: HTMLImageElement;
+  element: LayerElement;
 }
 
 export interface BaseLayer {
@@ -167,8 +168,7 @@ export type Layer = BackgroundLayer | ImageLayer | OverlayLayer;
 
 export interface OverlayLayer extends BaseLayer {
   kind: 'overlay';
-  opacity: number;
-  element: HTMLImageElement;
+  element: LayerElement;
 }
 
 export type TextLayerElement = Extract<LayerElement, { kind: 'text' }>;

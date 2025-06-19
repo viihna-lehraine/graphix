@@ -1,7 +1,43 @@
 // File: frontend/src/app/features/engine/animation.ts
 
+import type {
+  Asset,
+  GifAnimation,
+  GifFrame,
+  LayerElement
+} from '../../types/index.js';
 import { decompressFrames, parseGIF } from 'gifuct-js';
-import type { GifAnimation, GifFrame } from '../../types/index.js';
+
+export async function createAnimatedImageElementFromFile(
+  file: File,
+  asset: Asset
+): Promise<LayerElement> {
+  const buf = new Uint8Array(await file.arrayBuffer());
+  const gif = parseGIF(buf);
+  const framesRaw = decompressFrames(gif, true);
+
+  const gifFrames: GifFrame[] = framesRaw.map(f => ({
+    imageData: new ImageData(
+      new Uint8ClampedArray(f.patch),
+      f.dims.width,
+      f.dims.height
+    ),
+    delay: (f.delay || 10) * 10 // in ms
+  }));
+
+  return {
+    kind: 'animated_image',
+    id: crypto.randomUUID(),
+    asset,
+    position: { x: 0, y: 0 },
+    scale: { x: 1, y: 1 },
+    rotation: false,
+    gifFrames,
+    currentFrame: 0,
+    frameElapsed: 0,
+    element: null
+  };
+}
 
 export function createGifAnimation(arrayBuffer: ArrayBuffer): GifAnimation {
   const gif = parseGIF(arrayBuffer);
@@ -10,7 +46,7 @@ export function createGifAnimation(arrayBuffer: ArrayBuffer): GifAnimation {
   const frames: GifFrame[] = rawFrames.map(
     (frame): GifFrame => ({
       imageData: new ImageData(
-        new Uint8ClampedArray(frame.patch), // ALWAYS convert to Uint8ClampedArray for ImageData
+        new Uint8ClampedArray(frame.patch), // convert to Uint8ClampedArray for ImageData
         frame.dims.width,
         frame.dims.height
       ),

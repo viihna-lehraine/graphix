@@ -10,6 +10,7 @@ const exts: AssetExts = {
 const tags: AssetTags = ['animation', 'custom', 'rotate'] as const;
 
 const dummyTextAsset: Asset = {
+  index: 0,
   type: 'text',
   name: 'DEFAULT',
   class: 'static',
@@ -31,8 +32,6 @@ const dummyTextAsset: Asset = {
   tileable: false,
   animation: false
 };
-
-// ================================================== //
 
 export const assetsData: AssetData = {
   dummyTextAsset,

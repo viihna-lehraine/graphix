@@ -1,6 +1,6 @@
 // File: frontend/src/application/types/app/core.ts
 
-import type { Core } from '../index.js';
+import type { Core, Engine } from '../index.js';
 
 export interface Cache {
   bgImg: HTMLImageElement | null;
@@ -27,7 +27,7 @@ export interface ErrorHandlerOptions {
   userMessage?: string;
 }
 
-export type ListenerRegistration = (core: Core) => void | (() => void);
+export type ListenerRegistration = (core?: Core) => void | (() => void);
 
 export type NotifierLevel = 'info' | 'warn' | 'error' | 'success';
 
@@ -42,4 +42,7 @@ export type ResizePlugin = () => void;
 
 export type Subscriber<T> = (state: T) => void;
 
-export type UIInitializer = (core: Core) => void | Promise<void>;
+export type UIInitializer = (deps: {
+  core: Core;
+  engine: Engine;
+}) => void | Promise<void>;

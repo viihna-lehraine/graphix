@@ -5,7 +5,6 @@ import {
   ErrorHandlerOptions
 } from '../../types/index.js';
 import { errorClasses, ErrorClasses } from '../config/errors.js';
-import { Logger } from './Logger.js';
 
 // ================================================== //
 // ================================================== //
@@ -13,23 +12,24 @@ import { Logger } from './Logger.js';
 export class ErrorHandler implements ErrorHandlerServiceContract {
   static #instance: ErrorHandler | null = null;
   #errorClasses: ErrorClasses = errorClasses;
-  #logger: Logger;
 
-  private constructor(logger: Logger) {
+  private constructor() {
     try {
-      this.#logger = logger;
+      console.debug(`Creating ErrorHandler instance.`);
     } catch (error) {
-      throw new Error(`${error instanceof Error ? error.message : error}`);
+      throw new Error(
+        `Unable to create ErrorHandler instance: ${error instanceof Error ? error.message : error}`
+      );
     }
   }
 
-  static getInstance(logger: Logger): ErrorHandler {
+  static getInstance(): ErrorHandler {
     try {
       if (!ErrorHandler.#instance) {
         console.debug(
           `No ErrorHandler instance exists yet. Creating new instance.`
         );
-        ErrorHandler.#instance = new ErrorHandler(logger);
+        ErrorHandler.#instance = new ErrorHandler();
       }
 
       console.debug(`Returning ErrorHandler instance.`);
@@ -119,7 +119,7 @@ export class ErrorHandler implements ErrorHandlerServiceContract {
           ? options.context
           : {};
       const formattedError = this.#formatError(error, errorMessage, context);
-      this.#logger.error(formattedError);
+      console.error(formattedError);
 
       const userMessage =
         options.userMessage ??
