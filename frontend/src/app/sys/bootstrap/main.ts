@@ -9,9 +9,7 @@ export async function bootstrap(core: Core): Promise<void> {
     console.debug(`Executing main bootstrap function`);
 
     console.debug(`Importing setGlobalErrorHandlers function`);
-    const { setGlobalErrorHandlers } = await import(
-      './partials/setGlobalErrorHandlers.js'
-    );
+    const { setGlobalErrorHandlers } = await import('./partials.js');
     console.debug(`Successfully imported setGlobalErrorHandlers function`);
 
     console.debug(`Executing setGlobalErrorHandlers function`);

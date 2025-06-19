@@ -23,8 +23,7 @@ export async function initializeDownloadBtn({
       if (!canvas) {
         throw new Error(`Canvas element not found in DOM!`);
       }
-      const ctx = core.helpers.canvas.get2DContext(canvas);
-
+      const ctx = engine.renderingEngine.getContext();
       if (!ctx) {
         throw new Error(`Canvas 2D context not available.`);
         return;
@@ -52,6 +51,7 @@ export async function initializeDownloadBtn({
           height,
           frameCount,
           core,
+          engine.renderingEngine,
           fileName
         );
       } else {
@@ -61,6 +61,7 @@ export async function initializeDownloadBtn({
           width,
           height,
           core,
+          engine.renderingEngine,
           fileName
         );
       }

@@ -28,11 +28,14 @@ export interface Defaults {
     frameCount: number;
   };
   blendMode: BlendMode;
+  boundaryStrokeStyle: string;
   canvasWidth: number;
   canvasHeight: number;
   debounceWait: number;
+  fileExt: string;
   fileName: string;
   font: string;
+  lineDash: [number, number];
   textAlignment: CanvasTextAlign;
   textBaseline: CanvasTextBaseline;
   textColor: string;

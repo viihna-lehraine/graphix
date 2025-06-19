@@ -1,6 +1,8 @@
 // File: frontend/src/app/sys/events/ui.ts
 
-export async function addEngineUIEventListeners(): Promise<void> {
+import type { Engine } from '../../types/index.js';
+
+export async function addEngineUIEventListeners(engine: Engine): Promise<void> {
   const { getUploadMode } = await import('@engine/ui/uploadMode.js');
   const imgInput = document.getElementById(
     'img-input'
@@ -30,11 +32,12 @@ export async function addEngineUIEventListeners(): Promise<void> {
             throw new Error('Canvas element not found for background setting.');
           }
 
-          const ctx = canvas.getContext('2d');
+          const ctx = engine.renderingEngine.getContext();
           if (!ctx) throw new Error('2D context not available for canvas!');
 
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          engine.renderingEngine.clearCanvas(ctx);
+
+          engine.renderingEngine.requestRedraw();
         };
 
         img.src = reader.result;

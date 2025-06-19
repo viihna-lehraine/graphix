@@ -166,7 +166,39 @@ export interface IStorageService {
 export interface RenderingEngineContract {
   addRedrawPlugin: (plugin: RedrawPlugin) => void;
   drawDevOverlay: () => void;
-  render: (state?: CanvasState) => void;
+  drawFullBackgroundImage: (
+    img: HTMLImageElement,
+    canvas?: HTMLCanvasElement
+  ) => void;
+  getContext: () => CanvasRenderingContext2D | null;
+  getMousePositionFromEvent: (
+    canvas: HTMLCanvasElement,
+    evt: MouseEvent
+  ) => { x: number; y: number };
+  getNthTextElement: (n: number) => { layer: Layer; elemIndex: number } | null;
+  getTextElements: () => {
+    elem: TextLayerElement;
+    layerIndex: number;
+    elemIndex: number;
+  }[];
+  isOverTextResizeHandle: (
+    mouse: { x: number; y: number },
+    elem: TextLayerElement
+  ) => boolean;
+  isPointInTextElement: (
+    mouse: { x: number; y: number },
+    elem: TextLayerElement
+  ) => boolean;
   removeRedrawPlugin: (plugin: RedrawPlugin) => void;
-  renderTo: (ctx: CanvasRenderingContext2D, state?: CanvasState) => void;
+  renderLayersToContext: (
+    ctx: CanvasRenderingContext2D,
+    layers: Layer[]
+  ) => void;
+  requestRedraw: () => void;
+  showTextOverlay: (
+    canvas: HTMLCanvasElement,
+    elem: TextLayerElement,
+    index: number,
+    redraw: () => void
+  ) => void;
 }

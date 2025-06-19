@@ -11,11 +11,11 @@ import('./sys/events/dom.js').then(({ onDOMContentLoaded }) => {
       ) as HTMLCanvasElement | null;
       if (!canvas) throw new Error('Canvas element not found in DOM!');
 
-      const ctx = canvas.getContext('2d');
+      const ctx = engine.renderingEngine.getContext();
       if (!ctx) throw new Error('2D context not available for canvas!');
 
-      const animationTick = core.helpers.canvas.makeAnimationTick(
-        engine,
+      const animationTick = engine.renderingEngine.makeAnimationTick(
+        core.services.animationGroupManager,
         core.services.stateManager
       );
 

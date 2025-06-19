@@ -7,9 +7,7 @@ import type {
   EnvVars,
   GifAnimation,
   ImageLayer,
-  Layer,
-  LayerElement,
-  TextLayerElement
+  Layer
 } from './index.js';
 import { AnimationGroupManager } from '@engine/AnimationGroupManager.js';
 import { CacheManager } from '@core/services/CacheManager.js';
@@ -37,7 +35,6 @@ export interface Engine {
   assetBrowserFns: AssetBrowserFunctions;
   handlers: EngineHandlers;
   ioFns: IOFunctions;
-  overlayFns: OverlayFunctions;
   layerManager: LayerManager;
   renderingEngine: RenderingEngine;
 }
@@ -60,7 +57,6 @@ export type Services = {
 };
 
 export interface Utilities {
-  canvas: CanvasUtils;
   data: DataUtils;
   dom: DomUtils;
   math: MathUtils;
@@ -76,28 +72,6 @@ export interface AppHelpers {
 }
 
 export interface CanvasHelpers {
-  get2DContext: (canvas: HTMLCanvasElement) => CanvasRenderingContext2D;
-  getMousePosition(
-    canvas: HTMLCanvasElement,
-    evt: MouseEvent
-  ): {
-    x: number;
-    y: number;
-  };
-  isOverResizeHandle(
-    mouse: { x: number; y: number },
-    elem: LayerElement,
-    ctx: CanvasRenderingContext2D
-  ): boolean;
-  isPointInText(
-    pt: { x: number; y: number },
-    elem: LayerElement,
-    ctx: CanvasRenderingContext2D
-  ): boolean;
-  makeAnimationTick: (
-    engine: Engine,
-    stateManager: StateManager
-  ) => (now: number) => void;
   mapBlendMode: (blendMode?: string) => GlobalCompositeOperation;
 }
 
@@ -132,42 +106,6 @@ export interface TimeHelpers {
     fn: T,
     wait?: number
   ) => (...args: Parameters<T>) => void;
-}
-
-export interface CanvasUtils {
-  drawImagePreserveAspect(
-    ctx: CanvasRenderingContext2D,
-    img: HTMLImageElement,
-    canvasWidth: number,
-    canvasHeight: number
-  ): void;
-  drawVisualLayersToContext(
-    ctx: CanvasRenderingContext2D,
-    layers: Layer[]
-  ): void;
-  findNthTextElement: (
-    layers: Layer[],
-    n: number
-  ) => { layer: Layer; elemIndex: number } | null;
-  findTextElements(
-    layers: Layer[]
-  ): { elem: TextLayerElement; layerIndex: number; elemIndex: number }[];
-  prepCanvasHiDPI: (ctx: CanvasRenderingContext2D) => void;
-  resizeCanvasToMatchImage: (
-    canvas: HTMLCanvasElement,
-    img: HTMLImageElement
-  ) => void;
-  setCanvasHiDPISize: (
-    canvas: HTMLCanvasElement,
-    cssWidth: number,
-    cssHeight: number
-  ) => void;
-  setCanvasToBackgroundImage: (
-    canvas: HTMLCanvasElement,
-    img: HTMLImageElement,
-    maxWidth: number,
-    maxHeight: number
-  ) => void;
 }
 
 export interface DataUtils {
@@ -211,6 +149,7 @@ export interface IOFunctions {
     height: number,
     frameCount: number,
     core: Core,
+    renderingEngine: RenderingEngine,
     fileName?: string
   ) => Promise<void>;
   exportStaticFile: (
@@ -218,6 +157,7 @@ export interface IOFunctions {
     width: number,
     height: number,
     core: Core,
+    renderingEngine: RenderingEngine,
     fileName?: string
   ) => Promise<void>;
   handleDownload(
@@ -228,17 +168,7 @@ export interface IOFunctions {
   handleUpload: (
     file: File,
     core: Core,
-    createGifAnimation: (arrayBuffer: ArrayBuffer) => GifAnimation
+    createGifAnimation: (arrayBuffer: ArrayBuffer) => GifAnimation,
+    renderingEngine: RenderingEngine
   ) => Promise<void>;
-}
-
-export interface OverlayFunctions {
-  removeExistingOverlay(className: string): void;
-  showTxtElemOverlay: (
-    canvas: HTMLCanvasElement,
-    elem: TextLayerElement,
-    index: number,
-    core: Core,
-    redraw: () => void
-  ) => void;
 }

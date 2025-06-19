@@ -2,10 +2,14 @@
 
 import type { ConfigData, Defaults, Paths, Regex } from '../types/index.js';
 
+const defaultBoundaryStrokeStyle: string = '#ff80c5ff';
+const defaultLineDash: [number, number] = [12, 10];
+
 const defaultCanvasWidth: number = 800;
 const defaultCanvasHeight: number = 600;
 const defaultDebounceWait: number = 100;
 const defaultFileName: string = 'something_broke';
+const defaultFileExtension: string = 'png';
 
 const defaultAnimationFrameCount: number = 60;
 const defaultFont: string = 'Arial';
@@ -25,11 +29,14 @@ const defaults: Defaults = {
     frameCount: defaultAnimationFrameCount
   },
   blendMode: 'normal',
+  boundaryStrokeStyle: defaultBoundaryStrokeStyle,
   canvasWidth: defaultCanvasWidth,
   canvasHeight: defaultCanvasHeight,
   debounceWait: defaultDebounceWait,
+  fileExt: defaultFileExtension,
   fileName: defaultFileName,
   font: defaultFont,
+  lineDash: defaultLineDash,
   textAlignment: defaultTextAlignment,
   textBaseline: defaultTextBaseline,
   textColor: defaultTextColor,

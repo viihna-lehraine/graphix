@@ -19,22 +19,17 @@ export async function launchApp(): Promise<{
     await bootstrap(core);
     console.debug(`Bootstrap processes completed successfully.`);
 
-    console.debug(`Registering event listeners...`);
-    const { eventListeners, registerEventListeners } = await import(
-      '@sys_registries/events.js'
-    );
-    registerEventListeners(eventListeners, core);
-    console.debug(`Event listeners registered successfully.`);
-
-    console.debug(`Registering plugins...`);
-    const { plugins } = await import('@sys_registries/plugins.js');
-    for (const plugin of plugins) await plugin.register(core);
-    console.debug(`Plugins registered successfully.`);
-
     console.debug(`Initializing central App Engine...`);
     const { initializeEngine } = await import('@init/engine.js');
     const engine = await initializeEngine(core);
     console.debug(`User Interface initialized successfully.`);
+
+    console.debug(`Registering event listeners...`);
+    const { eventListeners, registerEventListeners } = await import(
+      '@sys_registries/events.js'
+    );
+    registerEventListeners(eventListeners, core, engine.renderingEngine);
+    console.debug(`Event listeners registered successfully.`);
 
     await engine.assetBrowserFns
       .render(core)

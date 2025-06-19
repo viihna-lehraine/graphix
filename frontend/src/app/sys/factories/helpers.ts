@@ -1,8 +1,6 @@
-// File: frontend/src/app/core/factories/helpers.ts
+// File: frontend/src/app/sys/factories/helpers.ts
 
 import type { Helpers } from '../../types/index.js';
-
-// ================================================== //
 
 export async function helpersFactory(): Promise<Required<Helpers>> {
   console.log(`Creating 'Helpers' object`);
@@ -16,11 +14,11 @@ export async function helpersFactory(): Promise<Required<Helpers>> {
     { mathHelpersFactory },
     { timeHelpersFactory }
   ] = await Promise.all([
-    import('../helpers/app.js'),
-    import('../helpers/canvas.js'),
-    import('../helpers/data.js'),
-    import('../helpers/math.js'),
-    import('../helpers/time.js')
+    import('../../core/helpers/app.js'),
+    import('../../core/helpers/canvas.js'),
+    import('../../core/helpers/data.js'),
+    import('../../core/helpers/math.js'),
+    import('../../core/helpers/time.js')
   ]);
 
   helpers.app = appHelpersFactory();

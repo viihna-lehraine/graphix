@@ -13,14 +13,12 @@ const manifestFile = path.resolve(assetRoot, 'assets.manifest.json');
 const manifest: AssetManifest = JSON.parse(
   fs.readFileSync(manifestFile, 'utf-8')
 );
-const hashTable: Record<string, { index: number | undefined; hash: string }> =
-  {};
+const hashTable: Record<string, { index: number | undefined }> = {};
 
 manifest.assets.forEach(asset => {
   if (asset.hash_sha256) {
     hashTable[asset.hash_sha256] = {
-      index: asset.index,
-      hash: asset.hash_sha256
+      index: asset.index
     };
   }
 });

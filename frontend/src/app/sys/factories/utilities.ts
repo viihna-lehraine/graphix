@@ -1,7 +1,6 @@
-// File: frontend/src/app/core/factories/utilities.ts
+// File: frontend/src/app/sys/factories/utilities.ts
 
 import type {
-  CanvasUtils,
   DataUtils,
   DomUtils,
   MathUtils,
@@ -14,20 +13,18 @@ export async function utilitiesFactory(): Promise<Required<Utilities>> {
     console.log(`Creating 'Utilities' object.`);
 
     const utils = {} as Utilities;
-    const { canvasUtilityFactory } = await import('../utils/canvas.js');
-    const { dataUtilityFactory } = await import('../utils/data.js');
-    const { domUtilityFactory } = await import('../utils/dom.js');
-    const { mathUtilityFactory } = await import('../utils/math.js');
-    const { typeguardFactory } = await import('../utils/typeguards.js');
+
+    const { dataUtilityFactory } = await import('../../core/utils/data.js');
+    const { domUtilityFactory } = await import('../../core/utils/dom.js');
+    const { mathUtilityFactory } = await import('../../core/utils/math.js');
+    const { typeguardFactory } = await import('../../core/utils/typeguards.js');
 
     const typeguards: Typeguards = typeguardFactory();
 
-    const canvasUtils: CanvasUtils = canvasUtilityFactory(typeguards);
     const dataUtils: DataUtils = dataUtilityFactory();
     const domUtils: DomUtils = domUtilityFactory();
     const mathUtils: MathUtils = mathUtilityFactory();
 
-    utils.canvas = canvasUtils;
     utils.data = dataUtils;
     utils.dom = domUtils;
     utils.math = mathUtils;

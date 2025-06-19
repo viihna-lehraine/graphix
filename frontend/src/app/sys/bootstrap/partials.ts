@@ -1,4 +1,4 @@
-// File: frontend/src/app/sys/bootstrap/partials/setGlobalErrorHandlers.ts
+// File: frontend/src/app/sys/bootstrap/partials.ts
 
 export async function setGlobalErrorHandlers(): Promise<void> {
   console.debug(`Registering global error handlers`);

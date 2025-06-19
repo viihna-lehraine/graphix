@@ -16,13 +16,10 @@ export async function initializeEngine(core: Core): Promise<Required<Engine>> {
     if (!container) throw new Error(`Canvas container not found in DOM!`);
     const canvasRefs = { canvas, ctx };
 
-    const { initializeRenderingEngine } = await import(
-      './partials/renderingEngine.js'
-    );
+    const { initializeRenderingEngine } = await import('./partials.js');
     const renderingEngine = await initializeRenderingEngine(ctx, core);
 
     const { ioFns } = await import('@engine/io.js');
-    const { overlayFns } = await import('@engine/overlays.js');
 
     const { animatedImageRedrawPlugin } = await import('@engine/plugins.js');
     renderingEngine.addRedrawPlugin(animatedImageRedrawPlugin);
@@ -58,7 +55,6 @@ export async function initializeEngine(core: Core): Promise<Required<Engine>> {
       handlers,
       ioFns,
       layerManager,
-      overlayFns,
       renderingEngine
     };
   }, `Engine/EngineUI initialization failed.`);

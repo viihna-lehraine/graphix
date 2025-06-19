@@ -10,6 +10,7 @@ import type {
 } from '../../types/index.js';
 import GIF from 'gif.js';
 import html2canvas from 'html2canvas';
+import { RenderingEngine } from '@engine/RenderingEngine.js';
 
 async function exportGif(
   layers: Layer[],
@@ -17,14 +18,10 @@ async function exportGif(
   height: number,
   frameCount: number = 60,
   core: Core,
+  renderingEngine: RenderingEngine,
   fileName?: string
 ): Promise<void> {
-  const {
-    data: {
-      config: { defaults, paths }
-    }
-  } = core;
-  if (!fileName) fileName = defaults.fileName + '.gif';
+  if (!fileName) fileName = core.data.config.defaults.fileName + '.gif';
 
   return new Promise((resolve, reject) => {
     const gif = new GIF({
@@ -32,7 +29,7 @@ async function exportGif(
       quality: 10,
       width,
       height,
-      workerScript: paths.gifWorkerScript
+      workerScript: core.data.config.paths.gifWorkerScript
     });
 
     const offscreenCanvas = document.createElement('canvas');
@@ -62,8 +59,8 @@ async function exportGif(
       }
 
       // draw this frame
-      offCtx.clearRect(0, 0, width, height);
-      // drawVisualLayersToContext(offCtx, layers);
+      renderingEngine.clearCanvas(offCtx);
+      renderingEngine.renderLayersToContext(offCtx, layers);
 
       // add frame to GIF
       gif.addFrame(offCtx, { copy: true, delay: baseFrameDelay });
@@ -93,18 +90,12 @@ async function exportStaticFile(
   width: number,
   height: number,
   core: Core,
+  renderingEngine: RenderingEngine,
   fileName?: string
 ): Promise<void> {
-  const {
-    data: {
-      config: { defaults }
-    },
-    services: { errors },
-    utils
-  } = core;
-  if (!fileName) fileName = defaults.fileName + '.png';
+  if (!fileName) fileName = core.data.config.defaults.fileName + '.png';
 
-  return errors.handleAsync(async () => {
+  return core.services.errors.handleAsync(async () => {
     const offscreenCanvas = document.createElement('canvas');
     offscreenCanvas.width = width;
     offscreenCanvas.height = height;
@@ -112,10 +103,9 @@ async function exportStaticFile(
     const offCtx = offscreenCanvas.getContext('2d');
     if (!offCtx) throw new Error('Offscreen canvas 2D context unavailable');
 
-    offCtx.clearRect(0, 0, width, height);
-
+    renderingEngine.clearCanvas(offCtx);
     // draw all layers
-    utils.canvas.drawVisualLayersToContext(offCtx, layers);
+    renderingEngine.renderLayersToContext(offCtx, layers);
 
     // export as PNG
     offscreenCanvas.toBlob(blob => {
@@ -158,13 +148,10 @@ async function handleDownload(
 async function handleUpload(
   file: File,
   core: Core,
-  createGifAnimation: (arrayBuffer: ArrayBuffer) => GifAnimation
+  createGifAnimation: (arrayBuffer: ArrayBuffer) => GifAnimation,
+  renderingEngine: RenderingEngine
 ): Promise<void> {
   const {
-    data: {
-      dom: { ids }
-    },
-    helpers,
     services: { cache, errors, stateManager }
   } = core;
 
@@ -173,11 +160,12 @@ async function handleUpload(
     const ext = fileName.split('.').pop()?.toLowerCase() ?? '';
 
     const canvas = document.getElementById(
-      ids.canvas
+      core.data.dom.ids.canvas
     ) as HTMLCanvasElement | null;
     if (!canvas) throw new Error(`Canvas element not found.`);
 
-    const ctx = helpers.canvas.get2DContext(canvas);
+    const ctx = renderingEngine.getContext();
+    if (!ctx) throw new Error(`2D context not available for canvas.`);
 
     // GIF support
     if (ext === 'gif') {
@@ -200,13 +188,8 @@ async function handleUpload(
         canvas.width = img.width;
         canvas.height = img.height;
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        core.utils.canvas.drawImagePreserveAspect(
-          ctx,
-          img,
-          canvas.width,
-          canvas.height
-        );
+        renderingEngine.clearCanvas(ctx);
+        renderingEngine.drawFullBackgroundImage(img, canvas);
 
         const imgAspect = img.width / img.height;
         const imageDataUrl = e.target?.result as string;
@@ -219,13 +202,8 @@ async function handleUpload(
         canvas.style.width = 'auto';
         canvas.style.height = 'auto';
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        core.utils.canvas.drawImagePreserveAspect(
-          ctx,
-          img,
-          canvas.width,
-          canvas.height
-        );
+        renderingEngine.clearCanvas(ctx);
+        renderingEngine.drawFullBackgroundImage(img, canvas);
 
         const canvasWidth = canvas.width;
         const canvasHeight = canvas.height;

@@ -1,4 +1,4 @@
-// File: frontend/src/app/core/factories/services.ts
+// File: frontend/src/app/sys/factories/services.ts
 
 import type {
   Data,

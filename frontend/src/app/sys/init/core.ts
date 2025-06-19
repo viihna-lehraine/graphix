@@ -6,11 +6,13 @@ export async function initializeCore(): Promise<Required<Core>> {
   try {
     console.log(`Starting dependency initialization...`);
 
-    const { initializeData } = await import('./partials/data.js');
-    const { initializeEnvVars } = await import('./partials/env_vars.js');
-    const { initializeHelpers } = await import('./partials/helpers.js');
-    const { initializeServices } = await import('./partials/services.js');
-    const { initializeUtilities } = await import('./partials/utils.js');
+    const {
+      initializeData,
+      initializeEnvVars,
+      initializeHelpers,
+      initializeServices,
+      initializeUtilities
+    } = await import('./partials.js');
 
     let core = {} as Core;
 

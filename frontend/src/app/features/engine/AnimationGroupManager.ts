@@ -5,9 +5,6 @@ import type {
   AnimationGroupManagerContract
 } from '../../types/index.js';
 
-// ================================================== //
-// ================================================== //
-
 export class AnimationGroupManager implements AnimationGroupManagerContract {
   static #instance: AnimationGroupManager | null = null;
 

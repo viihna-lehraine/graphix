@@ -7,79 +7,46 @@ export async function setupTextDragHandlers(
   core: Core,
   engine: Engine
 ): Promise<void> {
-  // drag state
   let dragging = false;
   let isResizing = false;
-  let dragTarget = null as null | { layerIndex: number; elemIndex: number };
-  let resizeTarget = null as null | { layerIndex: number; elemIndex: number };
+  let dragTarget: { layerIndex: number } | null = null;
+  let resizeTarget: { layerIndex: number } | null = null;
   let dragOffset = { x: 0, y: 0 };
   let initialMouseY = 0;
   let initialFontSize = 32;
 
   return core.services.errors.handleAsync(async () => {
-    canvas.addEventListener('mousedown', (e: MouseEvent) => {
+    canvas.addEventListener('mousedown', e => {
       dragging = false;
       isResizing = false;
       dragTarget = null;
       resizeTarget = null;
 
       const state = core.services.stateManager.getCanvas();
-      const mouse = core.helpers.canvas.getMousePosition(canvas, e);
-      const ctx = canvas.getContext('2d')!;
-
-      const textElems = core.utils.canvas.findTextElements(state.layers);
+      const mouse = engine.renderingEngine.getMousePositionFromEvent(canvas, e);
+      const textElems = engine.renderingEngine.getTextElements();
 
       for (let i = textElems.length - 1; i >= 0; i--) {
-        const { elem, layerIndex, elemIndex } = textElems[i];
+        const { elem, layerIndex } = textElems[i];
+        const ctx = engine.renderingEngine.getContext();
+        if (!ctx) return;
 
-        // check resize handle first
-        if (core.helpers.canvas.isOverResizeHandle(mouse, elem, ctx)) {
+        if (engine.renderingEngine.isOverTextResizeHandle(mouse, elem)) {
           isResizing = true;
-          resizeTarget = { layerIndex, elemIndex };
+          resizeTarget = { layerIndex };
           initialMouseY = mouse.y;
           initialFontSize = elem.fontSize ?? 32;
           core.services.stateManager.setSelectedLayerIndex(layerIndex);
           return;
         }
 
-        for (let i = state.layers.length - 1; i >= 0; i--) {
-          const layer = state.layers[i];
-
-          if (
-            core.utils.typeguards.isImageLayer(layer) &&
-            (layer.element.kind === 'static_image' ||
-              layer.element.kind === 'animated_image')
-          ) {
-            const elem = layer.element;
-            const img = elem.element;
-            if (!img) continue;
-
-            // calculate handle position (matches #drawTextAndSelection logic)
-            const handleX = elem.position.x + img.width * elem.scale.x;
-            const handleY = elem.position.y + img.height * elem.scale.y;
-
-            // is mouse near the handle?
-            const isOver =
-              Math.abs(mouse.x - handleX) <= 10 &&
-              Math.abs(mouse.y - handleY) <= 10;
-            if (isOver) {
-              isResizing = true;
-              resizeTarget = { layerIndex: i, elemIndex: 0 };
-              dragOffset.x = mouse.x - handleX;
-              dragOffset.y = mouse.y - handleY;
-              core.services.stateManager.setSelectedLayerIndex(i);
-
-              return;
-            }
-          }
-        }
-
-        // check if point in text
-        if (core.helpers.canvas.isPointInText(mouse, elem, ctx)) {
+        if (engine.renderingEngine.isPointInTextElement(mouse, elem)) {
           dragging = true;
-          dragTarget = { layerIndex, elemIndex };
-          dragOffset.x = mouse.x - elem.position.x;
-          dragOffset.y = mouse.y - elem.position.y;
+          dragTarget = { layerIndex };
+          dragOffset = {
+            x: mouse.x - elem.position.x,
+            y: mouse.y - elem.position.y
+          };
           core.services.stateManager.setSelectedLayerIndex(layerIndex);
           return;
         }
@@ -108,9 +75,8 @@ export async function setupTextDragHandlers(
             mouse.y <= y + h
           ) {
             dragging = true;
-            dragTarget = { layerIndex: i, elemIndex: 0 };
-            dragOffset.x = mouse.x - x;
-            dragOffset.y = mouse.y - y;
+            dragTarget = { layerIndex: i };
+            dragOffset = { x: mouse.x - x, y: mouse.y - y };
             core.services.stateManager.setSelectedLayerIndex(i);
             return;
           }
@@ -118,78 +84,54 @@ export async function setupTextDragHandlers(
       }
     });
 
-    canvas.addEventListener('mousemove', (e: MouseEvent) => {
-      const ctx = canvas.getContext('2d')!;
+    canvas.addEventListener('mousemove', e => {
       const state = core.services.stateManager.getCanvas();
+      const mouse = engine.renderingEngine.getMousePositionFromEvent(canvas, e);
 
       if (isResizing && resizeTarget) {
         const { layerIndex } = resizeTarget;
         const layer = state.layers[layerIndex];
+        if (!core.utils.typeguards.isImageLayer(layer)) return;
 
-        if (core.utils.typeguards.isImageLayer(layer)) {
-          const elem = layer.element;
-          const mouse = core.helpers.canvas.getMousePosition(canvas, e);
+        const elem = layer.element;
 
-          if (elem.kind === 'text') {
-            const deltaY = mouse.y - initialMouseY;
-            const newFontSize = Math.max(10, initialFontSize + deltaY);
-            const updatedElem = { ...elem, fontSize: newFontSize };
-            layer.element = updatedElem;
-            engine.renderingEngine.redraw(
-              ctx,
-              core.services.stateManager.getCanvas()
-            );
-            return;
-          }
-
-          if (elem.kind === 'static_image' && elem.element) {
-            const img = elem.element;
-            const startX = elem.position.x;
-            const startY = elem.position.y;
-            let newScaleX = (mouse.x - startX) / img.width;
-            let newScaleY = (mouse.y - startY) / img.height;
-
-            newScaleX = Math.max(newScaleX, 0.1);
-            newScaleY = Math.max(newScaleY, 0.1);
-            // Update
-            layer.element = {
-              ...elem,
-              scale: { x: newScaleX, y: newScaleY }
-            };
-            engine.renderingEngine.redraw(
-              ctx,
-              core.services.stateManager.getCanvas()
-            );
-            return;
-          }
+        if (elem.kind === 'text') {
+          const deltaY = mouse.y - initialMouseY;
+          const newFontSize = Math.max(10, initialFontSize + deltaY);
+          elem.fontSize = newFontSize;
+          engine.renderingEngine.requestRedraw();
+          return;
         }
+
+        if (elem.kind === 'static_image' && elem.element) {
+          const img = elem.element;
+          const newScaleX = Math.max(
+            (mouse.x - elem.position.x) / img.width,
+            0.1
+          );
+          const newScaleY = Math.max(
+            (mouse.y - elem.position.y) / img.height,
+            0.1
+          );
+          elem.scale = { x: newScaleX, y: newScaleY };
+          engine.renderingEngine.requestRedraw();
+        }
+
         return;
       }
 
       if (dragging && dragTarget) {
         const { layerIndex } = dragTarget;
         const layer = state.layers[layerIndex];
+        if (!core.utils.typeguards.isImageLayer(layer)) return;
 
-        if (core.utils.typeguards.isImageLayer(layer)) {
-          const elem = layer.element;
-          if (elem.kind !== 'text') return;
+        const elem = layer.element;
+        elem.position = {
+          x: mouse.x - dragOffset.x,
+          y: mouse.y - dragOffset.y
+        };
 
-          const mouse = core.helpers.canvas.getMousePosition(canvas, e);
-
-          const updatedElem = {
-            ...elem,
-            position: {
-              x: mouse.x - dragOffset.x,
-              y: mouse.y - dragOffset.y
-            }
-          };
-          layer.element = updatedElem;
-
-          engine.renderingEngine.redraw(
-            ctx,
-            core.services.stateManager.getCanvas()
-          );
-        }
+        engine.renderingEngine.requestRedraw();
       }
     });
 
@@ -207,25 +149,17 @@ export async function setupTextDragHandlers(
       resizeTarget = null;
     });
 
-    canvas.addEventListener('dblclick', (e: MouseEvent) => {
-      const state = core.services.stateManager.getCanvas();
-      const mouse = core.helpers.canvas.getMousePosition(canvas, e);
-      const ctx = canvas.getContext('2d')!;
-      const textElems = core.utils.canvas.findTextElements(state.layers);
+    canvas.addEventListener('dblclick', e => {
+      const mouse = engine.renderingEngine.getMousePositionFromEvent(canvas, e);
+      const textElems = engine.renderingEngine.getTextElements();
+      const ctx = engine.renderingEngine.getContext();
+      if (!ctx) return;
 
       for (let i = textElems.length - 1; i >= 0; i--) {
         const { elem, elemIndex } = textElems[i];
-        if (core.helpers.canvas.isPointInText(mouse, elem, ctx)) {
-          engine.overlayFns.showTxtElemOverlay(
-            canvas,
-            elem,
-            elemIndex,
-            core,
-            () =>
-              engine.renderingEngine.redraw(
-                ctx,
-                core.services.stateManager.getCanvas()
-              )
+        if (engine.renderingEngine.isPointInTextElement(mouse, elem)) {
+          engine.renderingEngine.showTextOverlay(canvas, elem, elemIndex, () =>
+            engine.renderingEngine.requestRedraw()
           );
           break;
         }
