@@ -6,9 +6,6 @@ import {
 } from '../../types/index.js';
 import { errorClasses, ErrorClasses } from '../config/errors.js';
 
-// ================================================== //
-// ================================================== //
-
 export class ErrorHandler implements ErrorHandlerServiceContract {
   static #instance: ErrorHandler | null = null;
   #errorClasses: ErrorClasses = errorClasses;

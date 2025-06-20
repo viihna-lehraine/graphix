@@ -24,7 +24,7 @@ export async function initializeCore(): Promise<Required<Core>> {
     core.helpers = helpers;
     const utils = await initializeUtilities();
     core.utils = utils;
-    const services = await initializeServices(data, env, helpers, utils);
+    const services = await initializeServices(data, env);
     core.services = services;
 
     console.info(`All dependencies initialized successfully.`);

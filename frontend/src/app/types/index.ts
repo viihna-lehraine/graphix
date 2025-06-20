@@ -42,7 +42,8 @@ export type {
   StickerExtra,
   Subscriber,
   TextLayerElement,
-  UIInitializer
+  UIInitializer,
+  UIState
 } from './app/index.js';
 export type {
   AnimationGroupManagerContract,
@@ -51,11 +52,12 @@ export type {
   ClientStateServiceContract,
   ErrorHandlerServiceContract,
   IStorageService,
-  LayerManagerContract,
+  LayerServiceContract,
+  LayoutManagerContract,
   NotifierServiceContract,
-  RenderingEngineContract,
-  ResizeManagerContract,
-  StateManagerContract
+  RenderingManagerContract,
+  StateManagerContract,
+  UIStateServiceContract
 } from './contracts.js';
 export type { TextStyle } from './css.js';
 export type {
@@ -93,9 +95,22 @@ export type {
   Helpers,
   IOFunctions,
   MathHelpers,
-  MathUtils,
   Services,
   TimeHelpers,
   Typeguards,
   Utilities
 } from './functions.js';
+export { AnimationGroupManager } from '@engine/AnimationGroupManager.js';
+export { CacheManager } from '@core/services/CacheManager.js';
+export { CanvasStateService } from '@core/services/state/CanvasStateService.js';
+export { ClientStateService } from '@core/services/state/ClientStateService.js';
+export { ErrorHandler } from '@core/services/ErrorHandler.js';
+export { IDBStorageService } from '@core/services/storage/IDBStorageService.js';
+export { LayerService } from '@engine/LayerService.js';
+export { LayoutManager } from '@core/services/LayoutManager.js';
+export { Notifier } from '@core/services/Notifier.js';
+export { LocalStorageService } from '@core/services/storage/LocalStorageService.js';
+export { RenderingManager } from '@engine/RenderingManager.js';
+export { StateManager } from '@core/services/state/StateManager.js';
+export { StorageManager } from '@core/services/storage/StorageManager.js';
+export { UIStateService } from '@core/services/state/UIStateService.js';

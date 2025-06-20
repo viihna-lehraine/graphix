@@ -1,6 +1,6 @@
-// File: frontend/src/app/featurtes/engine/ui/init/setupTextDragHandlers.ts
+// File: frontend/src/app/featurtes/engine/ui/setupTextDragHandlers.ts
 
-import type { Core, Engine } from '../../../../types/index.js';
+import type { Core, Engine } from '../../../types/index.js';
 
 export async function setupTextDragHandlers(
   canvas: HTMLCanvasElement,
@@ -23,15 +23,18 @@ export async function setupTextDragHandlers(
       resizeTarget = null;
 
       const state = core.services.stateManager.getCanvas();
-      const mouse = engine.renderingEngine.getMousePositionFromEvent(canvas, e);
-      const textElems = engine.renderingEngine.getTextElements();
+      const mouse = engine.renderingManager.getMousePositionFromEvent(
+        canvas,
+        e
+      );
+      const textElems = engine.renderingManager.getTextElements();
 
       for (let i = textElems.length - 1; i >= 0; i--) {
         const { elem, layerIndex } = textElems[i];
-        const ctx = engine.renderingEngine.getContext();
+        const ctx = engine.renderingManager.getContext();
         if (!ctx) return;
 
-        if (engine.renderingEngine.isOverTextResizeHandle(mouse, elem)) {
+        if (engine.renderingManager.isOverTextResizeHandle(mouse, elem)) {
           isResizing = true;
           resizeTarget = { layerIndex };
           initialMouseY = mouse.y;
@@ -40,7 +43,7 @@ export async function setupTextDragHandlers(
           return;
         }
 
-        if (engine.renderingEngine.isPointInTextElement(mouse, elem)) {
+        if (engine.renderingManager.isPointInTextElement(mouse, elem)) {
           dragging = true;
           dragTarget = { layerIndex };
           dragOffset = {
@@ -86,7 +89,10 @@ export async function setupTextDragHandlers(
 
     canvas.addEventListener('mousemove', e => {
       const state = core.services.stateManager.getCanvas();
-      const mouse = engine.renderingEngine.getMousePositionFromEvent(canvas, e);
+      const mouse = engine.renderingManager.getMousePositionFromEvent(
+        canvas,
+        e
+      );
 
       if (isResizing && resizeTarget) {
         const { layerIndex } = resizeTarget;
@@ -99,7 +105,7 @@ export async function setupTextDragHandlers(
           const deltaY = mouse.y - initialMouseY;
           const newFontSize = Math.max(10, initialFontSize + deltaY);
           elem.fontSize = newFontSize;
-          engine.renderingEngine.requestRedraw();
+          engine.renderingManager.requestRedraw();
           return;
         }
 
@@ -114,7 +120,7 @@ export async function setupTextDragHandlers(
             0.1
           );
           elem.scale = { x: newScaleX, y: newScaleY };
-          engine.renderingEngine.requestRedraw();
+          engine.renderingManager.requestRedraw();
         }
 
         return;
@@ -131,7 +137,7 @@ export async function setupTextDragHandlers(
           y: mouse.y - dragOffset.y
         };
 
-        engine.renderingEngine.requestRedraw();
+        engine.renderingManager.requestRedraw();
       }
     });
 
@@ -150,16 +156,19 @@ export async function setupTextDragHandlers(
     });
 
     canvas.addEventListener('dblclick', e => {
-      const mouse = engine.renderingEngine.getMousePositionFromEvent(canvas, e);
-      const textElems = engine.renderingEngine.getTextElements();
-      const ctx = engine.renderingEngine.getContext();
+      const mouse = engine.renderingManager.getMousePositionFromEvent(
+        canvas,
+        e
+      );
+      const textElems = engine.renderingManager.getTextElements();
+      const ctx = engine.renderingManager.getContext();
       if (!ctx) return;
 
       for (let i = textElems.length - 1; i >= 0; i--) {
         const { elem, elemIndex } = textElems[i];
-        if (engine.renderingEngine.isPointInTextElement(mouse, elem)) {
-          engine.renderingEngine.showTextOverlay(canvas, elem, elemIndex, () =>
-            engine.renderingEngine.requestRedraw()
+        if (engine.renderingManager.isPointInTextElement(mouse, elem)) {
+          engine.renderingManager.showTextOverlay(canvas, elem, elemIndex, () =>
+            engine.renderingManager.requestRedraw()
           );
           break;
         }

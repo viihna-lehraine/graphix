@@ -9,9 +9,9 @@ import type {
   Layer,
   LayerElement,
   Subscriber,
-  TextLayerElement,
-  Utilities
+  TextLayerElement
 } from '../../../types/index.js';
+import { RenderingManager } from '@engine/RenderingManager.js';
 
 export class CanvasStateService implements CanvasStateServiceContract {
   static #instance: CanvasStateService | null = null;
@@ -23,9 +23,8 @@ export class CanvasStateService implements CanvasStateServiceContract {
   #future: CanvasState[];
 
   #data: Data;
-  #utils: Utilities;
 
-  private constructor(initial: CanvasState, data: Data, utils: Utilities) {
+  private constructor(initial: CanvasState, data: Data) {
     this.#canvasState = { ...initial };
     this.#canvasState.layers = initial.layers || [];
     this.#canvasState.selectedLayerIndex = initial.selectedLayerIndex ?? null;
@@ -35,21 +34,12 @@ export class CanvasStateService implements CanvasStateServiceContract {
     this.#future = [];
 
     this.#data = data;
-    this.#utils = utils;
   }
 
-  static getInstance(
-    initial: CanvasState,
-    data: Data,
-    utils: Utilities
-  ): CanvasStateService {
+  static getInstance(initial: CanvasState, data: Data): CanvasStateService {
     try {
       if (!CanvasStateService.#instance) {
-        CanvasStateService.#instance = new CanvasStateService(
-          initial,
-          data,
-          utils
-        );
+        CanvasStateService.#instance = new CanvasStateService(initial, data);
       }
 
       return CanvasStateService.#instance;
@@ -248,17 +238,19 @@ export class CanvasStateService implements CanvasStateServiceContract {
     this.#notify();
   }
 
-  setCanvasImage(imageDataUrl: string | undefined): void {
+  setCanvasImage(
+    imageDataUrl: string | undefined
+  ): HTMLImageElement | undefined {
     if (imageDataUrl) {
       const img = new Image();
       img.src = imageDataUrl;
 
       const asset: Asset = {
-        index: 999999, // placeholder index
+        index: 999999,
         type: 'image',
         name: 'ImageLayer',
         class: 'static',
-        src: imageDataUrl,
+        src: img.src,
         ext: 'png',
         tags: [],
         size_kb: 0,
@@ -294,9 +286,11 @@ export class CanvasStateService implements CanvasStateServiceContract {
       };
 
       this.#canvasState.layers.push(imageLayer);
+      this.#notify();
+      return img;
     }
 
-    this.#notify();
+    return undefined;
   }
 
   setSelectedLayerIndex(index: number | null): void {
@@ -323,11 +317,11 @@ export class CanvasStateService implements CanvasStateServiceContract {
     this.#notify();
   }
 
-  updateTextElement(globalTextElemIndex: number): void {
-    const found = this.#utils.canvas.findNthTextElement(
-      this.#canvasState.layers,
-      globalTextElemIndex
-    );
+  updateTextElement(
+    globalTextElemIndex: number,
+    renderingManager: RenderingManager
+  ): void {
+    const found = renderingManager.getNthTextElement(globalTextElemIndex);
     if (!found) return;
     found.layer.element;
     this.#notify();

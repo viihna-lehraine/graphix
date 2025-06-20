@@ -6,17 +6,11 @@ import type {
   Services
 } from '../../types/index.js';
 
-// ======================================================== //
-// ======================================================== //
-
 export class CacheManager implements CacheManagerContract {
   static #instance: CacheManager | null = null;
 
   #cache = {} as Cache;
-
   #errors: Services['errors'];
-
-  // ====================================================== //
 
   private constructor(errors: Services['errors']) {
     try {
@@ -34,8 +28,6 @@ export class CacheManager implements CacheManagerContract {
     }
   }
 
-  // ====================================================== //
-
   public static getInstance(errors: Services['errors']): CacheManager {
     return errors.handleSync(() => {
       if (!CacheManager.#instance) {
@@ -50,8 +42,6 @@ export class CacheManager implements CacheManagerContract {
     }, 'Unhandled CanvasCacheService getInstance error.');
   }
 
-  // ====================================================== //
-
   get cachedBgImg(): HTMLImageElement | null {
     return this.#errors.handleSync(() => {
       console.debug('Returning cached canvas background img');
@@ -64,8 +54,6 @@ export class CacheManager implements CacheManagerContract {
       this.#cache.bgImg = img;
     }, 'Unhandled CanvasCacheService cachedBgImg setter error.');
   }
-
-  // ====================================================== //
 
   clearAll(): void {
     this.#errors.handleSync(() => {

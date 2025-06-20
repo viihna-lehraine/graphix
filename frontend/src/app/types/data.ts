@@ -115,7 +115,7 @@ export interface Regex {
 }
 
 export interface StorageKeys {
-  state: string;
+  APP_STATE: string;
 }
 
 // ================================================== //

@@ -1,4 +1,4 @@
-// File: frontend/src/app/features/engine/RenderingEngine.ts
+// File: frontend/src/app/features/engine/RenderingManager.ts
 
 import type {
   CanvasResizeOptions,
@@ -8,15 +8,15 @@ import type {
   Layer,
   RedrawPlugin,
   Services,
-  RenderingEngineContract,
+  RenderingManagerContract,
   TextLayerElement,
   Utilities
 } from '../../types/index.js';
 import { AnimationGroupManager } from '@engine/AnimationGroupManager.js';
 import { StateManager } from '@core/services/state/StateManager.js';
 
-export class RenderingEngine implements RenderingEngineContract {
-  static #instance: RenderingEngine | null = null;
+export class RenderingManager implements RenderingManagerContract {
+  static #instance: RenderingManager | null = null;
 
   #devMode: Data['flags']['devMode'];
   #redrawPlugins: RedrawPlugin[] = [];
@@ -30,7 +30,11 @@ export class RenderingEngine implements RenderingEngineContract {
   #stateManager: StateManager;
   #utils: Utilities;
 
-  private constructor(ctx: CanvasRenderingContext2D, core: Core) {
+  private constructor(
+    ctx: CanvasRenderingContext2D,
+    core: Core,
+    animationGroupManager: AnimationGroupManager
+  ) {
     this.#ctx = ctx;
     this.#core = core;
     this.#data = core.data;
@@ -39,27 +43,32 @@ export class RenderingEngine implements RenderingEngineContract {
     this.#errors = core.services.errors;
     this.#stateManager = core.services.stateManager;
 
-    this.#animationGroupManager = core.services.animationGroupManager;
+    this.#animationGroupManager = animationGroupManager;
 
-    this.#stateManager.subscribeToCanvas(() => {
+    this.#stateManager.subscribeToCanvasState(() => {
       this.requestRedraw();
     });
   }
 
   static getInstance(
     ctx: CanvasRenderingContext2D,
-    core: Core
-  ): RenderingEngine {
+    core: Core,
+    animationGroupManager: AnimationGroupManager
+  ): RenderingManager {
     return core.services.errors.handleSync(() => {
       console.debug(`calling getInstance()...`);
 
-      if (!RenderingEngine.#instance) {
+      if (!RenderingManager.#instance) {
         console.debug(`No existing instance found. Creating new instance.`);
 
-        RenderingEngine.#instance = new RenderingEngine(ctx, core);
+        RenderingManager.#instance = new RenderingManager(
+          ctx,
+          core,
+          animationGroupManager
+        );
       }
 
-      return RenderingEngine.#instance;
+      return RenderingManager.#instance;
     }, 'Failed to get instance.');
   }
 
@@ -319,6 +328,15 @@ export class RenderingEngine implements RenderingEngineContract {
     }, 'Unhandled canvas resize error.');
   }
 
+  setCanvasToBackgroundImage(
+    canvas: HTMLCanvasElement,
+    img: HTMLImageElement,
+    maxWidth: number = window.innerWidth,
+    maxHeight: number = window.innerHeight
+  ): void {
+    this.#setCanvasToBackgroundImage(canvas, img, maxWidth, maxHeight);
+  }
+
   showTextOverlay(
     canvas: HTMLCanvasElement,
     elem: TextLayerElement,
@@ -326,6 +344,13 @@ export class RenderingEngine implements RenderingEngineContract {
     redraw: () => void
   ): void {
     this.#showTextElementOverlay(canvas, elem, index, this.#core, redraw);
+  }
+
+  syncCanvasBackgroundFromImage(
+    canvas: HTMLCanvasElement,
+    img: HTMLImageElement
+  ): void {
+    this.#setCanvasToBackgroundImage(canvas, img);
   }
 
   // ==================================================== //
@@ -830,30 +855,20 @@ export class RenderingEngine implements RenderingEngineContract {
       cancelBtn
     );
 
-    // commit logic
-    function commitEdit() {
-      core.services.stateManager.updateTextElement(index);
-      overlay.remove();
-      redraw();
-    }
-    // cancellation logic
-    function cancelEdit() {
-      overlay.remove();
-      redraw();
-    }
+    const manager = this;
 
-    saveBtn.addEventListener('click', commitEdit);
-    cancelBtn.addEventListener('click', cancelEdit);
+    saveBtn.addEventListener('click', (e?: Event) => {
+      if (e) e.preventDefault();
+      commitEdit(index, overlay, redraw, core, manager);
+    });
+    cancelBtn.addEventListener('click', () => cancelEdit(overlay, redraw));
     overlay.addEventListener('keydown', (e: KeyboardEvent) => {
-      if (e.key === 'Escape') cancelEdit();
-      if (e.key === 'Enter') commitEdit();
+      if (e.key === 'Escape') cancelEdit(overlay, redraw);
+      if (e.key === 'Enter') commitEdit(index, overlay, redraw, core, manager);
     });
 
-    // focus logic
-    setTimeout(() => textInput.focus(), 20);
-
-    // attach to DOM
-    document.body.appendChild(overlay);
+    setTimeout(() => textInput.focus(), 20); // focus logic
+    document.body.appendChild(overlay); // attach to DOM
   }
 
   /**
@@ -869,4 +884,24 @@ export class RenderingEngine implements RenderingEngineContract {
     void this.#setCanvasToBackgroundImage;
     console.log(`NO-OP FN FOR TESTING PURPOSES: ${_animationGroupManager}`);
   }
+}
+
+// =================================================== //
+// =================================================== //
+
+function commitEdit(
+  index: number,
+  overlay: HTMLDivElement,
+  redraw: () => void,
+  core: Core,
+  renderingManager: RenderingManager
+): void {
+  core.services.stateManager.updateTextElement(index, renderingManager);
+  overlay.remove();
+  redraw();
+}
+
+function cancelEdit(overlay: HTMLDivElement, redraw: () => void): void {
+  overlay.remove();
+  redraw();
 }

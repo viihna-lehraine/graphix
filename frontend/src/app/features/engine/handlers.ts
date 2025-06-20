@@ -135,8 +135,6 @@ async function addImageLayerFromFile(file: File, core: Core): Promise<void> {
   reader.readAsDataURL(file);
 }
 
-// ============================================================= //
-
 export const handlers: EngineHandlers = {
   setBackgroundFromFile,
   addImageLayerFromFile

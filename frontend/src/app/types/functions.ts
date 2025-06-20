@@ -12,9 +12,10 @@ import type {
 import { AnimationGroupManager } from '@engine/AnimationGroupManager.js';
 import { CacheManager } from '@core/services/CacheManager.js';
 import { ErrorHandler } from '@core/services/ErrorHandler.js';
-import { LayerManager } from '@engine/LayerManager.js';
-import { RenderingEngine } from '@engine/RenderingEngine.js';
-import { ResizeManager } from '@core/services/ResizeManager.js';
+import { LayerService } from '@engine/LayerService.js';
+import { Notifier } from '@core/services/Notifier.js';
+import { RenderingManager } from '@engine/RenderingManager.js';
+import { LayoutManager } from '@core/services/LayoutManager.js';
 import { StateManager } from '@core/services/state/StateManager.js';
 import { StorageManager } from '@core/services/storage/StorageManager.js';
 
@@ -35,8 +36,8 @@ export interface Engine {
   assetBrowserFns: AssetBrowserFunctions;
   handlers: EngineHandlers;
   ioFns: IOFunctions;
-  layerManager: LayerManager;
-  renderingEngine: RenderingEngine;
+  layerService: LayerService;
+  renderingManager: RenderingManager;
 }
 
 export interface Helpers {
@@ -48,10 +49,10 @@ export interface Helpers {
 }
 
 export type Services = {
-  animationGroupManager: AnimationGroupManager;
   cache: CacheManager;
   errors: ErrorHandler;
-  resizeManager: ResizeManager;
+  notifier: Notifier;
+  layoutManager: LayoutManager;
   stateManager: StateManager;
   storageManager: StorageManager;
 };
@@ -59,7 +60,6 @@ export type Services = {
 export interface Utilities {
   data: DataUtils;
   dom: DomUtils;
-  math: MathUtils;
   typeguards: Typeguards;
 }
 
@@ -82,6 +82,7 @@ export interface DataHelpers {
     waitMs: number,
     options: DebounceOptions
   ): (...args: Parameters<T>) => void;
+  getElement: <T extends HTMLElement = HTMLElement>(id: string) => T;
   getFileExtension: (file: File | Blob) => string;
   getFileName: (file: File | Blob) => string;
   getFileSizeInKB: (file: File | Blob) => number;
@@ -117,13 +118,6 @@ export interface DomUtils {
   getCssVar: (name: string) => string;
 }
 
-export interface MathUtils {
-  modulo: (x: number, n: number) => number;
-  roundToStep: (x: number, step: number) => number;
-  toDegrees: (rad: number) => number;
-  toRadians: (deg: number) => number;
-}
-
 export interface Typeguards {
   isImageLayer: (layer: Layer) => layer is ImageLayer;
 }
@@ -149,7 +143,7 @@ export interface IOFunctions {
     height: number,
     frameCount: number,
     core: Core,
-    renderingEngine: RenderingEngine,
+    renderingManager: RenderingManager,
     fileName?: string
   ) => Promise<void>;
   exportStaticFile: (
@@ -157,7 +151,7 @@ export interface IOFunctions {
     width: number,
     height: number,
     core: Core,
-    renderingEngine: RenderingEngine,
+    renderingManager: RenderingManager,
     fileName?: string
   ) => Promise<void>;
   handleDownload(
@@ -169,6 +163,6 @@ export interface IOFunctions {
     file: File,
     core: Core,
     createGifAnimation: (arrayBuffer: ArrayBuffer) => GifAnimation,
-    renderingEngine: RenderingEngine
+    renderingManager: RenderingManager
   ) => Promise<void>;
 }

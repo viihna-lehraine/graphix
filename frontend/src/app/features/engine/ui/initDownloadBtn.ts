@@ -1,6 +1,6 @@
-// File: frontend/src/app/features/engine/ui/init/downloadBtn.ts
+// File: frontend/src/app/features/engine/ui/initDownloadBtn.ts
 
-import type { Core, Engine, LayerElement } from '../../../../types/index.js';
+import type { Core, Engine, LayerElement } from '../../../types/index.js';
 
 export async function initializeDownloadBtn({
   core,
@@ -9,25 +9,17 @@ export async function initializeDownloadBtn({
   core: Core;
   engine: Engine;
 }): Promise<void> {
-  return core.services.errors.handleAsync(async () => {
-    const btn = document.getElementById(
-      core.data.dom.ids.downloadBtn
-    ) as HTMLButtonElement | null;
+  const getElement = core.helpers.data.getElement;
+  const ids = core.data.dom.ids;
 
-    if (!btn) throw new Error(`Download button not found!`);
+  return core.services.errors.handleAsync(async () => {
+    const btn = getElement(ids.downloadBtn) as HTMLButtonElement;
 
     btn.addEventListener('click', () => {
-      const canvas = document.getElementById(
-        core.data.dom.ids.canvas
-      ) as HTMLCanvasElement | null;
-      if (!canvas) {
-        throw new Error(`Canvas element not found in DOM!`);
-      }
-      const ctx = engine.renderingEngine.getContext();
-      if (!ctx) {
-        throw new Error(`Canvas 2D context not available.`);
-        return;
-      }
+      const canvas = getElement(ids.canvas) as HTMLCanvasElement;
+      const ctx = engine.renderingManager.getContext();
+
+      if (!ctx) throw new Error(`Canvas 2D context not available.`);
 
       const state = core.services.stateManager.getCanvas();
       const hasAnimatedLayer = state.layers.some(
@@ -51,7 +43,7 @@ export async function initializeDownloadBtn({
           height,
           frameCount,
           core,
-          engine.renderingEngine,
+          engine.renderingManager,
           fileName
         );
       } else {
@@ -61,7 +53,7 @@ export async function initializeDownloadBtn({
           width,
           height,
           core,
-          engine.renderingEngine,
+          engine.renderingManager,
           fileName
         );
       }

@@ -6,16 +6,12 @@ import('./sys/events/dom.js').then(({ onDOMContentLoaded }) => {
       const { launchApp } = await import('@sys/launch.js');
       const { core, engine } = await launchApp();
 
-      const canvas = document.getElementById(
-        core.data.dom.ids.canvas
-      ) as HTMLCanvasElement | null;
-      if (!canvas) throw new Error('Canvas element not found in DOM!');
-
-      const ctx = engine.renderingEngine.getContext();
+      const _canvas = core.helpers.data.getElement(core.data.dom.ids.canvas);
+      const ctx = engine.renderingManager.getContext();
       if (!ctx) throw new Error('2D context not available for canvas!');
 
-      const animationTick = engine.renderingEngine.makeAnimationTick(
-        core.services.animationGroupManager,
+      const animationTick = engine.renderingManager.makeAnimationTick(
+        engine.animationGroupManager,
         core.services.stateManager
       );
 

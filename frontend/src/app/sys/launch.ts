@@ -28,7 +28,7 @@ export async function launchApp(): Promise<{
     const { eventListeners, registerEventListeners } = await import(
       '@sys_registries/events.js'
     );
-    registerEventListeners(eventListeners, core, engine.renderingEngine);
+    registerEventListeners(eventListeners, core, engine.renderingManager);
     console.debug(`Event listeners registered successfully.`);
 
     await engine.assetBrowserFns

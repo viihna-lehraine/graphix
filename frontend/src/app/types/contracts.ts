@@ -14,8 +14,10 @@ import type {
   State,
   StateLifecycleHook,
   Subscriber,
-  TextLayerElement
+  TextLayerElement,
+  UIState
 } from './index.js';
+import { RenderingManager } from '@engine/RenderingManager.js';
 
 // ================================================== //
 // ================================================== //
@@ -51,7 +53,7 @@ export interface ErrorHandlerServiceContract {
   ): T;
 }
 
-export interface LayerManagerContract {
+export interface LayerServiceContract {
   createImageLayer: (src: string, file: File) => Promise<Layer>;
   getElementById: (
     layers: Layer[],
@@ -60,19 +62,19 @@ export interface LayerManagerContract {
   getLayerById: (layer: Layer[], layerId: string) => Layer | undefined;
 }
 
+export interface LayoutManagerContract {
+  initialize: () => void;
+  register: (plugin: ResizePlugin) => void;
+  runAll: () => void;
+  unregister: (plugin: ResizePlugin) => void;
+}
+
 export interface NotifierServiceContract {
   notify: (message: string, level: NotifierLevel) => void;
   info: (message: string) => void;
   warn: (message: string) => void;
   error: (message: string) => void;
   success: (message: string) => void;
-}
-
-export interface ResizeManagerContract {
-  initialize: () => void;
-  register: (plugin: ResizePlugin) => void;
-  runAll: () => void;
-  unregister: (plugin: ResizePlugin) => void;
 }
 
 // ================================================== //
@@ -89,8 +91,9 @@ export interface StateManagerContract {
   clearCanvasAnimation: () => void;
   getCanvas: () => CanvasState;
   getCanvasAspectRatio: () => number | undefined;
-  getClient: () => ClientState;
+  getClientState: () => ClientState;
   getState: () => State;
+  getUIState: () => UIState;
   moveLayer: (index: number, newIndex: number) => void;
   removeLayer: (index: number) => void;
   removeTextElement(layerIndex: number): void;
@@ -98,15 +101,23 @@ export interface StateManagerContract {
   setCanvas: (width: number, height: number) => void;
   setCanvasAnimation: (anim: GifAnimation | null) => void;
   setCanvasAspectRatio: (aspect: number) => void;
-  setCanvasImage: (imageDataUrl: string | undefined) => void;
-  setClient: (viewportWidth: number, viewportHeight: number) => void;
+  setCanvasImage: (
+    imageDataUrl: string | undefined,
+    renderingManager: RenderingManager
+  ) => void;
+  setClientState: (viewportWidth: number, viewportHeight: number) => void;
   setSelectedLayerIndex: (index: number | null) => void;
-  subscribeToCanvas: (fn: Subscriber<CanvasState>) => () => void;
-  subscribeToClient: (fn: Subscriber<ClientState>) => () => void;
+  setUIState: <K extends keyof UIState>(key: K, value: UIState[K]) => void;
+  subscribeToCanvasState: (fn: Subscriber<CanvasState>) => () => void;
+  subscribeToClientState: (fn: Subscriber<ClientState>) => () => void;
+  subscribeToUIState: (fn: Subscriber<UIState>) => () => void;
   redoCanvas: () => void;
   undoCanvas: () => void;
   updateLayer: (index: number, newLayer: Layer) => void;
-  updateTextElement: (index: number, newElem: TextLayerElement) => void;
+  updateTextElement: (
+    index: number,
+    renderingManager: RenderingManager
+  ) => void;
 }
 
 export interface CanvasStateServiceContract {
@@ -139,13 +150,22 @@ export interface CanvasStateServiceContract {
   subscribe: (fn: Subscriber<CanvasState>) => () => void;
   undo: () => void;
   updateLayer(index: number, newLayer: Layer): void;
-  updateTextElement: (globalTextElemIndex: number) => void;
+  updateTextElement: (
+    globalTextElemIndex: number,
+    renderingManager: RenderingManager
+  ) => void;
 }
 
 export interface ClientStateServiceContract {
   get: () => ClientState;
   set: (viewportWidth: number, viewportHeight: number) => void;
   subscribe: (fn: Subscriber<ClientState>) => () => void;
+}
+
+export interface UIStateServiceContract {
+  get: () => UIState;
+  set: <K extends keyof UIState>(key: K, value: UIState[K]) => void;
+  subscribe: (fn: Subscriber<UIState>) => () => void;
 }
 
 // ================================================== //
@@ -163,7 +183,7 @@ export interface IStorageService {
 // ================================================== //
 // ================================================== //
 
-export interface RenderingEngineContract {
+export interface RenderingManagerContract {
   addRedrawPlugin: (plugin: RedrawPlugin) => void;
   drawDevOverlay: () => void;
   drawFullBackgroundImage: (
@@ -195,6 +215,12 @@ export interface RenderingEngineContract {
     layers: Layer[]
   ) => void;
   requestRedraw: () => void;
+  setCanvasToBackgroundImage: (
+    canvas: HTMLCanvasElement,
+    img: HTMLImageElement,
+    maxWidth: number,
+    maxHeight: number
+  ) => void;
   showTextOverlay: (
     canvas: HTMLCanvasElement,
     elem: TextLayerElement,

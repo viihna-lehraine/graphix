@@ -3,12 +3,23 @@
 import type {
   Core,
   Data,
+  DataUtils,
+  DomUtils,
   EnvVars,
   Helpers,
   Services,
+  Typeguards,
   Utilities
 } from '../../types/index.js';
-import { RenderingEngine } from '@engine/RenderingEngine.js';
+import { RenderingManager } from '../../types/index.js';
+import {
+  AnimationGroupManager,
+  CacheManager,
+  ErrorHandler,
+  LayoutManager,
+  StateManager,
+  StorageManager
+} from '../../types/index.js';
 
 export async function initializeData(): Promise<Required<Data>> {
   console.log(`Initializing Data object...`);
@@ -37,12 +48,32 @@ export async function initializeEnvVars(): Promise<Required<EnvVars>> {
 }
 
 export async function initializeHelpers(): Promise<Required<Helpers>> {
-  console.log(`Initializing Helpers object...`);
-
   try {
-    const { helpersFactory } = await import('@sys/factories/helpers.js');
+    console.log(`Initializing Helpers object...`);
 
-    const helpers: Helpers = await helpersFactory();
+    const helpers = {} as Helpers;
+
+    const [
+      { appHelpersFactory },
+      { canvasHelpersFactory },
+      { dataHelperFactory },
+      { mathHelpersFactory },
+      { timeHelpersFactory }
+    ] = await Promise.all([
+      import('@core/helpers/app.js'),
+      import('@core/helpers/canvas.js'),
+      import('@core/helpers/data.js'),
+      import('@core/helpers/math.js'),
+      import('@core/helpers/time.js')
+    ]);
+
+    helpers.app = appHelpersFactory();
+    helpers.canvas = canvasHelpersFactory();
+    helpers.data = await dataHelperFactory();
+    helpers.math = mathHelpersFactory();
+    helpers.time = timeHelpersFactory();
+
+    console.log(`Helpers object has been successfully created`);
 
     return helpers;
   } catch (error) {
@@ -51,13 +82,18 @@ export async function initializeHelpers(): Promise<Required<Helpers>> {
   }
 }
 
-export async function initializeRenderingEngine(
+export async function initializeRenderingManager(
   ctx: CanvasRenderingContext2D,
+  animationGroupManager: AnimationGroupManager,
   core: Core
-): Promise<RenderingEngine> {
+): Promise<RenderingManager> {
   return core.services.errors.handleAsync(async () => {
     console.debug('Initializing the Rendering Engine...');
-    const renderingEngine = RenderingEngine.getInstance(ctx, core);
+    const renderingEngine = RenderingManager.getInstance(
+      ctx,
+      core,
+      animationGroupManager
+    );
 
     return renderingEngine;
   }, `Rendering Engine initialization failed.`);
@@ -65,33 +101,61 @@ export async function initializeRenderingEngine(
 
 export async function initializeServices(
   data: Data,
-  env: EnvVars,
-  helpers: Helpers,
-  utils: Utilities
+  env: EnvVars
 ): Promise<Required<Services>> {
-  console.log(`Initializing Services object...`);
+  console.debug(`Initializing Services object...`);
 
   try {
-    const { serviceFactory } = await import('@sys/factories/services.js');
+    const services = {} as Services;
 
-    const services: Services = await serviceFactory(data, env, helpers, utils);
+    console.log(`Initializing the core.services object...`);
+
+    services.errors = ErrorHandler.getInstance();
+    services.storageManager = await StorageManager.getInstance();
+    services.stateManager = StateManager.getInstance(
+      data,
+      env,
+      services.errors
+    );
+    services.cache = CacheManager.getInstance(services.errors);
+    services.layoutManager = LayoutManager.getInstance(services.errors);
 
     return services;
   } catch (error) {
-    console.error(`Failed to initialize Services:`, error);
-    throw new Error(`Services initialization failed`);
+    console.error(`Service Factory execution failed:`, error);
+    throw new Error(
+      `Failed to initialize services: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
 }
 
 export async function initializeUtilities(): Promise<Required<Utilities>> {
-  console.log(`Initializing Utilities object...`);
-
   try {
-    const { utilitiesFactory } = await import('@sys/factories/utilities.js');
-    const utilities: Utilities = await utilitiesFactory();
+    console.log(`Creating 'Utilities' object.`);
 
-    return utilities;
+    const utils = {} as Utilities;
+
+    const { dataUtilityFactory } = await import('@core/utils/data.js');
+    const { domUtilityFactory } = await import('@core/utils/dom.js');
+    const { typeguardFactory } = await import('@core/utils/typeguards.js');
+
+    const typeguards: Typeguards = typeguardFactory();
+
+    const dataUtils: DataUtils = dataUtilityFactory();
+    const domUtils: DomUtils = domUtilityFactory();
+
+    utils.data = dataUtils;
+    utils.dom = domUtils;
+    utils.typeguards = typeguards;
+
+    console.log(`'Utilities' object has been successfully created.`);
+
+    return utils;
   } catch (error) {
-    throw new Error(`Utilities initialization failed.`);
+    throw new Error(
+      `Failed to create 'Utilities' object: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
   }
 }

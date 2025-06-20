@@ -46,4 +46,4 @@ export type {
   EnvVarParserMap,
   EnvVars
 } from './env.js';
-export type { CanvasState, ClientState, State } from './state.js';
+export type { CanvasState, ClientState, State, UIState } from './state.js';

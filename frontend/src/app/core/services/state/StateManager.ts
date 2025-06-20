@@ -6,7 +6,6 @@ import type {
   Data,
   EnvVars,
   GifAnimation,
-  Helpers,
   Layer,
   LayerElement,
   State,
@@ -14,12 +13,15 @@ import type {
   StateManagerContract,
   Subscriber,
   TextLayerElement,
-  Utilities
+  UIState
 } from '../../../types/index.js';
-import { CanvasStateService } from './CanvasStateService.js';
-import { ClientStateService } from './ClientStateService.js';
-import { ErrorHandler } from '../ErrorHandler.js';
-import { LayerManager } from '@engine/LayerManager.js';
+import {
+  CanvasStateService,
+  ClientStateService,
+  ErrorHandler,
+  RenderingManager,
+  UIStateService
+} from '../../../types/index.js';
 
 export class StateManager implements StateManagerContract {
   static #instance: StateManager | null = null;
@@ -27,31 +29,23 @@ export class StateManager implements StateManagerContract {
   #version: string | null = null;
   #lifecycleHooks: StateLifecycleHook[] = [];
 
-  #canvas: CanvasStateService;
-  #client: ClientStateService;
-  #layerManager: LayerManager;
+  #canvasStateService: CanvasStateService;
+  #clientStateService: ClientStateService;
+  #uiStateService: UIStateService = UIStateService.getInstance({
+    uploadMode: null
+  });
 
   #data: Data;
   #env: EnvVars;
   #errors: ErrorHandler;
-  #helpers: Helpers;
-  #utils: Utilities;
 
-  private constructor(
-    data: Data,
-    env: EnvVars,
-    errors: ErrorHandler,
-    helpers: Helpers,
-    utils: Utilities
-  ) {
+  private constructor(data: Data, env: EnvVars, errors: ErrorHandler) {
     try {
       console.debug('Initializing StateManager...');
 
       this.#data = data;
       this.#env = env;
       this.#errors = errors;
-      this.#helpers = helpers;
-      this.#utils = utils;
 
       this.#version = this.#env.VERSION;
 
@@ -67,7 +61,8 @@ export class StateManager implements StateManagerContract {
         client: {
           viewportWidth: window.innerWidth,
           viewportHeight: window.innerHeight
-        }
+        },
+        ui: { uploadMode: null }
       };
 
       const saved = window.localStorage.getItem('appState');
@@ -83,16 +78,18 @@ export class StateManager implements StateManagerContract {
         }
       }
 
-      this.#canvas = CanvasStateService.getInstance(
+      this.#canvasStateService = CanvasStateService.getInstance(
         initialState.canvas,
-        this.#data,
-        this.#utils
+        this.#data
       );
-      this.#client = ClientStateService.getInstance(initialState.client);
-      this.#layerManager = LayerManager.getInstance(this.#helpers);
+      this.#clientStateService = ClientStateService.getInstance(
+        initialState.client
+      );
+      this.#uiStateService = UIStateService.getInstance(initialState.ui);
 
-      this.#canvas.subscribe(() => this.#persistToStorage());
-      this.#client.subscribe(() => this.#persistToStorage());
+      this.#canvasStateService.subscribe(() => this.#persistToStorage());
+      this.#clientStateService.subscribe(() => this.#persistToStorage());
+      this.#uiStateService.subscribe(() => this.#persistToStorage());
 
       console.info('StateManager initialized successfully.');
     } catch (error) {
@@ -105,9 +102,7 @@ export class StateManager implements StateManagerContract {
   static getInstance(
     data: Data,
     env: EnvVars,
-    errors: ErrorHandler,
-    helpers: Helpers,
-    utils: Utilities
+    errors: ErrorHandler
   ): StateManager {
     try {
       console.debug('Calling StateManager.getInstance()...');
@@ -116,13 +111,7 @@ export class StateManager implements StateManagerContract {
         console.debug(
           'No existing StateManager instance found. Creating new instance.'
         );
-        return (StateManager.#instance = new StateManager(
-          data,
-          env,
-          errors,
-          helpers,
-          utils
-        ));
+        return (StateManager.#instance = new StateManager(data, env, errors));
       }
 
       console.debug('Returning existing StateManager instance.');
@@ -156,7 +145,8 @@ export class StateManager implements StateManagerContract {
       return {
         version: this.#version!,
         canvas: this.getCanvas(),
-        client: this.getClient()
+        client: this.getClientState(),
+        ui: this.getUIState()
       };
     }, 'Failed to return state.');
   }
@@ -164,86 +154,117 @@ export class StateManager implements StateManagerContract {
   // ====================================================================
 
   addLayer(layer: Layer): void {
-    this.#canvas.addLayer(layer);
+    this.#canvasStateService.addLayer(layer);
     for (const hook of this.#lifecycleHooks) {
       hook('addLayer', this.getCanvas());
     }
   }
   addTextElement(elem: TextLayerElement): void {
-    this.#canvas.addTextElement(elem);
+    this.#canvasStateService.addTextElement(elem);
   }
   canRedoCanvas(): boolean {
-    return this.#canvas.canRedo();
+    return this.#canvasStateService.canRedo();
   }
   canUndoCanvas(): boolean {
-    return this.#canvas.canUndo();
+    return this.#canvasStateService.canUndo();
   }
   clearCanvasAll(): void {
-    this.#canvas.clearAll();
-    window.localStorage.setItem('appState', JSON.stringify(this.getState()));
+    this.#canvasStateService.clearAll();
+    window.localStorage.setItem(
+      this.#data.storage_keys.APP_STATE,
+      JSON.stringify(this.getState())
+    );
   }
   clearCanvasAnimation(): void {
-    this.#canvas.clearAnimation();
+    this.#canvasStateService.clearAnimation();
   }
   getCanvas(): CanvasState {
-    return this.#canvas.get();
+    return this.#canvasStateService.get();
   }
   getCanvasAspectRatio(): number | undefined {
-    return this.#canvas.getAspectRatio();
+    return this.#canvasStateService.getAspectRatio();
   }
   moveLayer(index: number, newIndex: number): void {
-    this.#canvas.moveLayer(index, newIndex);
+    this.#canvasStateService.moveLayer(index, newIndex);
   }
   redoCanvas(): void {
-    this.#canvas.redo();
+    this.#canvasStateService.redo();
   }
   removeLayer(index: number): void {
-    this.#canvas.removeLayer(index);
+    this.#canvasStateService.removeLayer(index);
   }
   removeTextElement(layerIndex: number): void {
-    this.#canvas.removeTextElement(layerIndex);
+    this.#canvasStateService.removeTextElement(layerIndex);
   }
   resetCanvas(): void {
-    this.#canvas.reset();
+    this.#canvasStateService.reset();
   }
   setCanvas(width: number, height: number): void {
-    this.#canvas.set(width, height);
+    this.#canvasStateService.set(width, height);
   }
   setCanvasAnimation(anim: GifAnimation | null): void {
-    this.#canvas.setAnimation(anim);
+    this.#canvasStateService.setAnimation(anim);
   }
   setCanvasAspectRatio(aspect: number | undefined): void {
-    this.#canvas.setAspectRatio(aspect);
+    this.#canvasStateService.setAspectRatio(aspect);
   }
-  setCanvasImage(imageDataUrl: string | undefined): void {
-    this.#canvas.setCanvasImage(imageDataUrl);
+  setCanvasImage(
+    imageDataUrl: string | undefined,
+    renderingManager: RenderingManager
+  ): void {
+    const img = this.#canvasStateService.setCanvasImage(imageDataUrl);
+
+    if (img) {
+      img.onload = () => {
+        const canvas = document.getElementById(
+          this.#data.dom.ids.canvas
+        ) as HTMLCanvasElement | null;
+        if (!canvas) throw new Error('Canvas element not found');
+
+        renderingManager.syncCanvasBackgroundFromImage(canvas, img);
+      };
+    }
   }
   setSelectedLayerIndex(index: number | null): void {
-    this.#canvas.setSelectedLayerIndex(index);
+    this.#canvasStateService.setSelectedLayerIndex(index);
   }
-  subscribeToCanvas(fn: Subscriber<CanvasState>): () => void {
-    return this.#canvas.subscribe(fn);
+  subscribeToCanvasState(fn: Subscriber<CanvasState>): () => void {
+    return this.#canvasStateService.subscribe(fn);
   }
   undoCanvas(): void {
-    this.#canvas.undo();
+    this.#canvasStateService.undo();
   }
   updateLayer(index: number, newLayer: Layer): void {
-    this.#canvas.updateLayer(index, newLayer);
+    this.#canvasStateService.updateLayer(index, newLayer);
   }
-  updateTextElement(index: number): void {
-    this.#canvas.updateTextElement(index);
+  updateTextElement(index: number, renderingManager: RenderingManager): void {
+    this.#canvasStateService.updateTextElement(index, renderingManager);
   }
 
   // ====================================================================
 
-  getClient(): ClientState {
-    return this.#client.get();
+  getClientState(): ClientState {
+    return this.#clientStateService.get();
   }
-  setClient(viewportWidth: number, viewportHeight: number): void {
-    this.#client.set(viewportWidth, viewportHeight);
+  setClientState(viewportWidth: number, viewportHeight: number): void {
+    this.#clientStateService.set(viewportWidth, viewportHeight);
   }
-  subscribeToClient(fn: Subscriber<ClientState>): () => void {
-    return this.#client.subscribe(fn);
+  subscribeToClientState(fn: Subscriber<ClientState>): () => void {
+    return this.#clientStateService.subscribe(fn);
+  }
+
+  // ====================================================================
+
+  getUIState(): UIState {
+    return this.#uiStateService.get();
+  }
+
+  setUIState<K extends keyof UIState>(key: K, value: UIState[K]): void {
+    this.#uiStateService.set(key, value);
+  }
+
+  subscribeToUIState(fn: Subscriber<UIState>): () => void {
+    return this.#uiStateService.subscribe(fn);
   }
 
   // ====================================================================
@@ -303,11 +324,5 @@ export class StateManager implements StateManagerContract {
     return this.#errors.handleSync(() => {
       window.localStorage.setItem('appState', JSON.stringify(this.getState()));
     }, 'Failed to persist state to localStorage.');
-  }
-
-  // ====================================================================
-
-  _(): void {
-    this.#layerManager = this.#layerManager;
   }
 }

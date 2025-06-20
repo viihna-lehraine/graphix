@@ -3,5 +3,5 @@
 import type { StorageKeys } from '../types/index.js';
 
 export const storage_keys: StorageKeys = {
-  state: 'appState'
+  APP_STATE: 'appState'
 } as const;

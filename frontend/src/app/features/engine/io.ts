@@ -10,7 +10,7 @@ import type {
 } from '../../types/index.js';
 import GIF from 'gif.js';
 import html2canvas from 'html2canvas';
-import { RenderingEngine } from '@engine/RenderingEngine.js';
+import { RenderingManager } from '@engine/RenderingManager.js';
 
 async function exportGif(
   layers: Layer[],
@@ -18,7 +18,7 @@ async function exportGif(
   height: number,
   frameCount: number = 60,
   core: Core,
-  renderingEngine: RenderingEngine,
+  renderingManager: RenderingManager,
   fileName?: string
 ): Promise<void> {
   if (!fileName) fileName = core.data.config.defaults.fileName + '.gif';
@@ -59,8 +59,8 @@ async function exportGif(
       }
 
       // draw this frame
-      renderingEngine.clearCanvas(offCtx);
-      renderingEngine.renderLayersToContext(offCtx, layers);
+      renderingManager.clearCanvas(offCtx);
+      renderingManager.renderLayersToContext(offCtx, layers);
 
       // add frame to GIF
       gif.addFrame(offCtx, { copy: true, delay: baseFrameDelay });
@@ -90,7 +90,7 @@ async function exportStaticFile(
   width: number,
   height: number,
   core: Core,
-  renderingEngine: RenderingEngine,
+  renderingManager: RenderingManager,
   fileName?: string
 ): Promise<void> {
   if (!fileName) fileName = core.data.config.defaults.fileName + '.png';
@@ -103,9 +103,9 @@ async function exportStaticFile(
     const offCtx = offscreenCanvas.getContext('2d');
     if (!offCtx) throw new Error('Offscreen canvas 2D context unavailable');
 
-    renderingEngine.clearCanvas(offCtx);
+    renderingManager.clearCanvas(offCtx);
     // draw all layers
-    renderingEngine.renderLayersToContext(offCtx, layers);
+    renderingManager.renderLayersToContext(offCtx, layers);
 
     // export as PNG
     offscreenCanvas.toBlob(blob => {
@@ -149,7 +149,7 @@ async function handleUpload(
   file: File,
   core: Core,
   createGifAnimation: (arrayBuffer: ArrayBuffer) => GifAnimation,
-  renderingEngine: RenderingEngine
+  renderingManager: RenderingManager
 ): Promise<void> {
   const {
     services: { cache, errors, stateManager }
@@ -164,7 +164,7 @@ async function handleUpload(
     ) as HTMLCanvasElement | null;
     if (!canvas) throw new Error(`Canvas element not found.`);
 
-    const ctx = renderingEngine.getContext();
+    const ctx = renderingManager.getContext();
     if (!ctx) throw new Error(`2D context not available for canvas.`);
 
     // GIF support
@@ -188,13 +188,13 @@ async function handleUpload(
         canvas.width = img.width;
         canvas.height = img.height;
 
-        renderingEngine.clearCanvas(ctx);
-        renderingEngine.drawFullBackgroundImage(img, canvas);
+        renderingManager.clearCanvas(ctx);
+        renderingManager.drawFullBackgroundImage(img, canvas);
 
         const imgAspect = img.width / img.height;
         const imageDataUrl = e.target?.result as string;
 
-        stateManager.setCanvasImage(imageDataUrl);
+        stateManager.setCanvasImage(imageDataUrl, renderingManager);
         stateManager.setCanvasAspectRatio(imgAspect);
 
         cache.cachedBgImg = img;
@@ -202,8 +202,8 @@ async function handleUpload(
         canvas.style.width = 'auto';
         canvas.style.height = 'auto';
 
-        renderingEngine.clearCanvas(ctx);
-        renderingEngine.drawFullBackgroundImage(img, canvas);
+        renderingManager.clearCanvas(ctx);
+        renderingManager.drawFullBackgroundImage(img, canvas);
 
         const canvasWidth = canvas.width;
         const canvasHeight = canvas.height;
@@ -234,7 +234,6 @@ async function handleUpload(
           font: false,
           animation: false
         } as const;
-
         const imageElement = {
           kind: 'static_image',
           id: crypto.randomUUID(),
@@ -247,7 +246,6 @@ async function handleUpload(
           rotation: 0,
           element: img
         } as const;
-
         const imageLayer: Layer = {
           id: crypto.randomUUID(),
           name: 'Image Layer',

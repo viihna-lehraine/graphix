@@ -1,15 +1,15 @@
-// File: frontend/src/app/features/engine/LayerManager.ts
+// File: frontend/src/app/features/engine/LayerService.ts
 
 import type {
   Asset,
   Helpers,
   Layer,
   LayerElement,
-  LayerManagerContract
+  LayerServiceContract
 } from '../../types/index.js';
 
-export class LayerManager implements LayerManagerContract {
-  static #instance: LayerManager | null = null;
+export class LayerService implements LayerServiceContract {
+  static #instance: LayerService | null = null;
 
   #helpers: Helpers;
 
@@ -17,9 +17,9 @@ export class LayerManager implements LayerManagerContract {
     this.#helpers = helpers;
   }
 
-  static getInstance(helpers: Helpers): LayerManager {
+  static getInstance(helpers: Helpers): LayerService {
     if (!this.#instance) {
-      this.#instance = new LayerManager(helpers);
+      this.#instance = new LayerService(helpers);
     }
     return this.#instance;
   }

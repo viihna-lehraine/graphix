@@ -1,6 +1,6 @@
-// File: frontend/src/app/features/engine/ui/init/assetBrowserToggleBtn.ts
+// File: frontend/src/app/features/engine/ui/initAssetBrowserToggleBtn.ts
 
-import type { Core, Engine } from '../../../../types/index.js';
+import type { Core, Engine } from '../../../types/index.js';
 
 // @typescript-eslint/no-unused-vars
 export async function initializeAssetBrowserToggleBtn({
@@ -12,14 +12,11 @@ export async function initializeAssetBrowserToggleBtn({
 }): Promise<void> {
   if (core.data.flags.false) console.debug(`NO_OP PRINT: ${engine}`);
 
-  const btn = document.getElementById(
-    core.data.dom.ids.toggleAssetBrowserBtn
-  ) as HTMLButtonElement | null;
-  const browser = document.getElementById(
-    core.data.dom.ids.assetBrowserDiv
-  ) as HTMLDivElement | null;
-  if (!btn) throw new Error(`Asset Browser Toggle Button not found!`);
-  if (!browser) throw new Error(`Asset Browser Div not found!`);
+  const getElement = core.helpers.data.getElement;
+  const ids = core.data.dom.ids;
+
+  const btn = getElement(ids.toggleAssetBrowserBtn) as HTMLButtonElement;
+  const browser = getElement(ids.assetBrowserDiv) as HTMLDivElement;
 
   btn.addEventListener('click', () => {
     browser.classList.toggle('open');

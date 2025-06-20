@@ -5,9 +5,6 @@ import type {
   NotifierServiceContract
 } from '../../types/index.js';
 
-// =================================================== //
-// =================================================== //
-
 export class Notifier implements NotifierServiceContract {
   static #instance: Notifier | null = null;
 
@@ -19,8 +16,6 @@ export class Notifier implements NotifierServiceContract {
     }
     return Notifier.#instance;
   }
-
-  // ================================================== //
 
   notify(message: string, level: NotifierLevel = 'warn'): void {
     switch (level) {
@@ -38,8 +33,6 @@ export class Notifier implements NotifierServiceContract {
         break;
     }
   }
-
-  // ================================================== //
 
   info(message: string): void {
     this.notify(message, 'info');

@@ -138,6 +138,12 @@ export const dataHelperFactory = async (): Promise<DataHelpers> => ({
     };
   },
 
+  getElement<T extends HTMLElement = HTMLElement>(id: string): T {
+    const element = document.getElementById(id);
+    if (!element) throw new Error(`Element with ID '${id}' not found`);
+    return element as T;
+  },
+
   async getImageDimensions(file: File | Blob): Promise<{
     width: number;
     height: number;
@@ -147,6 +153,7 @@ export const dataHelperFactory = async (): Promise<DataHelpers> => ({
         const reader = new FileReader();
         reader.onload = () => {
           const img = new Image();
+
           img.onload = () => {
             resolve({ width: img.width, height: img.height });
           };

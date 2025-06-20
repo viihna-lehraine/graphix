@@ -1,18 +1,21 @@
 // File: frontend/src/app/sys/events/ui.ts
 
-import type { Engine } from '../../types/index.js';
+import type { Core, Engine } from '../../types/index.js';
 
-export async function addEngineUIEventListeners(engine: Engine): Promise<void> {
-  const { getUploadMode } = await import('@engine/ui/uploadMode.js');
-  const imgInput = document.getElementById(
-    'img-input'
-  ) as HTMLInputElement | null;
-  if (!imgInput) {
-    throw new Error('Image input element not found.');
-  }
+export async function addEngineUIEventListeners(
+  core: Core,
+  engine: Engine
+): Promise<void> {
+  const {
+    data: {
+      dom: { ids }
+    }
+  } = core;
+  const getElement = core.helpers.data.getElement;
+  const imgInput = getElement(ids.addImgInput) as HTMLInputElement;
 
   imgInput.addEventListener('change', async (e: Event) => {
-    if (getUploadMode && getUploadMode() === 'background') {
+    if (core.services.stateManager.getUIState().uploadMode === 'background') {
       const input = e.target as HTMLInputElement;
       const file = input.files && input.files[0];
       if (!file) return;
@@ -32,12 +35,12 @@ export async function addEngineUIEventListeners(engine: Engine): Promise<void> {
             throw new Error('Canvas element not found for background setting.');
           }
 
-          const ctx = engine.renderingEngine.getContext();
+          const ctx = engine.renderingManager.getContext();
           if (!ctx) throw new Error('2D context not available for canvas!');
 
-          engine.renderingEngine.clearCanvas(ctx);
+          engine.renderingManager.clearCanvas(ctx);
 
-          engine.renderingEngine.requestRedraw();
+          engine.renderingManager.requestRedraw();
         };
 
         img.src = reader.result;

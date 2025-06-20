@@ -1,7 +1,7 @@
 // File: frontend/src/application/types/app/core.ts
 
 import type { Core, Engine } from '../index.js';
-import { RenderingEngine } from '@engine/RenderingEngine.js';
+import { RenderingManager } from '@engine/RenderingManager.js';
 
 export interface Cache {
   bgImg: HTMLImageElement | null;
@@ -30,7 +30,7 @@ export interface ErrorHandlerOptions {
 
 export type ListenerRegistration = (
   core: Core,
-  renderingEngine: RenderingEngine
+  renderingManager: RenderingManager
 ) => void | (() => void);
 
 export type NotifierLevel = 'info' | 'warn' | 'error' | 'success';

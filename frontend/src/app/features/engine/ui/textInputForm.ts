@@ -1,6 +1,6 @@
-// File: frontend/src/app/features/engine/ui/init/textInputForm.ts
+// File: frontend/src/app/features/engine/ui/initTextInputForm.ts
 
-import type { Core, Engine } from '../../../../types/index.js';
+import type { Core, Engine } from '../../../types/index.js';
 
 export async function initializeTextInputForm({
   core,
@@ -11,21 +11,13 @@ export async function initializeTextInputForm({
 }): Promise<void> {
   if (core.data.flags.false) console.debug(`NO_OP PRINT: ${engine}`);
 
+  const getElement = core.helpers.data.getElement;
+  const ids = core.data.dom.ids;
+
   return core.services.errors.handleAsync(async () => {
-    const textForm = document.getElementById(
-      core.data.dom.ids.textForm
-    ) as HTMLFormElement | null;
-    const textInput = document.getElementById(
-      core.data.dom.ids.textInput
-    ) as HTMLInputElement | null;
-
-    if (!textForm) throw new Error(`Text form not found in DOM.`);
-    if (!textInput) throw new Error(`Text input not found in DOM.`);
-
-    const canvas = document.getElementById(
-      core.data.dom.ids.canvas
-    ) as HTMLCanvasElement | null;
-    if (!canvas) throw new Error(`Canvas element not found in DOM!`);
+    const textForm = getElement(ids.textForm) as HTMLFormElement;
+    const textInput = getElement(ids.textInput) as HTMLInputElement;
+    const canvas = getElement(ids.canvas) as HTMLCanvasElement;
 
     textForm.addEventListener('submit', (e: Event) => {
       e.preventDefault();
