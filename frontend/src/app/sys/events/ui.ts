@@ -1,17 +1,15 @@
 // File: frontend/src/app/sys/events/ui.ts
 
-import type { Core, Engine } from '../../types/index.js';
+import type { Core, Engine } from '../../meta/index.js';
 
 export async function addEngineUIEventListeners(
   core: Core,
   engine: Engine
 ): Promise<void> {
   const {
-    data: {
-      dom: { ids }
-    }
+    data: { ids }
   } = core;
-  const getElement = core.helpers.data.getElement;
+  const getElement = core.utils.getElement;
   const imgInput = getElement(ids.addImgInput) as HTMLInputElement;
 
   imgInput.addEventListener('change', async (e: Event) => {
@@ -28,18 +26,8 @@ export async function addEngineUIEventListeners(
         }
         const img = new window.Image();
         img.onload = () => {
-          const canvas = document.getElementById(
-            'main-canvas'
-          ) as HTMLCanvasElement | null;
-          if (!canvas) {
-            throw new Error('Canvas element not found for background setting.');
-          }
-
           const ctx = engine.renderingManager.getContext();
-          if (!ctx) throw new Error('2D context not available for canvas!');
-
           engine.renderingManager.clearCanvas(ctx);
-
           engine.renderingManager.requestRedraw();
         };
 

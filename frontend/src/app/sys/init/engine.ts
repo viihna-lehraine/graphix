@@ -1,39 +1,37 @@
 // File: frontend/src/app/sys/init/engine.ts
 
-import type { Core, Engine } from '../../types/index.js';
+import type { Core, Engine } from '@meta/index.js';
 
 export async function initializeEngine(core: Core): Promise<Required<Engine>> {
   return core.services.errors.handleAsync(async () => {
-    const {
-      data: {
-        dom: { ids }
-      },
-      helpers
-    } = core;
-    const getElement = helpers.data.getElement;
-
-    const canvas = getElement(ids.canvas) as HTMLCanvasElement;
+    const canvas = core.utils.getElement(
+      core.data.ids.canvas
+    ) as HTMLCanvasElement;
     const ctx = canvas.getContext('2d');
+
     if (!ctx) throw new Error(`2D context not available for canvas!`);
-    const container = getElement(ids.canvasContainerDiv);
+
+    const container = core.utils.getElement(core.data.ids.canvasContainerDiv);
 
     const canvasRefs = { canvas, ctx };
 
-    const { AnimationGroupManager } = await import(
-      '@engine/AnimationGroupManager.js'
+    const { AnimationManager } = await import(
+      'src/app/engine/AnimationManager.js'
     );
-    const animationGroupManager = AnimationGroupManager.getInstance();
+    const animationManager = AnimationManager.getInstance();
 
     const { initializeRenderingManager } = await import('./partials.js');
     const renderingManager = await initializeRenderingManager(
       ctx,
-      animationGroupManager,
+      animationManager,
       core
     );
 
-    const { ioFns } = await import('@engine/io.js');
+    const { ioFns } = await import('src/app/engine/io.js');
 
-    const { animatedImageRedrawPlugin } = await import('@engine/plugins.js');
+    const { animatedImageRedrawPlugin } = await import(
+      'src/app/engine/plugins.js'
+    );
     renderingManager.addRedrawPlugin(animatedImageRedrawPlugin);
 
     renderingManager.autoResize({
@@ -50,20 +48,34 @@ export async function initializeEngine(core: Core): Promise<Required<Engine>> {
       }, 'Canvas resize/redraw failed');
     });
 
-    const { LayerService } = await import('@engine/LayerService.js');
+    const { LayerService } = await import('src/app/engine/LayerService.js');
 
-    const layerService = LayerService.getInstance(core.helpers);
+    const layerService = LayerService.getInstance(core.utils);
 
-    const { handlers } = await import('@engine/handlers.js');
-    const { assetBrowserFns } = await import('@engine/asset_browser.js');
+    const { handlers } = await import('src/app/engine/handlers.js');
+    const { assetBrowserFns } = await import('src/app/engine/asset_browser.js');
+
+    const stateManager = core.services.stateManager;
+
+    const { UIManager } = await import('src/app/engine/UIManager.js');
+    const uiManager = UIManager.getInstance(
+      core.services.cache,
+      core,
+      core.services.errors,
+      ioFns,
+      layerService,
+      renderingManager,
+      stateManager
+    );
 
     return {
-      animationGroupManager,
+      animationManager,
       assetBrowserFns,
       handlers,
       ioFns,
       layerService,
-      renderingManager
+      renderingManager,
+      uiManager
     };
-  }, `Engine/EngineUI initialization failed.`);
+  }, `Engine initialization failed.`);
 }

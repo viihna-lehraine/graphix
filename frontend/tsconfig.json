@@ -21,18 +21,16 @@
     "noUnusedParameters": true,
     "outDir": "./public/dist",
     "paths": {
-      "@AnimationGroupManager/*": [
-        "src/app/features/engine/AnimationGroupManager.js"
-      ],
       "@bootstrap/*": ["src/app/sys/bootstrap/*"],
       "@build/*": ["src/app/build/*"],
-      "@core/*": ["src/app/core/*"],
+      "@config/*": ["src/app/config/*"],
       "@data/*": ["src/app/data/*"],
-      "@engine/*": ["src/app/features/engine/*"],
-      "@event_registry/*": ["src/app/sys/registries/events.js"],
-      "@features/*": ["src/app/features/*"],
-      "@init/*": ["src/app/sys/init/*"],
+      "@engine/*": ["src/app/engine/*"],
+      "@meta/*": ["src/app/meta/*"],
+      "@services/*": ["src/app/services/*"],
       "@sys/*": ["src/app/sys/*"],
+      "@sys_init/*": ["src/app/sys/init/*"],
+      "@sys_launch/*": ["src/app/sys/launch/*"],
       "@sys_registries/*": ["src/app/sys/registries/*"],
       "@types/*": ["src/app/types/*"]
     },

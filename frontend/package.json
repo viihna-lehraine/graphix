@@ -8,7 +8,7 @@
   "scripts": {
     "build": "pnpm run prebuild && pnpm run build:assets && pnpm run build:hash_table && vite build",
     "build:assets": "pnpm exec tsx src/app/build/asset_manifest/main.ts",
-    "build:env": "pnpm exec tsx src/app/build/env/main.ts",
+    "build:env": "pnpm exec tsx src/app/build/env_vars/main.ts",
     "build:hash_table": "pnpm exec tsx src/app/build/hash_table/main.ts",
     "clean": "rm -rf node_modules dist",
     "dev": "vite",

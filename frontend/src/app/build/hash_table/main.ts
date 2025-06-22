@@ -1,6 +1,6 @@
 // File: frontend/src/app/build/hash_table/main.ts
 
-import type { AssetManifest } from '../../types/index.js';
+import type { AssetManifest } from '../../meta/index.js';
 import fs from 'fs';
 import path from 'path';
 

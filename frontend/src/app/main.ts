@@ -1,27 +1,26 @@
 // File: frontend/src/app/main.ts
 
-import('./sys/events/dom.js').then(({ onDOMContentLoaded }) => {
+import('./sys/events/dom.js').then(async ({ onDOMContentLoaded }) => {
+  const { error_classes } = await import('./meta/errors/index.js');
+  const AppStartupError = error_classes.AppStartupError;
+
   onDOMContentLoaded(async () => {
     try {
       const { launchApp } = await import('@sys/launch.js');
+
       const { core, engine } = await launchApp();
 
-      const _canvas = core.helpers.data.getElement(core.data.dom.ids.canvas);
-      const ctx = engine.renderingManager.getContext();
-      if (!ctx) throw new Error('2D context not available for canvas!');
-
       const animationTick = engine.renderingManager.makeAnimationTick(
-        engine.animationGroupManager,
+        engine.animationManager,
         core.services.stateManager
       );
 
       requestAnimationFrame(animationTick);
     } catch (error) {
-      console.error(
-        `An unhandled error occurred during application startup:`,
-        error instanceof Error ? error.message : error
+      alert(
+        `An error occurred during application startup: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
-      throw new Error(`Application startup failed.`);
+      throw new AppStartupError('main application loop');
     }
   });
 });

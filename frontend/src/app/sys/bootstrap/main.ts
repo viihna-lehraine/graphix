@@ -1,6 +1,6 @@
 // File: frontend/src/app/sys/bootstrap/main.ts
 
-import type { Core } from '../../types/index.js';
+import type { Core } from '../../meta/index.js';
 
 export async function bootstrap(core: Core): Promise<void> {
   const { errors } = core.services;

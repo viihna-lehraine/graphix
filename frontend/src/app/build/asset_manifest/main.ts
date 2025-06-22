@@ -2,8 +2,9 @@
 
 import fs from 'fs';
 import path from 'path';
-import { data } from '../../data/index.js';
+import { initializeData } from '../../sys/init/partials.js';
 
+const data = await initializeData();
 const projectRoot = path.resolve(
   new URL('../../../../', import.meta.url).pathname
 );
@@ -25,7 +26,7 @@ if (fs.existsSync(outFile)) {
   console.log(`Removed existing manifest at ${outFile}`);
 }
 
-const { scanDir } = await import('./partials/scanDir.js');
+const { scanDir } = await import('./partials.js');
 const manifest = await scanDir(assetDir, '', data);
 const manifestWithIndex = manifest.map((asset, i) => ({
   ...asset,

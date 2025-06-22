@@ -1,10 +1,10 @@
 // File: frontend/src/app/sys/registries/events.ts
 
-import type { Core, ListenerRegistration } from '../../types/index.js';
-import { RenderingManager } from '@engine/RenderingManager.js';
+import type { Core, ListenerRegistration } from '../../meta/index.js';
+import { RenderingManager } from '../../meta/index.js';
 
 export const eventListeners: ListenerRegistration[] = [
-  (core: Core, radenderingManager: RenderingManager) => {
+  (core: Core, renderingManager: RenderingManager) => {
     window.addEventListener('keydown', (event: KeyboardEvent) => {
       if (!core) {
         console.warn(
@@ -18,7 +18,7 @@ export const eventListeners: ListenerRegistration[] = [
         core.services.stateManager.getCanvas().selectedLayerIndex !== null
       ) {
         const nth = core.services.stateManager.getCanvas().selectedLayerIndex!;
-        const found = radenderingManager.getNthTextElement(nth);
+        const found = renderingManager.getNthTextElement(nth);
 
         if (found) {
           core.services.stateManager.removeTextElement(
@@ -49,7 +49,7 @@ export async function registerEventListeners(
     {
       context: 'application startup',
       fallback: 'n/a',
-      userMessage: core.data.msgs.errors.unknownFatalError
+      userMessage: core.data.errorMessages.unknownFatalError
     }
   );
 }

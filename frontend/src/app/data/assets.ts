@@ -1,8 +1,13 @@
 // File: frontend/src/app/core/data/assets.ts
 
-import type { AssetData, Asset, AssetExts, AssetTags } from '../types/index.js';
+import type {
+  AssetData,
+  Asset,
+  AssetExtensions,
+  AssetTags
+} from '../meta/index.js';
 
-const exts: AssetExts = {
+const exts: AssetExtensions = {
   supported: ['gif', 'jpeg', 'jpg', 'png', 'webp'],
   unsupported: ['svg']
 } as const;

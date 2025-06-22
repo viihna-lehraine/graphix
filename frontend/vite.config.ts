@@ -19,29 +19,20 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@AnimationGroupManager': path.resolve(
-        import.meta.dirname,
-        'src/app/features/engine/AnimationGroupManager.js'
-      ),
       '@bootstrap': path.resolve(import.meta.dirname, 'src/app/sys/bootstrap'),
       '@build': path.resolve(import.meta.dirname, 'src/app/build'),
-      '@core': path.resolve(import.meta.dirname, 'src/app/core'),
+      '@config': path.resolve(import.meta.dirname, 'src/app/config'),
       '@data': path.resolve(import.meta.dirname, 'src/app/data'),
-      '@engine': path.resolve(import.meta.dirname, 'src/app/features/engine'),
-      '@features': path.resolve(import.meta.dirname, '/src/app/features'),
-      '@init': path.resolve(import.meta.dirname, 'src/app/sys/init'),
-      '@launch': path.resolve(import.meta.dirname, 'src/app/sys/launch.js'),
-      '@RenderingEngine': path.resolve(
-        import.meta.dirname,
-        'src/app/features/engine/RenderingEngine.js'
-      ),
+      '@engine': path.resolve(import.meta.dirname, 'src/app/engine'),
+      '@meta': path.resolve(import.meta.dirname, 'src/app/meta'),
       '@services': path.resolve(import.meta.dirname, 'src/app/services'),
       '@sys': path.resolve(import.meta.dirname, 'src/app/sys'),
+      '@sys_init': path.resolve(import.meta.dirname, 'src/app/sys/init'),
+      '@sys_launch': path.resolve(import.meta.dirname, 'src/app/sys/launch.js'),
       '@sys_registries': path.resolve(
         import.meta.dirname,
         'src/app/sys/registries'
-      ),
-      '@types': path.resolve(import.meta.dirname, 'src/app/types')
+      )
     },
     extensions: ['.js', '.mjs', '.ts', '.json']
   }

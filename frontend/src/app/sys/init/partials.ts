@@ -1,90 +1,56 @@
 // File: fronend/src/app/sys/init/partials.ts
 
-import type {
-  Core,
-  Data,
-  DataUtils,
-  DomUtils,
-  EnvVars,
-  Helpers,
-  Services,
-  Typeguards,
-  Utilities
-} from '../../types/index.js';
-import { RenderingManager } from '../../types/index.js';
+import type { Core, Data, Services, Utilities } from '@meta/index.js';
 import {
-  AnimationGroupManager,
+  AnimationManager,
   CacheManager,
   ErrorHandler,
   LayoutManager,
+  RenderingManager,
   StateManager,
   StorageManager
-} from '../../types/index.js';
+} from '../../meta/index.js';
 
-export async function initializeData(): Promise<Required<Data>> {
-  console.log(`Initializing Data object...`);
-
+export const initializeData = async (): Promise<Data> => {
   try {
-    const { data } = await import('@data/index.js');
+    console.log(`Initializing Data object...`);
 
-    return data;
+    const { assetsData: assets } = await import('../../data/assets.js');
+    const { domClasses: classes } = await import('../../data/dom/classes.js');
+    const { defaultValues: defaults } = await import('../../data/defaults.js');
+    const { env_vars } = await import('../../config/environment/vars.js');
+    const { error_messages } = await import('../../config/error_messages.js');
+    const { file_paths } = await import('../../data/file_paths.js');
+    const { domIDs: ids } = await import('../../data/dom/ids.js');
+    const manifests = {
+      asset: await (
+        await import('../../config/manifest.js')
+      ).loadAssetManifest()
+    };
+    const { regex } = await import('../../data/regex.js');
+    const { storage_keys } = await import('../../data/storage_keys.js');
+
+    return {
+      assets,
+      classes,
+      defaults,
+      env_vars,
+      error_messages,
+      file_paths,
+      manifests,
+      ids,
+      regex,
+      storage_keys
+    } as const;
   } catch (error) {
-    console.error(`Failed to initialize Data:`, error);
-    throw new Error(`Data initialization failed`);
+    console.error('Error loading app data > (initializeData):', error);
+    throw new Error('Failed to load application data > (initializeData)');
   }
-}
-
-export async function initializeEnvVars(): Promise<Required<EnvVars>> {
-  console.log(`Initializing EnvVars object...`);
-
-  try {
-    const { env } = await import('../../config/env_vars.js');
-
-    return env;
-  } catch (error) {
-    console.error(`Failed to initialize EnvVars:`, error);
-    throw new Error(`EnvVars initialization failed`);
-  }
-}
-
-export async function initializeHelpers(): Promise<Required<Helpers>> {
-  try {
-    console.log(`Initializing Helpers object...`);
-
-    const helpers = {} as Helpers;
-
-    const [
-      { appHelpersFactory },
-      { canvasHelpersFactory },
-      { dataHelperFactory },
-      { mathHelpersFactory },
-      { timeHelpersFactory }
-    ] = await Promise.all([
-      import('@core/helpers/app.js'),
-      import('@core/helpers/canvas.js'),
-      import('@core/helpers/data.js'),
-      import('@core/helpers/math.js'),
-      import('@core/helpers/time.js')
-    ]);
-
-    helpers.app = appHelpersFactory();
-    helpers.canvas = canvasHelpersFactory();
-    helpers.data = await dataHelperFactory();
-    helpers.math = mathHelpersFactory();
-    helpers.time = timeHelpersFactory();
-
-    console.log(`Helpers object has been successfully created`);
-
-    return helpers;
-  } catch (error) {
-    console.error(`Failed to initialize Helpers:`, error);
-    throw new Error(`Helpers initialization failed`);
-  }
-}
+};
 
 export async function initializeRenderingManager(
   ctx: CanvasRenderingContext2D,
-  animationGroupManager: AnimationGroupManager,
+  animationGroupManager: AnimationManager,
   core: Core
 ): Promise<RenderingManager> {
   return core.services.errors.handleAsync(async () => {
@@ -101,22 +67,18 @@ export async function initializeRenderingManager(
 
 export async function initializeServices(
   data: Data,
-  env: EnvVars
+  utils: Utilities
 ): Promise<Required<Services>> {
   console.debug(`Initializing Services object...`);
 
   try {
-    const services = {} as Services;
-
     console.log(`Initializing the core.services object...`);
 
-    services.errors = ErrorHandler.getInstance();
+    const services = {} as Services;
+
+    services.errors = ErrorHandler.getInstance(data, utils);
     services.storageManager = await StorageManager.getInstance();
-    services.stateManager = StateManager.getInstance(
-      data,
-      env,
-      services.errors
-    );
+    services.stateManager = StateManager.getInstance(data, services.errors);
     services.cache = CacheManager.getInstance(services.errors);
     services.layoutManager = LayoutManager.getInstance(services.errors);
 
@@ -129,24 +91,15 @@ export async function initializeServices(
   }
 }
 
-export async function initializeUtilities(): Promise<Required<Utilities>> {
+export async function initializeUtilities(
+  data: Data
+): Promise<Required<Utilities>> {
   try {
     console.log(`Creating 'Utilities' object.`);
 
-    const utils = {} as Utilities;
+    const { utilityFactory } = await import('src/app/utils/main.js');
 
-    const { dataUtilityFactory } = await import('@core/utils/data.js');
-    const { domUtilityFactory } = await import('@core/utils/dom.js');
-    const { typeguardFactory } = await import('@core/utils/typeguards.js');
-
-    const typeguards: Typeguards = typeguardFactory();
-
-    const dataUtils: DataUtils = dataUtilityFactory();
-    const domUtils: DomUtils = domUtilityFactory();
-
-    utils.data = dataUtils;
-    utils.dom = domUtils;
-    utils.typeguards = typeguards;
+    const utils = utilityFactory(data);
 
     console.log(`'Utilities' object has been successfully created.`);
 

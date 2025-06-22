@@ -1,6 +1,6 @@
 // File: frontend/src/app/sys/launch.ts
 
-import type { Core, Engine } from '../types/index.js';
+import type { Core, Engine } from '../meta/index.js';
 
 export async function launchApp(): Promise<{
   core: Core;
@@ -10,7 +10,7 @@ export async function launchApp(): Promise<{
     console.log(`Launching application...`);
 
     console.debug(`Initializing App Core...`);
-    const { initializeCore } = await import('@init/core.js');
+    const { initializeCore } = await import('@sys_init/core.js');
     const core = await initializeCore();
     console.debug(`Successfully initialized the Application Core.`);
 
@@ -20,7 +20,7 @@ export async function launchApp(): Promise<{
     console.debug(`Bootstrap processes completed successfully.`);
 
     console.debug(`Initializing central App Engine...`);
-    const { initializeEngine } = await import('@init/engine.js');
+    const { initializeEngine } = await import('@sys_init/engine.js');
     const engine = await initializeEngine(core);
     console.debug(`User Interface initialized successfully.`);
 
@@ -40,10 +40,18 @@ export async function launchApp(): Promise<{
       );
 
     console.debug(`Initializing User Interface...`);
-    const { registerEngineUIInitializers } = await import(
-      '@sys_registries/ui.js'
+    const { UIManager } = await import('src/app/engine/UIManager.js');
+    const uiManager = UIManager.getInstance(
+      core.services.cache,
+      core,
+      core.services.errors,
+      engine.ioFns,
+      engine.layerService,
+      engine.renderingManager,
+      core.services.stateManager
     );
-    await registerEngineUIInitializers(core, engine);
+
+    engine.uiManager = uiManager;
 
     return {
       core,
