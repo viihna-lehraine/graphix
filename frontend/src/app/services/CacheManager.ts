@@ -1,14 +1,15 @@
 // File: frontend/src/app/services/CanvasCacheService.ts
 
-import type { Cache, CacheManagerContract, Services } from '../meta/index.js';
+import type { Cache, CacheManagerContract } from '@index';
+import { ErrorHandler } from '@index';
 
 export class CacheManager implements CacheManagerContract {
   static #instance: CacheManager | null = null;
 
   #cache = {} as Cache;
-  #errors: Services['errors'];
+  #errors: ErrorHandler;
 
-  private constructor(errors: Services['errors']) {
+  private constructor(errors: ErrorHandler) {
     try {
       this.#errors = errors;
 
@@ -24,7 +25,7 @@ export class CacheManager implements CacheManagerContract {
     }
   }
 
-  public static getInstance(errors: Services['errors']): CacheManager {
+  public static getInstance(errors: ErrorHandler): CacheManager {
     return errors.handleSync(() => {
       if (!CacheManager.#instance) {
         console.debug('Creating CanvasCacheService instance.');

@@ -23,8 +23,16 @@ export default defineConfig({
       '@build': path.resolve(import.meta.dirname, 'src/app/build'),
       '@config': path.resolve(import.meta.dirname, 'src/app/config'),
       '@data': path.resolve(import.meta.dirname, 'src/app/data'),
+      '@dom_events': path.resolve(
+        import.meta.dirname,
+        'src/app/sys/events/dom.js'
+      ),
       '@engine': path.resolve(import.meta.dirname, 'src/app/engine'),
+      '@index': path.resolve(import.meta.dirname, 'src/app/meta/index.js'),
+      '@launch': path.resolve(import.meta.dirname, 'src/app/sys/launch.js'),
       '@meta': path.resolve(import.meta.dirname, 'src/app/meta'),
+      '@meta_errors': path.resolve(import.meta.dirname, 'src/app/meta/errors'),
+      '@meta_types': path.resolve(import.meta.dirname, 'src/app/meta/types'),
       '@services': path.resolve(import.meta.dirname, 'src/app/services'),
       '@sys': path.resolve(import.meta.dirname, 'src/app/sys'),
       '@sys_init': path.resolve(import.meta.dirname, 'src/app/sys/init'),
@@ -32,7 +40,8 @@ export default defineConfig({
       '@sys_registries': path.resolve(
         import.meta.dirname,
         'src/app/sys/registries'
-      )
+      ),
+      '@utils': path.resolve(import.meta.dirname, 'src/app/utils')
     },
     extensions: ['.js', '.mjs', '.ts', '.json']
   }

@@ -6,8 +6,8 @@ import type {
   SystemErrorInstance,
   Typeguards,
   UserFacingErrorInstance
-} from '../meta/index.js';
-import { SystemError, UserFacingError } from '../meta/index.js';
+} from '@index';
+import { SystemError, UserFacingError } from '@index';
 
 export const typeguardFactory = (): Typeguards =>
   ({

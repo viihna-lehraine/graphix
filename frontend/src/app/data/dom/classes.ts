@@ -1,6 +1,6 @@
 // File: frontend/src/app/data/dom/classes.ts
 
-import type { DomClasses } from '../../meta/index.js';
+import type { DomClasses } from '@index';
 
 const assetThumb = 'asset-thumbnail';
 const fontSelector = 'font-selector';

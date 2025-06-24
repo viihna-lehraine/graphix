@@ -17,7 +17,7 @@
     "lint:fix": "eslint --fix --ext .ts src/",
     "prebuild": "rm -rf public/assets && mkdir -p public && cp -r assets public && pnpm run build:env",
     "preview": "vite preview",
-    "reinit": "pnpm clean && pnpm install",
+    "reinit": "pnpm run clean && pnpm install",
     "test": "vitest run",
     "test:full": "vitest",
     "test:coverage": "vitest --coverage",

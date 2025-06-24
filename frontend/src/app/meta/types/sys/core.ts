@@ -1,7 +1,7 @@
 // File: frontend/src/application/meta/types/sys/core.ts
 
-import type { Core } from '../../index.js';
-import { RenderingManager } from '../../index.js';
+import type { Core } from '@index';
+import { RenderingManager } from '@index';
 
 export interface Cache {
   bgImg: HTMLImageElement | null;

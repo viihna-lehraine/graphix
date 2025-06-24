@@ -1,6 +1,6 @@
 // File: frontend/src/app/services/Notifier.ts
 
-import type { NotifierLevel, NotifierServiceContract } from '../meta/index.js';
+import type { NotifierLevel, NotifierServiceContract } from '@index';
 
 export class Notifier implements NotifierServiceContract {
   static #instance: Notifier | null = null;

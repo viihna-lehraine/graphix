@@ -1,6 +1,6 @@
 // File: frontend/src/app/services/storage/LocalStorageService.ts
 
-import type { IStorageService } from '../../meta/index.js';
+import type { IStorageService } from '@index';
 
 export class LocalStorageService implements IStorageService {
   get<T>(key: string): Promise<T | null> {

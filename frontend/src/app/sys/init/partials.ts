@@ -1,6 +1,6 @@
 // File: fronend/src/app/sys/init/partials.ts
 
-import type { Core, Data, Services, Utilities } from '@meta/index.js';
+import type { Core, Data, EnvVars, Services, Utilities } from '@index';
 import {
   AnimationManager,
   CacheManager,
@@ -15,26 +15,24 @@ export const initializeData = async (): Promise<Data> => {
   try {
     console.log(`Initializing Data object...`);
 
-    const { assetsData: assets } = await import('../../data/assets.js');
-    const { domClasses: classes } = await import('../../data/dom/classes.js');
-    const { defaultValues: defaults } = await import('../../data/defaults.js');
-    const { env_vars } = await import('../../config/environment/vars.js');
-    const { error_messages } = await import('../../config/error_messages.js');
-    const { file_paths } = await import('../../data/file_paths.js');
-    const { domIDs: ids } = await import('../../data/dom/ids.js');
+    const { assetsData: assets } = await import('@data/assets.js');
+    const { domClasses: classes } = await import('@data/dom/classes.js');
+    const { defaultValues: defaults } = await import('@data/defaults.js');
+    const { error_messages } = await import('@config/error_messages.js');
+    const { file_paths } = await import('@data/file_paths.js');
+    const { domIDs: ids } = await import('@data/dom/ids.js');
     const manifests = {
       asset: await (
-        await import('../../config/manifest.js')
+        await import('@config/manifest.browser.js')
       ).loadAssetManifest()
     };
-    const { regex } = await import('../../data/regex.js');
-    const { storage_keys } = await import('../../data/storage_keys.js');
+    const { regex } = await import('@data/regex.js');
+    const { storage_keys } = await import('@data/storage_keys.js');
 
     return {
       assets,
       classes,
       defaults,
-      env_vars,
       error_messages,
       file_paths,
       manifests,
@@ -48,17 +46,31 @@ export const initializeData = async (): Promise<Data> => {
   }
 };
 
+export async function initializeEnvVars(): Promise<EnvVars> {
+  try {
+    console.log(`Initializing Environment Variables...`);
+
+    const { env_vars } = await import('@config/env/vars.js');
+
+    return env_vars;
+  } catch (error) {
+    console.error('Error loading environment variables:', error);
+    throw new Error('Failed to load environment variables');
+  }
+}
+
 export async function initializeRenderingManager(
   ctx: CanvasRenderingContext2D,
-  animationGroupManager: AnimationManager,
+  animationManager: AnimationManager,
   core: Core
 ): Promise<RenderingManager> {
   return core.services.errors.handleAsync(async () => {
     console.debug('Initializing the Rendering Engine...');
+
     const renderingEngine = RenderingManager.getInstance(
       ctx,
-      core,
-      animationGroupManager
+      animationManager,
+      core
     );
 
     return renderingEngine;
@@ -67,6 +79,7 @@ export async function initializeRenderingManager(
 
 export async function initializeServices(
   data: Data,
+  env_vars: EnvVars,
   utils: Utilities
 ): Promise<Required<Services>> {
   console.debug(`Initializing Services object...`);
@@ -78,7 +91,11 @@ export async function initializeServices(
 
     services.errors = ErrorHandler.getInstance(data, utils);
     services.storageManager = await StorageManager.getInstance();
-    services.stateManager = StateManager.getInstance(data, services.errors);
+    services.stateManager = StateManager.getInstance(
+      data,
+      env_vars,
+      services.errors
+    );
     services.cache = CacheManager.getInstance(services.errors);
     services.layoutManager = LayoutManager.getInstance(services.errors);
 
@@ -97,7 +114,7 @@ export async function initializeUtilities(
   try {
     console.log(`Creating 'Utilities' object.`);
 
-    const { utilityFactory } = await import('src/app/utils/main.js');
+    const { utilityFactory } = await import('@utils/main.js');
 
     const utils = utilityFactory(data);
 

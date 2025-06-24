@@ -1,6 +1,6 @@
 // File: frontend/src/app/build/env_vars/partials.ts
 
-import type { EnvConfig, EnvVarParserMap, EnvVars } from '../../meta/index.js';
+import type { EnvConfig, EnvVarParserMap, EnvVars } from '@index';
 import { parse as dotenvParse } from 'dotenv';
 import { readFileSync } from 'fs';
 

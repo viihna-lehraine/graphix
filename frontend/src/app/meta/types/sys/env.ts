@@ -1,7 +1,5 @@
 // File: frontend/src/app/meta/types/sys/env.ts
 
-import type { EnvVars } from '../../index.js';
-
 export interface EnvConfig {
   env_import_declaration: string;
   env_var_file: string;
@@ -20,4 +18,14 @@ export type EnvVarParser<K extends keyof EnvVars> = (
 
 export type EnvVarParserMap = {
   [K in keyof EnvVars]: EnvVarParser<K>;
+};
+
+export type EnvVars = {
+  // ROOT ENVIRONMENT VARIABLES
+  APP_MODE: 'dev' | 'prod';
+  VERSION: string;
+
+  // MAIN ENVIRONMENT VARIABLES
+  LOG_LEVEL: 'debug' | 'info' | 'warn' | 'error' | 'silent';
+  VERBOSE: boolean;
 };

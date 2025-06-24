@@ -1,6 +1,6 @@
 // File: frotnend/src/app/services/storage/IDBStorageService.ts
 
-import type { IStorageService } from '../../meta/index.js';
+import type { IStorageService } from '@index';
 
 export class IDBStorageService implements IStorageService {
   static DB_NAME = 'graphix-app';

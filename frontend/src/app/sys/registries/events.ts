@@ -1,18 +1,11 @@
 // File: frontend/src/app/sys/registries/events.ts
 
-import type { Core, ListenerRegistration } from '../../meta/index.js';
+import type { Core, ListenerRegistration } from '@index';
 import { RenderingManager } from '../../meta/index.js';
 
 export const eventListeners: ListenerRegistration[] = [
   (core: Core, renderingManager: RenderingManager) => {
     window.addEventListener('keydown', (event: KeyboardEvent) => {
-      if (!core) {
-        console.warn(
-          'Core is not initialized, skipping event listener registration.'
-        );
-        return;
-      }
-
       if (
         event.key === 'Delete' &&
         core.services.stateManager.getCanvas().selectedLayerIndex !== null
@@ -49,7 +42,7 @@ export async function registerEventListeners(
     {
       context: 'application startup',
       fallback: 'n/a',
-      userMessage: core.data.errorMessages.unknownFatalError
+      userMessage: core.data.error_messages.unknownFatalError
     }
   );
 }

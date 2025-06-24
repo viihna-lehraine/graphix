@@ -1,6 +1,6 @@
 // File: frontend/src/app/config/errors_messages.ts
 
-import type { ErrorMessages } from '../meta/index.js';
+import type { ErrorMessages } from '@index';
 
 const post_message = 'If the problem persists, please contact support.';
 

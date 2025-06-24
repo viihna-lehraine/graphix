@@ -7,7 +7,7 @@ import type {
   EngineHandlers,
   Layer,
   LayerElement
-} from '../meta/index.js';
+} from '@index';
 
 async function setBackgroundFromFile(file: File, core: Core): Promise<void> {
   const { stateManager } = core.services;

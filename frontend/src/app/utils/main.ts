@@ -1,6 +1,6 @@
 // File: frontend/src/app/core/utils/main.ts
 
-import type { AssetType, Data, Utilities } from '../meta/index.js';
+import type { AssetType, Data, Utilities } from '@index';
 import { parseGIF, decompressFrames } from 'gifuct-js';
 
 const { typeguardFactory } = await import('./typeguards.js');

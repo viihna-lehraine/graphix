@@ -1,14 +1,12 @@
 #!/usr/bin/env bash
 
-# File: frontend/scripts/print_codebase.sh
-
 set -eou pipefail
 
 PROJECT_ROOT="/home/viihna/Projects/graphix"
 CSS_DIR="$PROJECT_ROOT/frontend/src/styles"
 HTML_FILE="$PROJECT_ROOT/frontend/src/index.html"
 TS_DIR="$PROJECT_ROOT/frontend/src/app"
-OUTPUT_FILE="$PROJECT_ROOT/dev/codebase.txt"
+OUTPUT_FILE="$PROJECT_ROOT/dev/codebase_dump/frontend.txt"
 
 if [ ! -d "$TS_DIR" ]; then
   echo "TS_DIR directory not found. Exiting..."

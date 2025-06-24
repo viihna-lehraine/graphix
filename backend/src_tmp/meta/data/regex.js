@@ -1,0 +1,6 @@
+// File: backend/src/meta/data/regex.ts
+const email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const regex = {
+    email
+};
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoicmVnZXguanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyJyZWdleC50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSx1Q0FBdUM7QUFJdkMsTUFBTSxLQUFLLEdBQVcsNEJBQTRCLENBQUM7QUFFbkQsTUFBTSxDQUFDLE1BQU0sS0FBSyxHQUFjO0lBQzlCLEtBQUs7Q0FDRyxDQUFDIiwic291cmNlc0NvbnRlbnQiOlsiLy8gRmlsZTogYmFja2VuZC9zcmMvbWV0YS9kYXRhL3JlZ2V4LnRzXG5cbmltcG9ydCB0eXBlIHsgUmVnZXhEYXRhIH0gZnJvbSAnLi4vaW5kZXguanMnO1xuXG5jb25zdCBlbWFpbDogUmVnRXhwID0gL15bXlxcc0BdK0BbXlxcc0BdK1xcLlteXFxzQF0rJC87XG5cbmV4cG9ydCBjb25zdCByZWdleDogUmVnZXhEYXRhID0ge1xuICBlbWFpbFxufSBhcyBjb25zdDtcbiJdfQ==

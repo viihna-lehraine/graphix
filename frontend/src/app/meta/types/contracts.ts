@@ -5,6 +5,7 @@ import type {
   CanvasState,
   ClientState,
   ErrorHandlerOptions,
+  FitMode,
   GifAnimation,
   Layer,
   LayerElement,
@@ -16,8 +17,8 @@ import type {
   Subscriber,
   TextLayerElement,
   UIState
-} from '../index.js';
-import { RenderingManager } from 'src/app/engine/RenderingManager.js';
+} from '@meta/types/sys/index.js';
+import { RenderingManager } from '@engine/RenderingManager.js';
 
 // ================================================== //
 // ================================================== //
@@ -190,6 +191,11 @@ export interface IStorageService {
 
 export interface RenderingManagerContract {
   addRedrawPlugin: (plugin: RedrawPlugin) => void;
+  drawBackgroundImage: (
+    ctx: CanvasRenderingContext2D,
+    img: HTMLImageElement,
+    fit: FitMode
+  ) => void;
   drawDevOverlay: () => void;
   drawFullBackgroundImage: (
     img: HTMLImageElement,

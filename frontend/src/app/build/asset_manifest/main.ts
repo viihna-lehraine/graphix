@@ -2,9 +2,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { initializeData } from '../../sys/init/partials.js';
 
-const data = await initializeData();
 const projectRoot = path.resolve(
   new URL('../../../../', import.meta.url).pathname
 );
@@ -27,7 +25,7 @@ if (fs.existsSync(outFile)) {
 }
 
 const { scanDir } = await import('./partials.js');
-const manifest = await scanDir(assetDir, '', data);
+const manifest = await scanDir(assetDir, '');
 const manifestWithIndex = manifest.map((asset, i) => ({
   ...asset,
   index: i + 1

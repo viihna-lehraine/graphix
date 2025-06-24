@@ -1,6 +1,6 @@
 // File: frontend/src/app/meta/types/data.ts
 
-import type { Asset, BlendMode } from '../index.js';
+import type { Asset, BlendMode, FitMode } from '@index';
 
 export interface AssetData {
   dummyTextAsset: Asset;
@@ -18,15 +18,13 @@ export type AssetManifest = { assets: Asset[] };
 export type AssetTags = string[];
 
 export interface Defaults {
-  animation: {
-    frameCount: number;
-  };
+  animation: { frameCount: number };
+  bgFitMode: FitMode;
   blendMode: BlendMode;
   boundaryStrokeStyle: string;
   canvasWidth: number;
   canvasHeight: number;
   debounceWait: number;
-  delayMs: number;
   fileExt: string;
   fileName: string;
   font: string;
@@ -71,6 +69,7 @@ export type DomIds = DomBtnIds &
   DomFormIds &
   DomInputIds & {
     canvas: string;
+    bgFitModeSelector: string;
   };
 
 export interface DomInputIds {
@@ -79,21 +78,11 @@ export interface DomInputIds {
   textInput: string;
 }
 
-export type EnvVars = {
-  // ROOT ENVIRONMENT VARIABLES
-  APP_MODE: 'dev' | 'prod';
-  VERSION: string;
-
-  // MAIN ENVIRONMENT VARIABLES
-  LOG_LEVEL: 'debug' | 'info' | 'warn' | 'error' | 'silent';
-  VERBOSE: boolean;
-};
-
 export type ErrorMessages = Record<string, string>;
 
 export interface FilePaths {
   asset_manifest: '/assets/user/assets.manifest.json';
-  gifWorkerScript: '/assets/scripts/gif.worker.js';
+  gif_worker_script: '/assets/scripts/gif.worker.js';
 }
 
 export interface Manifests {
@@ -117,7 +106,6 @@ export interface Data {
   assets: AssetData;
   classes: DomClasses;
   defaults: Defaults;
-  env_vars: EnvVars;
   error_messages: ErrorMessages;
   file_paths: FilePaths;
   ids: DomIds;

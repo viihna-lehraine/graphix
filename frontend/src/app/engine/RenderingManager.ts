@@ -6,13 +6,14 @@ import type {
   Core,
   Data,
   EnvVars,
+  FitMode,
   Layer,
   RedrawPlugin,
   RenderingManagerContract,
   TextLayerElement,
   Utilities
-} from '../meta/index.js';
-import { AnimationManager, ErrorHandler, StateManager } from '../meta/index.js';
+} from '@index';
+import { AnimationManager, ErrorHandler, StateManager } from '@index';
 
 export class RenderingManager implements RenderingManagerContract {
   static #instance: RenderingManager | null = null;
@@ -39,11 +40,11 @@ export class RenderingManager implements RenderingManagerContract {
 
   private constructor(
     ctx: CanvasRenderingContext2D,
-    core: Core,
-    animationManager: AnimationManager
+    animationManager: AnimationManager,
+    core: Core
   ) {
     this.#animationManager = animationManager;
-    this.#appMode = core.data.env_vars.APP_MODE;
+    this.#appMode = core.env.APP_MODE;
     // this.#asyncErrorHandler = core.services.errors.handleAsync.bind(this);
     this.#ctx = ctx;
     this.#core = core;
@@ -60,8 +61,8 @@ export class RenderingManager implements RenderingManagerContract {
 
   static getInstance(
     ctx: CanvasRenderingContext2D,
-    core: Core,
-    animationManager: AnimationManager
+    animationManager: AnimationManager,
+    core: Core
   ): RenderingManager {
     return core.services.errors.handleSync(() => {
       console.debug(`calling getInstance()...`);
@@ -71,8 +72,8 @@ export class RenderingManager implements RenderingManagerContract {
 
         RenderingManager.#instance = new RenderingManager(
           ctx,
-          core,
-          animationManager
+          animationManager,
+          core
         );
       }
 
@@ -127,6 +128,44 @@ export class RenderingManager implements RenderingManagerContract {
     return this.#syncErrorHandler(() => {
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     }, 'Unhandled canvas clear error.');
+  }
+
+  drawBackgroundImage(
+    ctx: CanvasRenderingContext2D,
+    img: HTMLImageElement,
+    fit: FitMode = 'cover'
+  ): void {
+    const { width: cW, height: cH } = ctx.canvas;
+    const { width: iW, height: iH } = img;
+
+    let sx = 0,
+      sy = 0,
+      sWidth = iW,
+      sHeight = iH;
+    let dx = 0,
+      dy = 0,
+      dWidth = cW,
+      dHeight = cH;
+
+    if (fit === 'stretch') {
+      // use defaults
+    } else if (fit === 'contain') {
+      // fit whole image inside canvas, may letterbox
+      const scale = Math.min(cW / iW, cH / iH);
+      dWidth = iW * scale;
+      dHeight = iH * scale;
+      dx = (cW - dWidth) / 2;
+      dy = (cH - dHeight) / 2;
+    } else if (fit === 'cover') {
+      // gill canvas, crop as needed
+      const scale = Math.max(cW / iW, cH / iH);
+      sWidth = cW / scale;
+      sHeight = cH / scale;
+      sx = (iW - sWidth) / 2;
+      sy = (iH - sHeight) / 2;
+    }
+
+    ctx.drawImage(img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
   }
 
   drawBoundary(ctx: CanvasRenderingContext2D): void {

@@ -1,10 +1,6 @@
 // File: frontend/src/app/services/state/UIStateService.ts
 
-import type {
-  Subscriber,
-  UIState,
-  UIStateServiceContract
-} from '../../meta/index.js';
+import type { Subscriber, UIState, UIStateServiceContract } from '@index';
 
 export class UIStateService implements UIStateServiceContract {
   static #instance: UIStateService | null = null;

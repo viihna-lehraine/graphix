@@ -1,6 +1,6 @@
 // File: frontend/src/app/meta/types/errors.ts
 
-import { error_classes } from '../errors/index.js';
+import { error_classes } from '@meta/errors/index.js';
 
 export type SystemErrorInstance = InstanceType<
   typeof error_classes.SystemError

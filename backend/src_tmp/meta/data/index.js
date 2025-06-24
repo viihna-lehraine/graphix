@@ -1,0 +1,8 @@
+// File: backend/src/meta/data/index.ts
+import { config } from './config.js';
+import { regex } from './regex.js';
+export const data = {
+    config,
+    regex
+};
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiaW5kZXguanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyJpbmRleC50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSx1Q0FBdUM7QUFHdkMsT0FBTyxFQUFFLE1BQU0sRUFBRSxNQUFNLGFBQWEsQ0FBQztBQUNyQyxPQUFPLEVBQUUsS0FBSyxFQUFFLE1BQU0sWUFBWSxDQUFDO0FBRW5DLE1BQU0sQ0FBQyxNQUFNLElBQUksR0FBUztJQUN4QixNQUFNO0lBQ04sS0FBSztDQUNHLENBQUMiLCJzb3VyY2VzQ29udGVudCI6WyIvLyBGaWxlOiBiYWNrZW5kL3NyYy9tZXRhL2RhdGEvaW5kZXgudHNcblxuaW1wb3J0IHR5cGUgeyBEYXRhIH0gZnJvbSAnLi4vaW5kZXguanMnO1xuaW1wb3J0IHsgY29uZmlnIH0gZnJvbSAnLi9jb25maWcuanMnO1xuaW1wb3J0IHsgcmVnZXggfSBmcm9tICcuL3JlZ2V4LmpzJztcblxuZXhwb3J0IGNvbnN0IGRhdGE6IERhdGEgPSB7XG4gIGNvbmZpZyxcbiAgcmVnZXhcbn0gYXMgY29uc3Q7XG4iXX0=

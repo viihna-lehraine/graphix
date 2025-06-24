@@ -1,0 +1,19 @@
+// File: backend/src/services/JWTService.ts
+export class JWTService {
+    #fastify;
+    constructor(fastify) {
+        this.#fastify = fastify;
+    }
+    sign(payload) {
+        return this.#fastify.jwt.sign(payload);
+    }
+    verify(token) {
+        try {
+            return this.#fastify.jwt.verify(token);
+        }
+        catch {
+            return null;
+        }
+    }
+}
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiSldUU2VydmljZS5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIkpXVFNlcnZpY2UudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsMkNBQTJDO0FBSzNDLE1BQU0sT0FBTyxVQUFVO0lBQ3JCLFFBQVEsQ0FBa0I7SUFFMUIsWUFBWSxPQUF3QjtRQUNsQyxJQUFJLENBQUMsUUFBUSxHQUFHLE9BQU8sQ0FBQztJQUMxQixDQUFDO0lBRUQsSUFBSSxDQUFDLE9BQXFCO1FBQ3hCLE9BQU8sSUFBSSxDQUFDLFFBQVEsQ0FBQyxHQUFHLENBQUMsSUFBSSxDQUFDLE9BQU8sQ0FBQyxDQUFDO0lBQ3pDLENBQUM7SUFFRCxNQUFNLENBQUMsS0FBYTtRQUNsQixJQUFJLENBQUM7WUFDSCxPQUFPLElBQUksQ0FBQyxRQUFRLENBQUMsR0FBRyxDQUFDLE1BQU0sQ0FBZSxLQUFLLENBQUMsQ0FBQztRQUN2RCxDQUFDO1FBQUMsTUFBTSxDQUFDO1lBQ1AsT0FBTyxJQUFJLENBQUM7UUFDZCxDQUFDO0lBQ0gsQ0FBQztDQUNGIiwic291cmNlc0NvbnRlbnQiOlsiLy8gRmlsZTogYmFja2VuZC9zcmMvc2VydmljZXMvSldUU2VydmljZS50c1xuXG5pbXBvcnQgdHlwZSB7IEpXVFNlcnZpY2VDb250cmFjdCwgVG9rZW5QYXlsb2FkIH0gZnJvbSAnLi4vbWV0YS9pbmRleC5qcyc7XG5pbXBvcnQgeyBGYXN0aWZ5SW5zdGFuY2UgfSBmcm9tICdmYXN0aWZ5JztcblxuZXhwb3J0IGNsYXNzIEpXVFNlcnZpY2UgaW1wbGVtZW50cyBKV1RTZXJ2aWNlQ29udHJhY3Qge1xuICAjZmFzdGlmeTogRmFzdGlmeUluc3RhbmNlO1xuXG4gIGNvbnN0cnVjdG9yKGZhc3RpZnk6IEZhc3RpZnlJbnN0YW5jZSkge1xuICAgIHRoaXMuI2Zhc3RpZnkgPSBmYXN0aWZ5O1xuICB9XG5cbiAgc2lnbihwYXlsb2FkOiBUb2tlblBheWxvYWQpOiBzdHJpbmcge1xuICAgIHJldHVybiB0aGlzLiNmYXN0aWZ5Lmp3dC5zaWduKHBheWxvYWQpO1xuICB9XG5cbiAgdmVyaWZ5KHRva2VuOiBzdHJpbmcpOiBUb2tlblBheWxvYWQgfCBudWxsIHtcbiAgICB0cnkge1xuICAgICAgcmV0dXJuIHRoaXMuI2Zhc3RpZnkuand0LnZlcmlmeTxUb2tlblBheWxvYWQ+KHRva2VuKTtcbiAgICB9IGNhdGNoIHtcbiAgICAgIHJldHVybiBudWxsO1xuICAgIH1cbiAgfVxufVxuIl19

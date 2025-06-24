@@ -1,11 +1,6 @@
 // File: frontend/src/app/engine/animation.ts
 
-import type {
-  Asset,
-  GifAnimation,
-  GifFrame,
-  LayerElement
-} from '../meta/index.js';
+import type { Asset, GifAnimation, GifFrame, LayerElement } from '@index';
 import { decompressFrames, parseGIF } from 'gifuct-js';
 
 export async function createAnimatedImageElementFromFile(

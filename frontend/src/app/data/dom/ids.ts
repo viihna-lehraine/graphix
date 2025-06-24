@@ -6,11 +6,12 @@ import type {
   DomFormIds,
   DomIds,
   DomInputIds
-} from '../../meta/index.js';
+} from '@index';
 
 const addImgBtn = 'add-img-btn';
 const addImgInput = 'add-img-input';
 const assetBrowserDiv = 'asset-browser';
+const bgFitModeSelector = 'bg-fit-mode-selector';
 const canvas = 'main-canvas';
 const canvasContainerDiv = 'canvas-container';
 const canvasToolbarDiv = 'canvas-toolbar';
@@ -48,6 +49,7 @@ const inputs: DomInputIds = {
 
 export const domIDs: DomIds = {
   canvas,
+  bgFitModeSelector,
   ...btns,
   ...divs,
   ...forms,

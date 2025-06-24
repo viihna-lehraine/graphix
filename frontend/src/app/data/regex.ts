@@ -1,6 +1,6 @@
 // File: frontend/src/app/data/regex.ts
 
-import type { Regex } from '../meta/index.js';
+import type { Regex } from '@index';
 
 const floatString: RegExp = /^[-+]?\d*\.\d+(e[-+]?\d+)?$/i;
 const hex: RegExp = /^#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;

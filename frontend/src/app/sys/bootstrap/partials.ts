@@ -8,11 +8,14 @@ export async function setGlobalErrorHandlers(): Promise<void> {
       console.log(
         `Unhandled error: ${message} at ${source}:${lineno}:${colno}`
       );
+
       if (error && error.stack) {
         console.log(`Stack trace:\n${error.stack}`);
       }
+
       return false;
     };
+
     window.addEventListener('unhandledrejection', event => {
       console.log(`Unhandled promise rejection: ${event.reason}`);
     });
@@ -20,6 +23,7 @@ export async function setGlobalErrorHandlers(): Promise<void> {
     console.error(
       `Failed to register global error handlers: ${error instanceof Error ? error.message : String(error)}`
     );
+
     throw new Error(`Global error handler registration failed.`);
   }
 }

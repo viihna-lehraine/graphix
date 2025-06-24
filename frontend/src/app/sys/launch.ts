@@ -1,6 +1,6 @@
 // File: frontend/src/app/sys/launch.ts
 
-import type { Core, Engine } from '../meta/index.js';
+import type { Core, Engine } from '@index';
 
 export async function launchApp(): Promise<{
   core: Core;
@@ -40,7 +40,7 @@ export async function launchApp(): Promise<{
       );
 
     console.debug(`Initializing User Interface...`);
-    const { UIManager } = await import('src/app/engine/UIManager.js');
+    const { UIManager } = await import('@engine/UIManager.js');
     const uiManager = UIManager.getInstance(
       core.services.cache,
       core,

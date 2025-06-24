@@ -10,8 +10,8 @@ import type {
   LayerElement,
   Subscriber,
   TextLayerElement
-} from '../../meta/index.js';
-import { RenderingManager } from 'src/app/engine/RenderingManager.js';
+} from '@index';
+import { RenderingManager } from '@engine/RenderingManager.js';
 
 export class CanvasStateService implements CanvasStateServiceContract {
   static #instance: CanvasStateService | null = null;

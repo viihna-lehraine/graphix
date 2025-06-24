@@ -4,7 +4,7 @@ import type {
   ClientState,
   ClientStateServiceContract,
   Subscriber
-} from '../../meta/index.js';
+} from '@index';
 
 export class ClientStateService implements ClientStateServiceContract {
   static #instance: ClientStateService | null = null;

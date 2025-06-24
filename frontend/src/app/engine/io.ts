@@ -7,8 +7,8 @@ import type {
   GifAnimation,
   Layer,
   IOFunctions
-} from '../meta/index.js';
-import { RenderingManager } from '../meta/index.js';
+} from '@index';
+import { RenderingManager } from '@index';
 import GIF from 'gif.js';
 import html2canvas from 'html2canvas';
 
@@ -29,7 +29,7 @@ async function exportGif(
       quality: 10,
       width,
       height,
-      workerScript: core.data.file_paths.gifWorkerScript
+      workerScript: core.data.file_paths.gif_worker_script
     });
 
     const offscreenCanvas = document.createElement('canvas');

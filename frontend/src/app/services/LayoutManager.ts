@@ -1,7 +1,7 @@
 // File: frontend/src/app/services/dom/LayoutManager.ts
 
-import type { LayoutManagerContract, ResizePlugin } from '../meta/index.js';
-import { ErrorHandler } from './ErrorHandler.js';
+import type { LayoutManagerContract, ResizePlugin } from '@index';
+import { ErrorHandler } from '@index';
 
 export class LayoutManager implements LayoutManagerContract {
   static #instance: LayoutManager | null = null;

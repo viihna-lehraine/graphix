@@ -37,6 +37,15 @@ export type {
   Subscriber
 } from './core.js';
 export type { TextStyle, TextUnit } from './css.js';
-export type { CanvasLifecycleEvent, StateLifecycleHook } from './engine.js';
-export type { EnvConfig, EnvVarParser, EnvVarParserMap } from './env.js';
+export type {
+  CanvasLifecycleEvent,
+  FitMode,
+  StateLifecycleHook
+} from './engine.js';
+export type {
+  EnvConfig,
+  EnvVarParser,
+  EnvVarParserMap,
+  EnvVars
+} from './env.js';
 export type { CanvasState, ClientState, State, UIState } from './state.js';

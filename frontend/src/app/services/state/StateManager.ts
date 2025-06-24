@@ -4,23 +4,26 @@ import type {
   CanvasState,
   ClientState,
   Data,
+  Defaults,
+  EnvVars,
   GifAnimation,
   Layer,
   LayerElement,
   State,
   StateLifecycleHook,
   StateManagerContract,
+  StorageKeys,
   Subscriber,
   TextLayerElement,
   UIState
-} from '../../meta/index.js';
+} from '@index';
 import {
   CanvasStateService,
   ClientStateService,
   ErrorHandler,
   RenderingManager,
   UIStateService
-} from '../../meta/index.js';
+} from '@index';
 
 export class StateManager implements StateManagerContract {
   static #instance: StateManager | null = null;
@@ -35,25 +38,32 @@ export class StateManager implements StateManagerContract {
   });
 
   #data: Data;
+  #defaults: Defaults;
+  #env_vars: EnvVars;
   #errors: ErrorHandler;
+  #keys: StorageKeys;
 
-  private constructor(data: Data, errors: ErrorHandler) {
+  private constructor(data: Data, env_vars: EnvVars, errors: ErrorHandler) {
     try {
       console.debug('Initializing StateManager...');
 
       this.#data = data;
+      this.#defaults = data.defaults;
+      this.#env_vars = env_vars;
       this.#errors = errors;
+      this.#keys = data.storage_keys;
 
-      this.#version = this.#data.env_vars.VERSION;
+      this.#version = this.#env_vars.VERSION;
 
       // hydrate state
       let initialState: State = {
-        version: this.#data.env_vars.VERSION,
+        version: this.#env_vars.VERSION,
         canvas: {
           width: this.#data.defaults.canvasWidth,
           height: this.#data.defaults.canvasHeight,
           layers: [],
-          selectedLayerIndex: null
+          selectedLayerIndex: null,
+          bgFitMode: this.#data.defaults.bgFitMode
         },
         client: {
           viewportWidth: window.innerWidth,
@@ -62,7 +72,7 @@ export class StateManager implements StateManagerContract {
         ui: { uploadMode: null }
       };
 
-      const saved = window.localStorage.getItem('appState');
+      const saved = window.localStorage.getItem(this.#keys.APP_STATE);
 
       if (saved) {
         try {
@@ -96,7 +106,11 @@ export class StateManager implements StateManagerContract {
     }
   }
 
-  static getInstance(data: Data, errors: ErrorHandler): StateManager {
+  static getInstance(
+    data: Data,
+    env_vars: EnvVars,
+    errors: ErrorHandler
+  ): StateManager {
     try {
       console.debug('Calling StateManager.getInstance()...');
 
@@ -104,7 +118,11 @@ export class StateManager implements StateManagerContract {
         console.debug(
           'No existing StateManager instance found. Creating new instance.'
         );
-        return (StateManager.#instance = new StateManager(data, errors));
+        return (StateManager.#instance = new StateManager(
+          data,
+          env_vars,
+          errors
+        ));
       }
 
       console.debug('Returning existing StateManager instance.');

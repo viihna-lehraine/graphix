@@ -8,8 +8,8 @@ import type {
   ErrorHandlerOptions,
   Typeguards,
   Utilities
-} from '../meta/index.js';
-import { error_classes } from '../meta/index.js';
+} from '@index';
+import { error_classes } from '@index';
 
 export class ErrorHandler implements ErrorHandlerServiceContract {
   static #instance: ErrorHandler | null = null;

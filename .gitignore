@@ -1,6 +1,5 @@
 .github
 .vscode
-backend
 dev
 dist
 public/assets
@@ -8,5 +7,6 @@ node_modules
 frontend/backups
 frontend/public
 frontend/dist
-
 env_vars.generated.ts
+pnpm-lock.yaml
+pnpm-workspace.yaml

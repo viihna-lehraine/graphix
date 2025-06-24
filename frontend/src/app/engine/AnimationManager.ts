@@ -1,10 +1,7 @@
 // File: frontend/src/app/engine/AnimationManager.ts
 
-import type {
-  AnimationGroup,
-  AnimationManagerContract
-} from '../meta/index.js';
-import { RenderingManager } from '../meta/index.js';
+import type { AnimationGroup, AnimationManagerContract } from '@index';
+import { RenderingManager } from '@index';
 
 export class AnimationManager implements AnimationManagerContract {
   static #instance: AnimationManager | null = null;

@@ -6,7 +6,7 @@ import type {
   LayerElement,
   LayerServiceContract,
   Utilities
-} from '../meta/index.js';
+} from '@index';
 
 export class LayerService implements LayerServiceContract {
   static #instance: LayerService | null = null;

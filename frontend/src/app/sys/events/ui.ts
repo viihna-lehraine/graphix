@@ -1,6 +1,6 @@
 // File: frontend/src/app/sys/events/ui.ts
 
-import type { Core, Engine } from '../../meta/index.js';
+import type { Core, Engine } from '@index';
 
 export async function addEngineUIEventListeners(
   core: Core,

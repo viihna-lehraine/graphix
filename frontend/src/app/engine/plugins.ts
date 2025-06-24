@@ -1,6 +1,6 @@
 // File: frontend/src/app/engine/plugins.ts
 
-import type { RedrawPlugin } from '../meta/index.js';
+import type { RedrawPlugin } from '@index';
 
 export const animatedImageRedrawPlugin: RedrawPlugin = (ctx, core) => {
   const state = core.services.stateManager.getCanvas();

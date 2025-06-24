@@ -1,8 +1,7 @@
 // File: frontend/src/app/services/storage/StorageManager.ts
 
-import type { IStorageService } from '../../meta/index.js';
-import { IDBStorageService } from './IDBStorageService.js';
-import { LocalStorageService } from './LocalStorageService.js';
+import type { IStorageService } from '@index';
+import { IDBStorageService, LocalStorageService } from '@index';
 
 export class StorageManager implements IStorageService {
   static #instance: StorageManager | null = null;

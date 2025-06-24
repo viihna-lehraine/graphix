@@ -1,6 +1,6 @@
 // File: frontend/src/app/sys/init/engine.ts
 
-import type { Core, Engine } from '@meta/index.js';
+import type { Core, Engine } from '@index';
 
 export async function initializeEngine(core: Core): Promise<Required<Engine>> {
   return core.services.errors.handleAsync(async () => {
@@ -15,23 +15,21 @@ export async function initializeEngine(core: Core): Promise<Required<Engine>> {
 
     const canvasRefs = { canvas, ctx };
 
-    const { AnimationManager } = await import(
-      'src/app/engine/AnimationManager.js'
-    );
+    const { AnimationManager } = await import('@engine/AnimationManager.js');
     const animationManager = AnimationManager.getInstance();
 
-    const { initializeRenderingManager } = await import('./partials.js');
+    const { initializeRenderingManager } = await import(
+      '@sys_init/partials.js'
+    );
     const renderingManager = await initializeRenderingManager(
       ctx,
       animationManager,
       core
     );
 
-    const { ioFns } = await import('src/app/engine/io.js');
+    const { ioFns } = await import('@engine/io.js');
 
-    const { animatedImageRedrawPlugin } = await import(
-      'src/app/engine/plugins.js'
-    );
+    const { animatedImageRedrawPlugin } = await import('@engine/plugins.js');
     renderingManager.addRedrawPlugin(animatedImageRedrawPlugin);
 
     renderingManager.autoResize({
@@ -48,16 +46,16 @@ export async function initializeEngine(core: Core): Promise<Required<Engine>> {
       }, 'Canvas resize/redraw failed');
     });
 
-    const { LayerService } = await import('src/app/engine/LayerService.js');
+    const { LayerService } = await import('@engine/LayerService.js');
 
     const layerService = LayerService.getInstance(core.utils);
 
-    const { handlers } = await import('src/app/engine/handlers.js');
-    const { assetBrowserFns } = await import('src/app/engine/asset_browser.js');
+    const { handlers } = await import('@engine/handlers.js');
+    const { assetBrowserFns } = await import('@engine/asset_browser.js');
 
     const stateManager = core.services.stateManager;
 
-    const { UIManager } = await import('src/app/engine/UIManager.js');
+    const { UIManager } = await import('@engine/UIManager.js');
     const uiManager = UIManager.getInstance(
       core.services.cache,
       core,

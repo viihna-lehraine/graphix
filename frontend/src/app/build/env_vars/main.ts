@@ -1,6 +1,6 @@
 // File: frontend/src/app/build/env_vars/main.ts
 
-import type { EnvVars } from '../../meta/index.js';
+import type { EnvVars } from '@index';
 import { writeFileSync } from 'fs';
 import { resolve } from 'path';
 

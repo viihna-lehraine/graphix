@@ -1,12 +1,12 @@
 // File: frontend/src/app/main.ts
 
-import('./sys/events/dom.js').then(async ({ onDOMContentLoaded }) => {
-  const { error_classes } = await import('./meta/errors/index.js');
+import('@dom_events').then(async ({ onDOMContentLoaded }) => {
+  const { error_classes } = await import('@index');
   const AppStartupError = error_classes.AppStartupError;
 
   onDOMContentLoaded(async () => {
     try {
-      const { launchApp } = await import('@sys/launch.js');
+      const { launchApp } = await import('@launch');
 
       const { core, engine } = await launchApp();
 

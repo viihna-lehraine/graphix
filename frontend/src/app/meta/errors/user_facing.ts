@@ -1,6 +1,6 @@
 // File: frontend/src/app/meta/error/user_facing.ts
 
-import { error_messages as msgs } from '../../config/error_messages.js';
+import { error_messages as msgs } from '@config/error_messages.js';
 
 export class UserFacingError extends Error {
   constructor(

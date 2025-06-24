@@ -1,0 +1,8 @@
+// File: backend/src/app/index.ts
+import { env } from './env/index.js';
+import { utils } from './utils/index.js';
+export const core = {
+    env,
+    utils
+};
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiaW5kZXguanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyJpbmRleC50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSxpQ0FBaUM7QUFHakMsT0FBTyxFQUFFLEdBQUcsRUFBRSxNQUFNLGdCQUFnQixDQUFDO0FBQ3JDLE9BQU8sRUFBRSxLQUFLLEVBQUUsTUFBTSxrQkFBa0IsQ0FBQztBQUV6QyxNQUFNLENBQUMsTUFBTSxJQUFJLEdBQVM7SUFDeEIsR0FBRztJQUNILEtBQUs7Q0FDRyxDQUFDIiwic291cmNlc0NvbnRlbnQiOlsiLy8gRmlsZTogYmFja2VuZC9zcmMvYXBwL2luZGV4LnRzXG5cbmltcG9ydCB7IENvcmUgfSBmcm9tICcuLi9tZXRhL2luZGV4LmpzJztcbmltcG9ydCB7IGVudiB9IGZyb20gJy4vZW52L2luZGV4LmpzJztcbmltcG9ydCB7IHV0aWxzIH0gZnJvbSAnLi91dGlscy9pbmRleC5qcyc7XG5cbmV4cG9ydCBjb25zdCBjb3JlOiBDb3JlID0ge1xuICBlbnYsXG4gIHV0aWxzXG59IGFzIGNvbnN0O1xuIl19

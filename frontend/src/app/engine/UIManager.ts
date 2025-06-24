@@ -11,13 +11,13 @@ import type {
   Typeguards,
   UIManagerContract,
   Utilities
-} from '../meta/index.js';
+} from '@index';
 import {
   CacheManager,
   ErrorHandler,
   LayerService,
   RenderingManager
-} from '../meta/index.js';
+} from '@index';
 
 export class UIManager implements UIManagerContract {
   static #instance: UIManager | null = null;
@@ -120,6 +120,7 @@ export class UIManager implements UIManagerContract {
           reader.result as string,
           file
         );
+
         this.#stateManager.addLayer(layer);
       };
 

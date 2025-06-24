@@ -1,11 +1,6 @@
 // File: frontend/src/app/engine/asset_browser.ts
 
-import type {
-  AssetBrowserFunctions,
-  Core,
-  Layer,
-  LayerElement
-} from '../meta/index.js';
+import type { AssetBrowserFunctions, Core, Layer, LayerElement } from '@index';
 
 function fileExtensionToVisualLayerType(
   ext: string
@@ -31,7 +26,7 @@ async function renderAssetBrowser(core: Core): Promise<void> {
 
   browser.innerHTML = '';
 
-  const { loadAssetManifest } = await import('src/app/config/manifest.js');
+  const { loadAssetManifest } = await import('@config/manifest.browser.js');
   const asset_manifest = await loadAssetManifest();
 
   (asset_manifest.assets || []).forEach(asset => {
@@ -44,6 +39,7 @@ async function renderAssetBrowser(core: Core): Promise<void> {
       const elemKind = fileExtensionToVisualLayerType(asset.ext);
 
       let element: LayerElement;
+
       if (elemKind === 'animated_image') {
         element = {
           kind: 'animated_image',

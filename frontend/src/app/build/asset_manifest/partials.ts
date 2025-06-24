@@ -8,13 +8,12 @@ import type {
   BackgroundExtra,
   BlendMode,
   BorderExtra,
-  Data,
   FontExtra,
   GifExtra,
   ImageExtra,
   OverlayExtra,
   StickerExtra
-} from '@meta/index.js';
+} from '@index';
 import fs from 'fs';
 import fsPromises from 'fs/promises';
 import crypto from 'crypto';
@@ -25,14 +24,13 @@ import path from 'path';
 export async function getAssetClassAndFields(
   relPath: string,
   ext: string,
-  filePath: string,
-  data: Data
+  filePath: string
 ): Promise<{ assetType: AssetType; extra: AssetsExtra }> {
   const rel = relPath.replace(/\\/g, '/').toLowerCase();
 
   // OVERLAY
   if (rel.includes('/overlays/')) {
-    let blendMode = data.defaults.blendMode;
+    let blendMode = 'normal' as BlendMode;
     if (rel.includes('multiply')) blendMode = 'multiply';
     else if (rel.includes('screen')) blendMode = 'screen';
     else if (rel.includes('overlay')) blendMode = 'overlay';
@@ -168,8 +166,7 @@ export async function readAssetMetadata(
 
 export async function scanDir(
   dir: string,
-  base: string = '',
-  data: Data
+  base: string = ''
 ): Promise<Asset[]> {
   const files: Asset[] = [];
   const entries = await fsPromises.readdir(dir);
@@ -181,7 +178,7 @@ export async function scanDir(
     const stat = await fsPromises.stat(full);
 
     if (stat.isDirectory()) {
-      const nestedFiles = await scanDir(full, rel, data);
+      const nestedFiles = await scanDir(full, rel);
       files.push(...nestedFiles);
     } else {
       if (entry.endsWith('.json')) continue;
@@ -189,12 +186,7 @@ export async function scanDir(
       const ext = path.extname(entry).slice(1).toLowerCase();
 
       const { size_kb, hash_sha256 } = await getFileInfo(full);
-      const { assetType, extra } = await getAssetClassAndFields(
-        rel,
-        ext,
-        full,
-        data
-      );
+      const { assetType, extra } = await getAssetClassAndFields(rel, ext, full);
       const assetMetadata = await readAssetMetadata(full);
 
       // ---------------------------
@@ -204,7 +196,7 @@ export async function scanDir(
       let tileable: boolean = false;
       let width: number | false = false;
       let height: number | false = false;
-      let blendMode: BlendMode = data.defaults.blendMode;
+      let blendMode = 'normal' as BlendMode;
       let animation: AnimatedAssetProps | false = false;
       let font: Asset['font'] = false;
 

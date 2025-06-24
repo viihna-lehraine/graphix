@@ -7,7 +7,7 @@ import type {
   GifAnimation,
   ImageLayer,
   Layer
-} from '../index.js';
+} from '@index';
 import {
   AnimationManager,
   CacheManager,

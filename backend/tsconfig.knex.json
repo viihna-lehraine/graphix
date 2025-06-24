@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "CommonJS",
+    "outDir": "./knex-dist",
+    "skipLibCheck": true,
+    "target": "ES2022"
+  },
+  "include": ["./knexfile.ts"]
+}
